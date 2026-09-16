@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>스케줄러</title>
+  <style>
+    :root {
+      --bg: #f4f6fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --danger: #ef4444;
+      --done: #9ca3af;
+      --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --card: #1e293b;
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --border: #334155;
+        --primary: #6366f1;
+        --primary-hover: #818cf8;
+        --danger: #f87171;
+        --done: #64748b;
+        --shadow: 0 1px 3px rgba(0,0,0,.4);
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo",
+        "Malgun Gothic", "맑은 고딕", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 24px 16px 60px;
+    }
+    .wrap { max-width: 640px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 24px; }
+    header h1 { margin: 0 0 4px; font-size: 1.8rem; }
+    header p { margin: 0; color: var(--muted); font-size: .9rem; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    form { display: grid; gap: 12px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 480px) { .row { grid-template-columns: 1fr; } }
+    label { font-size: .8rem; color: var(--muted); display: block; margin-bottom: 4px; }
+    input[type="text"], input[type="date"], input[type="time"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: .95rem;
+    }
+    input:focus { outline: 2px solid var(--primary); border-color: transparent; }
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      font-size: .95rem;
+      font-weight: 600;
+      padding: 11px 16px;
+      transition: background .15s;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .toolbar h2 { margin: 0; font-size: 1.1rem; }
+    .filters { display: flex; gap: 6px; }
+    .filters button {
+      padding: 6px 12px;
+      font-size: .8rem;
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .filters button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    ul { list-style: none; margin: 0; padding: 0; }
+    li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 4px;
+      border-bottom: 1px solid var(--border);
+    }
+    li:last-child { border-bottom: none; }
+    li .check {
+      width: 20px; height: 20px; flex-shrink: 0; cursor: pointer;
+      accent-color: var(--primary);
+    }
+    li .info { flex: 1; min-width: 0; }
+    li .title { font-weight: 600; word-break: break-word; }
+    li .when { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+    li.done .title { text-decoration: line-through; color: var(--done); }
+    li .del {
+      background: transparent; color: var(--danger); padding: 6px 10px; font-size: .8rem;
+    }
+    .empty { text-align: center; color: var(--muted); padding: 32px 0; font-size: .9rem; }
+    .overdue { color: var(--danger); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>📅 스케줄러</h1>
+      <p>일정을 등록하고 관리하세요. 데이터는 브라우저에 저장됩니다.</p>
+    </header>
+
+    <div class="card">
+      <form id="form">
+        <div>
+          <label for="title">일정 내용</label>
+          <input type="text" id="title" placeholder="예: 팀 회의, 병원 예약..." required />
+        </div>
+        <div class="row">
+          <div>
+            <label for="date">날짜</label>
+            <input type="date" id="date" required />
+          </div>
+          <div>
+            <label for="time">시간</label>
+            <input type="time" id="time" />
+          </div>
+        </div>
+        <button type="submit" class="btn-primary">일정 추가</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <h2>내 일정 <span id="count"></span></h2>
+        <div class="filters">
+          <button data-filter="all" class="active">전체</button>
+          <button data-filter="active">진행중</button>
+          <button data-filter="done">완료</button>
+        </div>
+      </div>
+      <ul id="list"></ul>
+      <div class="empty" id="empty">등록된 일정이 없습니다.</div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "scheduler.items.v1";
+    let items = [];
+    let filter = "all";
+
+    function load() {
+      try {
+        items = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch (e) {
+        items = [];
+      }
+    }
+    function save() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+      } catch (e) { /* 저장 불가 환경 무시 */ }
+    }
+
+    function fmtWhen(item) {
+      const d = new Date(item.date + "T" + (item.time || "00:00"));
+      const opts = { year: "numeric", month: "long", day: "numeric", weekday: "short" };
+      let s = d.toLocaleDateString("ko-KR", opts);
+      if (item.time) {
+        s += " " + d.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" });
+      }
+      return s;
+    }
+
+    function isOverdue(item) {
+      if (item.done) return false;
+      const d = new Date(item.date + "T" + (item.time || "23:59"));
+      return d.getTime() < Date.now();
+    }
+
+    function render() {
+      const list = document.getElementById("list");
+      const empty = document.getElementById("empty");
+      list.innerHTML = "";
+
+      const sorted = [...items].sort((a, b) => {
+        const da = a.date + (a.time || "00:00");
+        const db = b.date + (b.time || "00:00");
+        return da.localeCompare(db);
+      });
+
+      const shown = sorted.filter((it) => {
+        if (filter === "active") return !it.done;
+        if (filter === "done") return it.done;
+        return true;
+      });
+
+      document.getElementById("count").textContent =
+        items.length ? "(" + items.filter((i) => !i.done).length + "건 진행중)" : "";
+
+      empty.style.display = shown.length ? "none" : "block";
+
+      for (const it of shown) {
+        const li = document.createElement("li");
+        if (it.done) li.className = "done";
+
+        const check = document.createElement("input");
+        check.type = "checkbox";
+        check.className = "check";
+        check.checked = it.done;
+        check.addEventListener("change", () => toggle(it.id));
+
+        const info = document.createElement("div");
+        info.className = "info";
+        const title = document.createElement("div");
+        title.className = "title";
+        title.textContent = it.title;
+        const when = document.createElement("div");
+        when.className = "when" + (isOverdue(it) ? " overdue" : "");
+        when.textContent = fmtWhen(it) + (isOverdue(it) ? " · 지남" : "");
+        info.appendChild(title);
+        info.appendChild(when);
+
+        const del = document.createElement("button");
+        del.className = "del";
+        del.textContent = "삭제";
+        del.addEventListener("click", () => remove(it.id));
+
+        li.appendChild(check);
+        li.appendChild(info);
+        li.appendChild(del);
+        list.appendChild(li);
+      }
+    }
+
+    function add(title, date, time) {
+      items.push({ id: Date.now() + "-" + Math.random().toString(36).slice(2, 7),
+                   title, date, time, done: false });
+      save();
+      render();
+    }
+    function toggle(id) {
+      const it = items.find((i) => i.id === id);
+      if (it) { it.done = !it.done; save(); render(); }
+    }
+    function remove(id) {
+      items = items.filter((i) => i.id !== id);
+      save();
+      render();
+    }
+
+    document.getElementById("form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const title = document.getElementById("title").value.trim();
+      const date = document.getElementById("date").value;
+      const time = document.getElementById("time").value;
+      if (!title || !date) return;
+      add(title, date, time);
+      e.target.reset();
+      document.getElementById("title").focus();
+    });
+
+    document.querySelectorAll(".filters button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        filter = btn.dataset.filter;
+        document.querySelectorAll(".filters button").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        render();
+      });
+    });
+
+    // 기본 날짜를 오늘로 설정
+    document.getElementById("date").value = new Date().toISOString().slice(0, 10);
+
+    load();
+    render();
+  </script>
+</body>
+</html>
