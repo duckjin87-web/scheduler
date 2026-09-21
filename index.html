@@ -433,6 +433,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
+const APP_VERSION = "2026-09-21 · 글자크기/항상위고정/알림팝업";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -684,7 +685,8 @@ function renderSettings() {
       <div class="set-row"><div><div class="lab">전체 삭제</div><div class="desc">이 기기의 모든 데이터 삭제</div></div><button class="btn-danger" id="set-clear">삭제</button></div>
     </div>
     <p class="sub" style="color:var(--text-faint);font-size:11.5px;margin-top:16px;line-height:1.6">
-      데이터는 이 브라우저에만 저장됩니다. 다른 기기와의 자동 동기화는 다음 단계에서 추가됩니다.</p>`;
+      데이터는 이 브라우저에만 저장됩니다. 다른 기기와의 자동 동기화는 다음 단계에서 추가됩니다.<br>
+      <span style="opacity:.8">버전: ${esc(APP_VERSION)}</span></p>`;
 }
 
 /* ---------- 행 렌더 ---------- */
