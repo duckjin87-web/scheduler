@@ -156,11 +156,12 @@
   /* all-day / todo band */
   .week-grid .band-label{background:var(--surface-2);border-bottom:1px solid var(--border);font-size:10px;color:var(--text-faint);font-weight:700;display:flex;align-items:center;justify-content:center;padding:4px 2px;}
   .week-grid .band-cell{border-bottom:1px solid var(--border);border-left:1px solid var(--border);min-height:32px;padding:3px;display:flex;flex-direction:column;gap:3px;}
-  .week-grid .band-cell.today-col{background:color-mix(in srgb, var(--work-soft) 45%, transparent);}
+  .week-grid .band-cell.today-col{background:color-mix(in srgb, var(--work) 14%, var(--surface));}
   .week-grid .hourlabel{font-size:10.5px;color:var(--text-faint);text-align:right;padding:4px 6px 0 0;border-top:1px solid var(--border);height:46px;}
   .week-grid .cell{border-top:1px solid var(--border);border-left:1px solid var(--border);min-height:46px;padding:2px;position:relative;cursor:pointer;transition:background .1s;}
   .week-grid .cell:hover{background:var(--surface-2);}
-  .week-grid .cell.today-col{background:color-mix(in srgb, var(--work-soft) 45%, transparent);}
+  .week-grid .cell.today-col{background:color-mix(in srgb, var(--work) 10%, var(--surface));}
+  .week-grid .head.today{background:color-mix(in srgb, var(--work) 16%, var(--surface));}
   .week-grid .drop-hover{background:var(--work-soft) !important;outline:2px dashed var(--work);outline-offset:-2px;}
   .evt{
     border-radius:6px;padding:3px 6px;font-size:11px;font-weight:600;margin-bottom:2px;line-height:1.3;
@@ -248,9 +249,22 @@
   .btn-sub{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;padding:8px 14px;font-size:12.5px;font-weight:700;}
   .btn-danger{border:1px solid var(--urgent);color:var(--urgent);background:transparent;border-radius:8px;padding:8px 14px;font-size:12.5px;font-weight:700;}
 
-  /* ---------- mobile bottom nav + FAB ---------- */
+  /* ---------- mobile bottom nav ---------- */
   .bottom-nav{display:none;}
-  .fab{display:none;}
+
+  /* ---------- 알림 팝업 스택 (우측) ---------- */
+  #alert-stack{position:fixed;top:64px;right:16px;z-index:150;display:flex;flex-direction:column;gap:10px;width:300px;max-width:calc(100vw - 24px);}
+  .alert-card{background:var(--surface);border:1px solid var(--border-strong);border-left:4px solid var(--urgent);border-radius:12px;box-shadow:var(--shadow-lg);padding:12px 14px;animation:ac-in .2s ease;}
+  @keyframes ac-in{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:none;}}
+  .alert-card .ac-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .alert-card .ac-badge{font-size:10px;font-weight:800;color:var(--urgent);background:var(--urgent-soft);padding:2px 8px;border-radius:6px;display:flex;align-items:center;gap:4px;}
+  .alert-card .ac-badge svg{width:11px;height:11px;stroke:var(--urgent);}
+  .alert-card .ac-time{font-size:11.5px;font-weight:700;color:var(--text-soft);}
+  .alert-card .ac-title{font-weight:700;font-size:14px;}
+  .alert-card .ac-loc{font-size:11.5px;color:var(--text-faint);margin-top:2px;}
+  .alert-card .ac-actions{display:flex;gap:6px;margin-top:10px;}
+  .alert-card .ac-actions button{flex:1;border:1px solid var(--border);background:var(--surface-2);color:var(--text-soft);border-radius:7px;padding:8px 4px;font-size:11.5px;font-weight:700;}
+  .alert-card .ac-actions .ac-ok{background:var(--work);color:#fff;border-color:var(--work);}
 
   /* ---------- modal (CENTER) ---------- */
   .modal-backdrop{
@@ -343,13 +357,8 @@
     }
     .bottom-nav button svg{width:21px;height:21px;stroke:currentColor;}
     .bottom-nav button.active{color:var(--work);}
-    .fab{
-      display:flex;position:fixed;right:18px;bottom:calc(74px + var(--safe-b));z-index:46;
-      width:52px;height:52px;border-radius:50%;background:var(--work);border:none;
-      align-items:center;justify-content:center;box-shadow:var(--shadow-lg);
-    }
-    .fab svg{width:24px;height:24px;stroke:#fff;}
     .week-grid{min-width:560px;}
+    #alert-stack{top:auto;bottom:calc(74px + var(--safe-b));right:12px;left:12px;width:auto;}
   }
   @media (min-width: 901px){ .mobile-only{display:none !important;} }
 </style>
@@ -395,7 +404,9 @@
     <button data-view="todo"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>할 일</button>
     <button data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.34 1.87l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.7 1.7 0 00-1.87-.34 1.7 1.7 0 00-1 1.55V21a2 2 0 11-4 0v-.09a1.7 1.7 0 00-1-1.55 1.7 1.7 0 00-1.87.34l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.7 1.7 0 00.34-1.87 1.7 1.7 0 00-1.55-1H3a2 2 0 110-4h.09a1.7 1.7 0 001.55-1 1.7 1.7 0 00-.34-1.87l-.06-.06a2 2 0 112.83-2.83l.06.06a1.7 1.7 0 001.87.34H9a1.7 1.7 0 001-1.55V3a2 2 0 114 0v.09a1.7 1.7 0 001 1.55 1.7 1.7 0 001.87-.34l.06-.06a2 2 0 112.83 2.83l-.06.06a1.7 1.7 0 00-.34 1.87V9a1.7 1.7 0 001.55 1H21a2 2 0 110 4h-.09a1.7 1.7 0 00-1.55 1z"/></svg>설정</button>
   </nav>
-  <button class="fab" id="fab"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+
+  <!-- 알림 팝업 스택 -->
+  <div id="alert-stack"></div>
 
   <!-- Pin widget -->
   <div class="pin-widget" id="pin-widget" hidden>
@@ -657,7 +668,11 @@ function renderSettings() {
     <div class="set-group">
       <div class="set-row"><div><div class="lab">다크 모드</div><div class="desc">화면 테마를 전환합니다</div></div>
         <button class="switch ${dark ? "on" : ""}" id="set-theme"></button></div>
-      <div class="set-row"><div><div class="lab">오늘 할 일 고정 위젯</div><div class="desc">화면에 항상 떠 있는 위젯 (투명도 조절 가능)</div></div>
+      <div class="set-row"><div><div class="lab">글자 크기</div><div class="desc">앱 전체 텍스트 크기 (5~20)</div></div>
+        <div style="display:flex;align-items:center;gap:8px;min-width:150px">
+          <input type="range" id="set-fs" min="5" max="20" step="1" value="${fontSize}" style="flex:1" />
+          <span id="set-fs-val" style="font-size:12px;font-weight:700;color:var(--text-soft);width:34px;text-align:right">${fontSize}px</span></div></div>
+      <div class="set-row"><div><div class="lab">오늘 할 일 고정 (항상 위)</div><div class="desc">${pipSupported() ? "별도 창으로 항상 화면 최상단에 띄웁니다" : "이 브라우저는 항상-위 창을 지원하지 않아 앱 내부 위젯으로 표시됩니다"}</div></div>
         <button class="switch ${pinState.open ? "on" : ""}" id="set-pin"></button></div>
       <div class="set-row"><div><div class="lab">캘린더 기본 보기</div><div class="desc">월~일(주간) / 월~금(작업주간)</div></div>
         <div class="seg"><button class="${!ui.workweek ? "active" : ""}" data-ww="0">월~일</button><button class="${ui.workweek ? "active" : ""}" data-ww="1">월~금</button></div></div>
@@ -874,12 +889,25 @@ function updateThemeIcon() {
     : '<path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>';
 }
 
-/* ---------- 알림 (브라우저 Notification) ---------- */
+/* ---------- 글자 크기 ---------- */
+let fontSize = 14;
+function loadFS() { try { const v = parseInt(localStorage.getItem("scheduler:fs"), 10); if (v >= 5 && v <= 20) fontSize = v; } catch (e) {} }
+function applyFontSize(px) {
+  fontSize = Math.max(5, Math.min(20, px));
+  try { localStorage.setItem("scheduler:fs", String(fontSize)); } catch (e) {}
+  // 앱 전체를 기준(14px) 대비 배율로 확대/축소
+  document.body.style.zoom = (fontSize / 14).toFixed(4);
+}
+
+/* ---------- 알림 (지속형 팝업 + 브라우저 Notification 백업) ---------- */
 let reminderTimers = [];
+const firedAlerts = new Set();   // 이미 뜬 알림(중복 방지)
+const snoozeTimers = {};
 function requestNotify() { try { if ("Notification" in window && Notification.permission === "default") Notification.requestPermission(); } catch (e) {} }
+
+// 컴퓨터(로컬) 시간 기준으로 알림 예약. 앱/PiP가 열려 있는 동안 동작.
 function scheduleReminders() {
   reminderTimers.forEach(clearTimeout); reminderTimers = [];
-  if (!("Notification" in window) || Notification.permission !== "granted") return;
   const now = Date.now();
   [0, 1].forEach((off) => {
     const ds = ymd(addDays(new Date(), off));
@@ -887,11 +915,44 @@ function scheduleReminders() {
       if (e.allDay || !e.time || !e.reminder || e.reminder === "none") return;
       const dt = new Date(`${ds}T${e.time.length === 5 ? e.time : "09:00"}:00`);
       const fire = dt.getTime() - parseInt(e.reminder, 10) * 60000;
-      if (fire > now && fire - now < 26 * 3600 * 1000) {
-        reminderTimers.push(setTimeout(() => { try { new Notification("일정 알림: " + e.title, { body: `${evTimeText(e)} ${e.location || ""}`.trim() }); } catch (_) {} }, fire - now));
+      const key = e._base + "@" + ds;
+      if (fire > now && fire - now < 26 * 3600 * 1000 && !firedAlerts.has(key)) {
+        reminderTimers.push(setTimeout(() => fireAlert(e, key), fire - now));
       }
     });
   });
+}
+function fireAlert(e, key) {
+  firedAlerts.add(key);
+  // 탭이 숨겨져 있으면 OS 알림도 백업으로 (확인 전까지 유지)
+  try {
+    if ("Notification" in window && Notification.permission === "granted" && document.hidden) {
+      new Notification("일정 알림: " + e.title, { body: `${evTimeText(e)} ${e.location || ""}`.trim(), requireInteraction: true });
+    }
+  } catch (_) {}
+  showAlertCard(e, key);
+}
+// 우측 지속형 팝업 — 확인/30분/1시간 액션 전까지 사라지지 않음
+function showAlertCard(e, key) {
+  const stacks = [document.getElementById("alert-stack")];
+  if (pipWin && pipWin.document) { const s = pipWin.document.getElementById("alert-stack"); if (s) stacks.push(s); }
+  const host = stacks[0];
+  const card = document.createElement("div");
+  card.className = "alert-card";
+  card.innerHTML = `<div class="ac-head"><span class="ac-badge">${IC.bell}알림</span><span class="ac-time">${esc(evTimeText(e))}</span></div>
+    <div class="ac-title">${esc(e.title)}</div>${e.location ? `<div class="ac-loc">${esc(e.location)}</div>` : ""}
+    <div class="ac-actions"><button data-a="ok" class="ac-ok">확인</button><button data-a="30">30분 뒤</button><button data-a="60">1시간 뒤</button></div>`;
+  card.addEventListener("click", (ev) => {
+    const b = ev.target.closest("button"); if (!b) return;
+    card.remove();
+    if (b.dataset.a === "30" || b.dataset.a === "60") {
+      const mins = parseInt(b.dataset.a, 10);
+      clearTimeout(snoozeTimers[key]);
+      snoozeTimers[key] = setTimeout(() => showAlertCard(e, key), mins * 60000);
+      toast(`${mins}분 뒤 다시 알림`);
+    }
+  });
+  host.appendChild(card);
 }
 
 /* ---------- 백업 ---------- */
@@ -912,48 +973,88 @@ function importData() {
   input.click();
 }
 
-/* ---------- 핀 위젯 ---------- */
+/* ---------- 핀: 오늘 할 일 고정 ----------
+   지원 브라우저(크롬 등)에서는 Document Picture-in-Picture로 '항상 위'에 뜨는
+   실제 창을 띄웁니다. 미지원 시 앱 내부 플로팅 위젯으로 대체합니다. */
 const pinState = { open: false, collapsed: false, opacity: 100, x: null, y: null };
-function loadPin() { try { const p = JSON.parse(localStorage.getItem("scheduler:pin") || "{}"); Object.assign(pinState, p); } catch (e) {} }
+let pipWin = null;
+function pipSupported() { return "documentPictureInPicture" in window; }
+function loadPin() { try { const p = JSON.parse(localStorage.getItem("scheduler:pin") || "{}"); Object.assign(pinState, p); pinState.open = false; } catch (e) {} }
 function savePin() { try { localStorage.setItem("scheduler:pin", JSON.stringify(pinState)); } catch (e) {} }
-function renderPin() {
-  const w = document.getElementById("pin-widget");
-  document.getElementById("pin-btn").classList.toggle("on", pinState.open);
-  if (!pinState.open) { w.hidden = true; return; }
-  w.hidden = false;
-  w.classList.toggle("collapsed", pinState.collapsed);
-  w.style.opacity = (pinState.opacity / 100).toFixed(2);
-  // 위치
-  if (pinState.x == null) { w.style.right = "16px"; w.style.left = "auto"; w.style.top = "68px"; }
-  else { w.style.left = pinState.x + "px"; w.style.top = pinState.y + "px"; w.style.right = "auto"; }
-  document.getElementById("pin-opacity").value = pinState.opacity;
-  document.getElementById("pin-opacity-val").textContent = pinState.opacity + "%";
-  // 내용: 오늘 마감/지난 미완료 할 일
+
+function pinItemsHtml() {
   const today = todayStr();
   const items = Store.state.todos.filter((t) => !t.done && (!t.due || t.due <= today))
     .sort((a, b) => (a.due || "9999").localeCompare(b.due || "9999") || PRIO[a.priority].rank - PRIO[b.priority].rank);
-  const body = document.getElementById("pin-body");
-  body.innerHTML = items.length ? items.map((t) => `
+  return items.length ? items.map((t) => `
     <div class="pin-todo ${t.done ? "done" : ""}">
       <div class="box ${t.done ? "done" : ""}" data-pin-toggle="${t.id}">${t.done ? IC.check : ""}</div>
       <div><div class="t">${esc(t.title)}</div><div class="m">${t.due ? fmtDueMeta(t.due) : "기한 없음"} · ${PRIO[t.priority].label}</div></div>
     </div>`).join("") : `<div class="pin-empty">${IC.check} 오늘 할 일 완료!</div>`;
 }
+
+async function openPip() {
+  try {
+    pipWin = await documentPictureInPicture.requestWindow({ width: 300, height: 400 });
+    const doc = pipWin.document;
+    // 스타일 복사
+    [...document.styleSheets].forEach((ss) => {
+      try { const css = [...ss.cssRules].map((r) => r.cssText).join(""); const st = doc.createElement("style"); st.textContent = css; doc.head.appendChild(st); }
+      catch (_) { if (ss.href) { const l = doc.createElement("link"); l.rel = "stylesheet"; l.href = ss.href; doc.head.appendChild(l); } }
+    });
+    doc.title = "오늘 할 일";
+    doc.body.style.margin = "0"; doc.body.style.background = "var(--bg)"; doc.body.style.color = "var(--text)";
+    const dk = document.documentElement.getAttribute("data-theme"); if (dk) doc.documentElement.setAttribute("data-theme", dk);
+    doc.body.innerHTML = `
+      <div style="position:sticky;top:0;background:var(--work);color:#fff;padding:9px 12px;font-weight:800;font-size:13px;display:flex;align-items:center;gap:6px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px;stroke:#fff"><path d="M9 4h6l-1 6 3 3v2H7v-2l3-3-1-6z"/><path d="M12 15v5"/></svg>오늘 할 일 · 항상 위
+      </div>
+      <div id="pip-body" style="padding:8px 12px;"></div>
+      <div id="alert-stack" style="position:fixed;left:8px;right:8px;bottom:8px;display:flex;flex-direction:column;gap:8px;z-index:150;"></div>`;
+    doc.getElementById("pip-body").addEventListener("click", (e) => { const b = e.target.closest("[data-pin-toggle]"); if (b) Store.toggleTodo(b.dataset.pinToggle); });
+    pipWin.addEventListener("pagehide", () => { pipWin = null; pinState.open = false; savePin(); renderPin(); });
+    renderPin();
+  } catch (e) { pipWin = null; renderPin(); }
+}
+function closePip() { if (pipWin) { try { pipWin.close(); } catch (_) {} pipWin = null; } }
+
+function togglePin() {
+  if (pinState.open) { pinState.open = false; savePin(); closePip(); renderPin(); return; }
+  pinState.open = true; savePin();
+  renderPin(); // 버튼 상태 + 폴백 위젯 즉시 반영
+  if (pipSupported()) openPip(); // 지원 시 항상-위 PiP 창으로 승격 (성공하면 위젯 숨김)
+}
+
+function renderPin() {
+  document.getElementById("pin-btn").classList.toggle("on", pinState.open);
+  const w = document.getElementById("pin-widget");
+  // PiP 창이 열려 있으면 그쪽을 갱신하고 앱 내부 위젯은 숨김
+  if (pipWin && pipWin.document) {
+    const pb = pipWin.document.getElementById("pip-body"); if (pb) pb.innerHTML = pinItemsHtml();
+    w.hidden = true; return;
+  }
+  if (!pinState.open) { w.hidden = true; return; }
+  // 앱 내부 위젯 (PiP 미지원 폴백)
+  w.hidden = false;
+  w.classList.toggle("collapsed", pinState.collapsed);
+  w.style.opacity = (pinState.opacity / 100).toFixed(2);
+  if (pinState.x == null) { w.style.right = "16px"; w.style.left = "auto"; w.style.top = "68px"; }
+  else { w.style.left = pinState.x + "px"; w.style.top = pinState.y + "px"; w.style.right = "auto"; }
+  document.getElementById("pin-opacity").value = pinState.opacity;
+  document.getElementById("pin-opacity-val").textContent = pinState.opacity + "%";
+  document.getElementById("pin-body").innerHTML = pinItemsHtml();
+}
 function wirePin() {
-  document.getElementById("pin-btn").addEventListener("click", () => { pinState.open = !pinState.open; savePin(); renderPin(); });
-  document.getElementById("pin-hide").addEventListener("click", () => { pinState.open = false; savePin(); renderPin(); });
+  document.getElementById("pin-btn").addEventListener("click", togglePin);
+  document.getElementById("pin-hide").addEventListener("click", () => { pinState.open = false; savePin(); closePip(); renderPin(); });
   document.getElementById("pin-collapse").addEventListener("click", () => { pinState.collapsed = !pinState.collapsed; savePin(); renderPin(); });
   const op = document.getElementById("pin-opacity");
   op.addEventListener("input", () => { pinState.opacity = parseInt(op.value, 10); document.getElementById("pin-opacity-val").textContent = pinState.opacity + "%"; document.getElementById("pin-widget").style.opacity = (pinState.opacity / 100).toFixed(2); });
   op.addEventListener("change", savePin);
   document.getElementById("pin-body").addEventListener("click", (e) => { const b = e.target.closest("[data-pin-toggle]"); if (b) Store.toggleTodo(b.dataset.pinToggle); });
-  // 드래그 이동 (pointer)
   const head = document.getElementById("pin-head"); const w = document.getElementById("pin-widget");
   let drag = null;
-  head.addEventListener("pointerdown", (e) => {
-    if (e.target.closest("button")) return;
-    const r = w.getBoundingClientRect(); drag = { dx: e.clientX - r.left, dy: e.clientY - r.top }; head.setPointerCapture(e.pointerId);
-  });
+  head.addEventListener("pointerdown", (e) => { if (e.target.closest("button")) return; const r = w.getBoundingClientRect(); drag = { dx: e.clientX - r.left, dy: e.clientY - r.top }; head.setPointerCapture(e.pointerId); });
   head.addEventListener("pointermove", (e) => {
     if (!drag) return;
     let x = e.clientX - drag.dx, y = e.clientY - drag.dy;
@@ -1002,8 +1103,10 @@ function setView(v) { ui.view = v; saveUI(); render(); window.scrollTo(0, 0); }
 function wireGlobal() {
   document.querySelectorAll(".side-item[data-view], .bottom-nav button[data-view]").forEach((b) => b.addEventListener("click", () => setView(b.dataset.view)));
   document.getElementById("add-btn").addEventListener("click", () => openModal(ui.view === "todo" ? "todo" : "event", { cat: ui.cat === "personal" ? "personal" : "work" }));
-  document.getElementById("fab").addEventListener("click", () => openModal(ui.view === "todo" ? "todo" : "event", { cat: ui.cat === "personal" ? "personal" : "work" }));
   document.getElementById("search").addEventListener("input", (e) => { ui.search = e.target.value; render(); });
+  document.querySelector(".app").addEventListener("input", (e) => {
+    if (e.target.id === "set-fs") { applyFontSize(parseInt(e.target.value, 10)); const l = document.getElementById("set-fs-val"); if (l) l.textContent = fontSize + "px"; }
+  });
   document.getElementById("theme-btn").addEventListener("click", () => setTheme(!currentDark()));
   document.getElementById("modal-backdrop").addEventListener("click", (e) => { if (e.target.id === "modal-backdrop") closeModal(); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
@@ -1024,7 +1127,7 @@ function wireGlobal() {
     if (t.id === "wk-today") { ui.weekRef = startOfWeek(new Date()); render(); return; }
     if (t.id === "roll-desktop" || t.id === "roll-mobile") { const n = Store.rollover(); toast(n ? `${n}건을 오늘로 이월했습니다` : "이월할 업무가 없습니다"); return; }
     if (t.id === "set-theme") { setTheme(!currentDark()); render(); return; }
-    if (t.id === "set-pin") { pinState.open = !pinState.open; savePin(); renderPin(); render(); return; }
+    if (t.id === "set-pin") { togglePin(); render(); return; }
     if (t.id === "set-export") { exportData(); return; }
     if (t.id === "set-import") { importData(); return; }
     if (t.id === "set-clear") { if (confirm("이 기기의 모든 일정·할 일을 삭제할까요? 되돌릴 수 없습니다.")) { Store.replaceAll({ events: [], todos: [] }); toast("모든 데이터를 삭제했습니다"); } return; }
@@ -1044,7 +1147,7 @@ function wireGlobal() {
 (function init() {
   try { const th = localStorage.getItem("scheduler:theme"); if (th) document.documentElement.setAttribute("data-theme", th); } catch (e) {}
   updateThemeIcon();
-  loadUI(); loadPin();
+  loadUI(); loadPin(); loadFS(); applyFontSize(fontSize);
   Store.subscribe(render); Store.load();
   wireGlobal(); wirePin();
   render();
