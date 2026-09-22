@@ -124,7 +124,10 @@
   .tab.active{background:var(--work-soft);color:var(--work);}
   .tab.active .count{color:var(--work);}
   .tab-sep{width:1px;height:20px;background:var(--border);flex:none;}
-  .tabbar .chip-row{margin-left:auto;flex:none;}
+  .tabbar .chip-row{flex:none;}
+  .tabbar-cal{margin-left:auto;display:flex;align-items:center;gap:8px;flex:none;}
+  .tabbar-cal:empty{display:none;}
+  .cal-range{font-size:11.5px;color:var(--text-faint);font-weight:700;white-space:nowrap;}
 
   /* ---------- App shell (resizable split) ---------- */
   .app{display:flex; min-height:calc(100vh - 104px);}
@@ -477,6 +480,7 @@
     </div>
     <div class="tab-sep"></div>
     <div class="chip-row" data-chips></div>
+    <div class="tabbar-cal" id="tabbar-cal"></div>
   </div>
 
   <div class="app" id="app">
@@ -523,7 +527,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-22 · 핀개편/완료섹션/캘린더체크박스";
+const APP_VERSION = "2026-09-22 · 탭한행통합/완료접힘/투명도토글";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -713,28 +717,30 @@ function renderToday() {
   return html;
 }
 
+// 캘린더 컨트롤(주간 전환 + 주 이동 + 날짜 범위) — 상단 탭바 우측에 표시
+function calControlsHtml() {
+  const nDays = ui.workweek ? 5 : 7;
+  const week = [...Array(nDays)].map((_, i) => addDays(ui.weekRef, i));
+  const from = week[0], to = week[nDays - 1];
+  const range = `${from.getMonth() + 1}.${from.getDate()}–${to.getMonth() + 1}.${to.getDate()}`;
+  return `<span class="cal-range">${range}</span>
+    <div class="seg" id="wk-mode">
+      <button class="${!ui.workweek ? "active" : ""}" data-ww="0">월~일</button>
+      <button class="${ui.workweek ? "active" : ""}" data-ww="1">월~금</button>
+    </div>
+    <div class="week-nav">
+      <button id="wk-prev">${IC.left}</button>
+      <button class="today-btn" id="wk-today">오늘</button>
+      <button id="wk-next">${IC.right}</button>
+    </div>`;
+}
+
 /* ---------- 렌더: 캘린더 (주간 그리드) ---------- */
 function renderCalendar() {
   const nDays = ui.workweek ? 5 : 7;
   const week = [...Array(nDays)].map((_, i) => addDays(ui.weekRef, i));
-  const from = week[0], to = week[nDays - 1];
-  const range = `${from.getMonth() + 1}.${from.getDate()} – ${to.getMonth() + 1}.${to.getDate()}`;
   const today = todayStr();
-
-  const head = `<div class="view-head">
-    <div><h2>캘린더</h2><div class="sub">${from.getFullYear()}년 ${range}</div></div>
-    <div class="cal-tools">
-      <div class="seg" id="wk-mode">
-        <button class="${!ui.workweek ? "active" : ""}" data-ww="0">월~일</button>
-        <button class="${ui.workweek ? "active" : ""}" data-ww="1">월~금</button>
-      </div>
-      <div class="week-nav">
-        <button id="wk-prev">${IC.left}</button>
-        <button class="today-btn" id="wk-today">오늘</button>
-        <button id="wk-next">${IC.right}</button>
-      </div>
-    </div></div>`;
-
+  const head = "";
   const cols = `grid-template-columns:46px repeat(${nDays},minmax(72px,1fr));`;
   let grid = `<div class="week-scroll"><div class="week-grid" style="${cols}"><div class="corner"></div>`;
   week.forEach((d) => {
@@ -902,6 +908,8 @@ function render() {
   else if (ui.view === "calendar") content.innerHTML = renderCalendar();
   else if (ui.view === "todo") content.innerHTML = renderTodo();
   else if (ui.view === "settings") content.innerHTML = renderSettings();
+  // 캘린더 컨트롤을 상단 탭바로 (한 행에 통합 → 캘린더 영역 확대)
+  document.getElementById("tabbar-cal").innerHTML = ui.view === "calendar" ? calControlsHtml() : "";
 
   // 우측 요약 패널: 캘린더 모드에서만 (리사이즈/접기 가능)
   const app = document.getElementById("app");
@@ -1201,10 +1209,10 @@ function importData() {
 /* ---------- 핀: 오늘 할 일 고정 ----------
    지원 브라우저(크롬 등)에서는 Document Picture-in-Picture로 '항상 위'에 뜨는
    실제 창을 띄웁니다. 미지원 시 앱 내부 플로팅 위젯으로 대체합니다. */
-const pinState = { open: false, collapsed: false, opacity: 100, x: null, y: null };
+const pinState = { open: false, collapsed: false, opacity: 100, x: null, y: null, doneOpen: false };
 let pipWin = null;
 function pipSupported() { return "documentPictureInPicture" in window; }
-function loadPin() { try { const p = JSON.parse(localStorage.getItem("scheduler:pin") || "{}"); Object.assign(pinState, p); pinState.open = false; } catch (e) {} }
+function loadPin() { try { const p = JSON.parse(localStorage.getItem("scheduler:pin") || "{}"); Object.assign(pinState, p); pinState.open = false; pinState.doneOpen = false; } catch (e) {} }
 function savePin() { try { localStorage.setItem("scheduler:pin", JSON.stringify(pinState)); } catch (e) {} }
 
 // 핀/항상위: 미완료 할 일(어제까지 못한 것 + 오늘 + 그 사이 추가) → 구분선 → 오늘 일정(이월 포함)
@@ -1235,15 +1243,18 @@ function pinItemsHtml() {
     ...Store.state.todos.filter((t) => t.done).map((t) => ({ kind: "todo", id: t.id, title: t.title, pri: t.priority, cat: t.cat, at: t.doneAt || 0 })),
     ...Store.state.events.filter((e) => e.done).map((e) => ({ kind: "event", id: e.id, title: e.title, pri: e.priority, cat: e.cat, at: e.doneAt || 0 })),
   ].sort((a, b) => b.at - a.at);
-  h += `<div class="pin-divider">완료 · ${doneItems.length}</div>`;
-  h += doneItems.length ? doneItems.map((d) => `
-    <div class="pin-todo done pri-${d.pri}">
-      <div class="box done" data-pin-${d.kind === "todo" ? "toggle" : "ev-toggle"}="${d.id}">${IC.check}</div>
-      <div><div class="t">${d.kind === "event" ? catIcon(d.cat) + " " : ""}${esc(d.title)}</div><div class="m">완료 · 체크 해제 시 복원</div></div>
-    </div>`).join("") : `<div class="pin-empty">완료된 항목 없음</div>`;
+  h += `<div class="pin-divider pin-fold" data-pin-donetoggle style="cursor:pointer">완료 · ${doneItems.length} ${pinState.doneOpen ? "▲" : "▼"}</div>`;
+  if (pinState.doneOpen) {
+    h += doneItems.length ? doneItems.map((d) => `
+      <div class="pin-todo done pri-${d.pri}">
+        <div class="box done" data-pin-${d.kind === "todo" ? "toggle" : "ev-toggle"}="${d.id}">${IC.check}</div>
+        <div><div class="t">${d.kind === "event" ? catIcon(d.cat) + " " : ""}${esc(d.title)}</div><div class="m">완료 · 체크 해제 시 복원</div></div>
+      </div>`).join("") : `<div class="pin-empty">완료된 항목 없음</div>`;
+  }
   return h;
 }
 function pinBodyClick(e) {
+  if (e.target.closest("[data-pin-donetoggle]")) { pinState.doneOpen = !pinState.doneOpen; savePin(); renderPin(); return; }
   const tb = e.target.closest("[data-pin-toggle]"); if (tb) { Store.toggleTodo(tb.dataset.pinToggle); return; }
   const eb = e.target.closest("[data-pin-ev-toggle]"); if (eb) { Store.toggleEvent(eb.dataset.pinEvToggle); return; }
 }
@@ -1384,7 +1395,8 @@ function wireGlobal() {
   document.getElementById("modal-backdrop").addEventListener("click", (e) => { if (e.target.id === "modal-backdrop") closeModal(); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
 
-  document.querySelector(".app").addEventListener("click", (e) => {
+  document.addEventListener("click", (e) => {
+    if (e.target.closest("#timepop") || e.target.closest(".pin-widget")) return; // 별도 핸들러 처리
     const t = e.target.closest("[data-cat],[data-todo-filter],[data-toggle],[data-ev-toggle],[data-edit-event],[data-del-event],[data-edit-todo],[data-del-todo],[data-ww],[data-dash-toggle],#dash-collapse,#wk-prev,#wk-next,#wk-today,#roll-desktop,#roll-mobile,#set-theme,#set-pin,#set-export,#set-import,#set-clear,#set-alert-demo");
     if (!t) return;
     if (t.dataset.evToggle) { Store.toggleEvent(t.dataset.evToggle); return; }
