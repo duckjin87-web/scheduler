@@ -28,6 +28,10 @@
     --shadow-lg: 0 10px 40px rgba(20,20,15,0.18);
     --radius: 10px;
     --safe-b: env(safe-area-inset-bottom, 0px);
+    /* 우선순위 음영 (soft보다 20% 더 짙게) */
+    --pri-urgent: color-mix(in srgb, var(--urgent-soft), var(--urgent) 20%);
+    --pri-high: color-mix(in srgb, var(--high-soft), var(--high) 20%);
+    --pri-normal: color-mix(in srgb, var(--done-soft), var(--done) 20%);
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
@@ -187,9 +191,9 @@
   .evt .t{font-size:9.5px;opacity:.75;margin-right:4px;}
   .evt .ci{margin-right:1px;}
   /* 배경 = 우선순위(긴급 빨강/높음 주황/보통 초록), 좌측 선 = 분류 */
-  .evt.pri-urgent{background:var(--urgent-soft);}
-  .evt.pri-high{background:var(--high-soft);}
-  .evt.pri-normal{background:var(--done-soft);}
+  .evt.pri-urgent{background:var(--pri-urgent);}
+  .evt.pri-high{background:var(--pri-high);}
+  .evt.pri-normal{background:var(--pri-normal);}
   .evt.work{border-left:3px solid var(--work);}
   .evt.personal{border-left:3px solid var(--personal);}
   .evt.done{opacity:.5;text-decoration:line-through;}
@@ -199,13 +203,17 @@
   }
   .cal-chip svg{width:10px;height:10px;flex:none;}
   .cal-chip.allday{color:var(--text);}
-  .cal-chip.allday.pri-urgent{background:var(--urgent-soft);}
-  .cal-chip.allday.pri-high{background:var(--high-soft);}
-  .cal-chip.allday.pri-normal{background:var(--done-soft);}
+  .cal-chip.allday.pri-urgent{background:var(--pri-urgent);}
+  .cal-chip.allday.pri-high{background:var(--pri-high);}
+  .cal-chip.allday.pri-normal{background:var(--pri-normal);}
   .cal-chip.allday.work{border-left:3px solid var(--work);}
   .cal-chip.allday.personal{border-left:3px solid var(--personal);}
   .cal-chip.todo{background:var(--high-soft);color:var(--high);}
   .cal-chip.todo.done{opacity:.5;text-decoration:line-through;}
+  .cal-check{width:13px;height:13px;flex:none;border-radius:3px;border:1.5px solid var(--border-strong);background:var(--surface);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;vertical-align:middle;}
+  .cal-check.done{background:var(--done);border-color:var(--done);}
+  .cal-check svg{width:9px;height:9px;stroke:#fff;}
+  .evt .cal-check{margin-right:3px;}
   .cal-chip.dragging,.evt.dragging{opacity:.4;}
 
   /* ---------- lists / cards ---------- */
@@ -215,7 +223,7 @@
   .agenda{display:flex;flex-direction:column;gap:8px;}
   .row-item{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;cursor:pointer;border-left-width:4px;}
   .row-item.work{border-left-color:var(--work);} .row-item.personal{border-left-color:var(--personal);}
-  .row-item.pri-urgent{background:var(--urgent-soft);} .row-item.pri-high{background:var(--high-soft);} .row-item.pri-normal{background:var(--done-soft);}
+  .row-item.pri-urgent{background:var(--pri-urgent);} .row-item.pri-high{background:var(--pri-high);} .row-item.pri-normal{background:var(--pri-normal);}
   .row-item .box{width:19px;height:19px;flex:none;border-radius:6px;border:1.8px solid var(--border-strong);display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--surface);}
   .row-item .box.done{background:var(--done);border-color:var(--done);}
   .row-item .box svg{width:12px;height:12px;stroke:#fff;}
@@ -346,16 +354,21 @@
   .pin-head .pin-title{font-size:12.5px;font-weight:800;flex:1;display:flex;align-items:center;gap:5px;}
   .pin-head .pin-title svg{width:13px;height:13px;stroke:#fff;}
   .pin-head button{border:none;background:rgba(255,255,255,.18);color:#fff;width:22px;height:22px;border-radius:6px;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;}
-  .pin-opacity{display:flex;align-items:center;gap:6px;padding:6px 10px;border-bottom:1px solid var(--border);font-size:10.5px;color:var(--text-faint);}
+  .pin-opacity{display:none;align-items:center;gap:6px;padding:6px 10px;border-bottom:1px solid var(--border);font-size:10.5px;color:var(--text-faint);}
   .pin-opacity input{flex:1;}
+  .pin-widget.show-op:not(.collapsed) .pin-opacity{display:flex;}
+  .pin-head button.on{background:rgba(255,255,255,.4);}
   .pin-body{padding:8px 10px;overflow:auto;}
-  .pin-todo{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);}
-  .pin-todo:last-child{border-bottom:none;}
-  .pin-todo .box{width:16px;height:16px;flex:none;border-radius:5px;border:1.6px solid var(--border-strong);display:flex;align-items:center;justify-content:center;cursor:pointer;margin-top:1px;}
+  .pin-todo{display:flex;align-items:flex-start;gap:8px;padding:6px;border-radius:7px;margin-bottom:4px;}
+  .pin-todo.pri-urgent{background:var(--pri-urgent);}
+  .pin-todo.pri-high{background:var(--pri-high);}
+  .pin-todo.pri-normal{background:var(--pri-normal);}
+  .pin-todo .box{width:16px;height:16px;flex:none;border-radius:5px;border:1.6px solid var(--border-strong);display:flex;align-items:center;justify-content:center;cursor:pointer;margin-top:1px;background:var(--surface);}
   .pin-todo .box.done{background:var(--done);border-color:var(--done);}
   .pin-todo .box svg{width:10px;height:10px;stroke:#fff;}
   .pin-todo .t{font-size:12.5px;font-weight:600;}
   .pin-todo.done .t{text-decoration:line-through;color:var(--text-faint);}
+  .pin-todo.done{opacity:.7;}
   .pin-todo .m{font-size:10.5px;color:var(--text-faint);}
   .pin-widget.collapsed .pin-opacity,.pin-widget.collapsed .pin-body{display:none;}
   .pin-empty{font-size:11px;color:var(--text-faint);text-align:center;padding:8px 0;}
@@ -488,6 +501,7 @@
   <div class="pin-widget" id="pin-widget" hidden>
     <div class="pin-head" id="pin-head">
       <span class="pin-title"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M9 4h6l-1 6 3 3v2H7v-2l3-3-1-6z"/><path d="M12 15v5"/></svg>오늘 할 일</span>
+      <button id="pin-optoggle" title="투명도"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" style="width:13px;height:13px;stroke:#fff"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 000 18z" fill="#fff" stroke="none"/></svg></button>
       <button id="pin-collapse" title="접기/펼치기">–</button>
       <button id="pin-hide" title="닫기">×</button>
     </div>
@@ -509,7 +523,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-21 · 우선순위색상/분류아이콘/일정이월/시간선택기";
+const APP_VERSION = "2026-09-22 · 핀개편/완료섹션/캘린더체크박스";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -551,14 +565,14 @@ const Store = (() => {
       reminder: e.reminder || "none",
       repeat: e.repeat || "none",
       priority: PRIO[e.priority] ? e.priority : "normal",
-      done: !!e.done,
+      done: !!e.done, doneAt: e.doneAt || null,
       createdAt: e.createdAt || Date.now(),
     };
   }
   function normalizeTodo(t) {
     return { id: t.id || uid(), title: t.title || "", cat: t.cat === "personal" ? "personal" : "work",
       priority: PRIO[t.priority] ? t.priority : "normal", due: t.due || null, note: t.note || "",
-      done: !!t.done, rolledFrom: t.rolledFrom || null, createdAt: t.createdAt || Date.now() };
+      done: !!t.done, doneAt: t.doneAt || null, rolledFrom: t.rolledFrom || null, createdAt: t.createdAt || Date.now() };
   }
 
   function seed() {
@@ -599,8 +613,14 @@ const Store = (() => {
     deleteEvent(id) { state.events = state.events.filter((x) => x.id !== id); emit(); },
     addTodo(t) { state.todos.push(normalizeTodo(t)); emit(); },
     updateTodo(id, patch) { const t = state.todos.find((x) => x.id === id); if (t) Object.assign(t, normalizeTodo({ ...t, ...patch })); emit(); },
-    toggleTodo(id) { const t = state.todos.find((x) => x.id === id); if (t) t.done = !t.done; emit(); },
-    toggleEvent(id) { const e = state.events.find((x) => x.id === id); if (e) e.done = !e.done; emit(); },
+    toggleTodo(id) { const t = state.todos.find((x) => x.id === id); if (t) { t.done = !t.done; t.doneAt = t.done ? Date.now() : null; } emit(); },
+    toggleEvent(id) { const e = state.events.find((x) => x.id === id); if (e) { e.done = !e.done; e.doneAt = e.done ? Date.now() : null; } emit(); },
+    purgeOld() {
+      const cut = Date.now() - 7 * 86400000; let n = 0;
+      const kt = state.todos.filter((t) => !(t.done && t.doneAt && t.doneAt < cut)); n += state.todos.length - kt.length; state.todos = kt;
+      const ke = state.events.filter((e) => !(e.done && e.doneAt && e.doneAt < cut)); n += state.events.length - ke.length; state.events = ke;
+      if (n) emit(); return n;
+    },
     deleteTodo(id) { state.todos = state.todos.filter((x) => x.id !== id); emit(); },
     rollover() { const today = todayStr(); let n = 0; state.todos.forEach((t) => { if (!t.done && t.due && t.due < today) { t.rolledFrom = t.due; t.due = today; n++; } }); if (n) emit(); return n; },
     replaceAll(next) { if (next && Array.isArray(next.events) && Array.isArray(next.todos)) { state = { version: 2, events: next.events.map(normalizeEvent), todos: next.todos.map(normalizeTodo) }; emit(); return true; } return false; },
@@ -729,8 +749,8 @@ function renderCalendar() {
     const allday = eventsOn(ds).filter((e) => e.allDay);
     const todos = visibleTodos().filter((t) => t.due === ds);
     let cell = `<div class="band-cell ${isToday ? "today-col" : ""}" data-date="${ds}" data-band="1">`;
-    cell += allday.map((e) => `<div class="cal-chip allday pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}" draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="ci">${catIcon(e.cat)}</span>${esc(e.title)}</div>`).join("");
-    cell += todos.map((t) => `<div class="cal-chip todo ${t.done ? "done" : ""}" draggable="true" data-drag="todo" data-id="${t.id}" data-edit-todo="${t.id}">${IC.check}${esc(t.title)}</div>`).join("");
+    cell += allday.map((e) => `<div class="cal-chip allday pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}" draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span><span class="ci">${catIcon(e.cat)}</span>${esc(e.title)}</div>`).join("");
+    cell += todos.map((t) => `<div class="cal-chip todo ${t.done ? "done" : ""}" draggable="true" data-drag="todo" data-id="${t.id}" data-edit-todo="${t.id}"><span class="cal-check ${t.done ? "done" : ""}" data-toggle="${t.id}">${t.done ? IC.check : ""}</span>${esc(t.title)}</div>`).join("");
     cell += `</div>`;
     grid += cell;
   });
@@ -742,7 +762,7 @@ function renderCalendar() {
       const isToday = ds === today;
       const cellEvts = eventsOn(ds).filter((e) => !e.allDay && parseInt((e.time || "0").slice(0, 2), 10) === h);
       grid += `<div class="cell ${isToday ? "today-col" : ""}" data-date="${ds}" data-hour="${pad(h)}:00">` +
-        cellEvts.map((e) => `<div class="evt pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}" draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="t">${esc(evTimeText(e))}</span><span class="ci">${catIcon(e.cat)}</span>${esc(e.title)}${e.repeat !== "none" ? " ↻" : ""}</div>`).join("") +
+        cellEvts.map((e) => `<div class="evt pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}" draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span><span class="t">${esc(evTimeText(e))}</span><span class="ci">${catIcon(e.cat)}</span>${esc(e.title)}${e.repeat !== "none" ? " ↻" : ""}</div>`).join("") +
         `</div>`;
     });
   }
@@ -1196,19 +1216,31 @@ function pinItemsHtml() {
   let h = `<div class="pin-sec">할 일 · ${todos.length}</div>`;
   h += todos.length ? todos.map((t) => {
     const late = t.due && t.due < today ? `<span class="dd">D+${daysBetween(t.due, today)}</span>` : "";
-    return `<div class="pin-todo ${t.done ? "done" : ""}">
-      <div class="box ${t.done ? "done" : ""}" data-pin-toggle="${t.id}">${t.done ? IC.check : ""}</div>
+    return `<div class="pin-todo pri-${t.priority}">
+      <div class="box" data-pin-toggle="${t.id}"></div>
       <div><div class="t">${late}${esc(t.title)}</div><div class="m">${t.due ? fmtDueMeta(t.due) : "기한 없음"} · ${PRIO[t.priority].label}</div></div>
     </div>`;
   }).join("") : `<div class="pin-empty">${IC.check} 할 일 없음</div>`;
   h += `<div class="pin-divider">오늘 일정</div>`;
   h += events.length ? events.map((e) => {
     const dd = e._delay ? `<span class="dd">D+${e._delay}</span>` : "";
-    return `<div class="pin-todo ${e.done ? "done" : ""}">
-      <div class="box ${e.done ? "done" : ""}" data-pin-ev-toggle="${e._base || e.id}">${e.done ? IC.check : ""}</div>
+    return `<div class="pin-todo pri-${e.priority}">
+      <div class="box" data-pin-ev-toggle="${e._base || e.id}"></div>
       <div><div class="t">${dd}${catIcon(e.cat)} ${esc(e.title)}</div><div class="m">${esc(evTimeText(e))}${e.location ? " · " + esc(e.location) : ""}</div></div>
     </div>`;
   }).join("") : `<div class="pin-empty">오늘 일정 없음</div>`;
+
+  // 완료 섹션 — 되돌리기(체크 해제) 가능, 1주일 지난 항목은 자동 삭제됨
+  const doneItems = [
+    ...Store.state.todos.filter((t) => t.done).map((t) => ({ kind: "todo", id: t.id, title: t.title, pri: t.priority, cat: t.cat, at: t.doneAt || 0 })),
+    ...Store.state.events.filter((e) => e.done).map((e) => ({ kind: "event", id: e.id, title: e.title, pri: e.priority, cat: e.cat, at: e.doneAt || 0 })),
+  ].sort((a, b) => b.at - a.at);
+  h += `<div class="pin-divider">완료 · ${doneItems.length}</div>`;
+  h += doneItems.length ? doneItems.map((d) => `
+    <div class="pin-todo done pri-${d.pri}">
+      <div class="box done" data-pin-${d.kind === "todo" ? "toggle" : "ev-toggle"}="${d.id}">${IC.check}</div>
+      <div><div class="t">${d.kind === "event" ? catIcon(d.cat) + " " : ""}${esc(d.title)}</div><div class="m">완료 · 체크 해제 시 복원</div></div>
+    </div>`).join("") : `<div class="pin-empty">완료된 항목 없음</div>`;
   return h;
 }
 function pinBodyClick(e) {
@@ -1230,14 +1262,17 @@ async function openPip() {
     const dk = document.documentElement.getAttribute("data-theme"); if (dk) doc.documentElement.setAttribute("data-theme", dk);
     doc.body.innerHTML = `
       <div style="position:sticky;top:0;background:var(--work);color:#fff;padding:9px 12px;font-weight:800;font-size:13px;display:flex;align-items:center;gap:6px;">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px;stroke:#fff"><path d="M9 4h6l-1 6 3 3v2H7v-2l3-3-1-6z"/><path d="M12 15v5"/></svg>오늘 할 일 · 항상 위
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px;stroke:#fff"><path d="M9 4h6l-1 6 3 3v2H7v-2l3-3-1-6z"/><path d="M12 15v5"/></svg>
+        <span style="flex:1">오늘 할 일</span>
+        <button id="pip-optoggle" title="투명도" style="border:none;background:rgba(255,255,255,.2);color:#fff;width:24px;height:22px;border-radius:6px;font-size:11px;">◐</button>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--border);font-size:10.5px;color:var(--text-faint);">
+      <div id="pip-op-row" hidden style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--border);font-size:10.5px;color:var(--text-faint);">
         투명도 <input type="range" id="pip-opacity" min="35" max="100" value="${pinState.opacity}" style="flex:1"/> <span id="pip-opacity-val">${pinState.opacity}%</span>
       </div>
       <div id="pip-body" style="padding:8px 12px;"></div>
       <div id="alert-stack" style="position:fixed;left:8px;right:8px;bottom:8px;display:flex;flex-direction:column;gap:8px;z-index:150;"></div>`;
     doc.getElementById("pip-body").addEventListener("click", pinBodyClick);
+    doc.getElementById("pip-optoggle").addEventListener("click", () => { const r = doc.getElementById("pip-op-row"); r.hidden = !r.hidden; });
     const pop = doc.getElementById("pip-opacity");
     pop.addEventListener("input", () => {
       pinState.opacity = parseInt(pop.value, 10);
@@ -1282,6 +1317,10 @@ function wirePin() {
   document.getElementById("pin-btn").addEventListener("click", togglePin);
   document.getElementById("pin-hide").addEventListener("click", () => { pinState.open = false; savePin(); closePip(); renderPin(); });
   document.getElementById("pin-collapse").addEventListener("click", () => { pinState.collapsed = !pinState.collapsed; savePin(); renderPin(); });
+  document.getElementById("pin-optoggle").addEventListener("click", () => {
+    const w = document.getElementById("pin-widget"); w.classList.toggle("show-op");
+    document.getElementById("pin-optoggle").classList.toggle("on", w.classList.contains("show-op"));
+  });
   const op = document.getElementById("pin-opacity");
   op.addEventListener("input", () => { pinState.opacity = parseInt(op.value, 10); document.getElementById("pin-opacity-val").textContent = pinState.opacity + "%"; document.getElementById("pin-widget").style.opacity = (pinState.opacity / 100).toFixed(2); });
   op.addEventListener("change", savePin);
@@ -1404,6 +1443,8 @@ function wireGlobal() {
   updateThemeIcon();
   loadUI(); loadPin(); loadFS(); applyFontSize(fontSize);
   Store.subscribe(render); Store.load();
+  Store.purgeOld();                                   // 완료 후 1주일 지난 항목 자동 삭제
+  setInterval(() => Store.purgeOld(), 60 * 60 * 1000); // 1시간마다 정리
   wireGlobal(); wirePin();
   render();
   // PWA: 서비스 워커 등록 (설치형 앱 + 오프라인)
