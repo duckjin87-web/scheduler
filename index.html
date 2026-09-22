@@ -527,7 +527,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-22 · 자동업데이트(탭한행/완료접힘/투명도토글)";
+const APP_VERSION = "2026-09-22 · PiP투명도토글 버그수정";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1277,13 +1277,13 @@ async function openPip() {
         <span style="flex:1">오늘 할 일</span>
         <button id="pip-optoggle" title="투명도" style="border:none;background:rgba(255,255,255,.2);color:#fff;width:24px;height:22px;border-radius:6px;font-size:11px;">◐</button>
       </div>
-      <div id="pip-op-row" hidden style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--border);font-size:10.5px;color:var(--text-faint);">
+      <div id="pip-op-row" style="display:none;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--border);font-size:10.5px;color:var(--text-faint);">
         투명도 <input type="range" id="pip-opacity" min="35" max="100" value="${pinState.opacity}" style="flex:1"/> <span id="pip-opacity-val">${pinState.opacity}%</span>
       </div>
       <div id="pip-body" style="padding:8px 12px;"></div>
       <div id="alert-stack" style="position:fixed;left:8px;right:8px;bottom:8px;display:flex;flex-direction:column;gap:8px;z-index:150;"></div>`;
     doc.getElementById("pip-body").addEventListener("click", pinBodyClick);
-    doc.getElementById("pip-optoggle").addEventListener("click", () => { const r = doc.getElementById("pip-op-row"); r.hidden = !r.hidden; });
+    doc.getElementById("pip-optoggle").addEventListener("click", () => { const r = doc.getElementById("pip-op-row"); r.style.display = (r.style.display === "none" || !r.style.display) ? "flex" : "none"; });
     const pop = doc.getElementById("pip-opacity");
     pop.addEventListener("input", () => {
       pinState.opacity = parseInt(pop.value, 10);
