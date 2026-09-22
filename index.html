@@ -360,6 +360,12 @@
   .pin-opacity{display:none;align-items:center;gap:6px;padding:6px 10px;border-bottom:1px solid var(--border);font-size:10.5px;color:var(--text-faint);}
   .pin-opacity input{flex:1;}
   .pin-widget.show-op:not(.collapsed) .pin-opacity{display:flex;}
+  .pin-qa{display:none;align-items:center;gap:6px;padding:7px 10px;border-bottom:1px solid var(--border);}
+  .pin-widget.show-qa:not(.collapsed) .pin-qa{display:flex;}
+  .pin-qa select{border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:6px;font-size:11px;padding:5px 4px;flex:none;}
+  .pin-qa input{flex:1;min-width:0;border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:6px;font-size:12px;padding:6px 8px;outline:none;}
+  .pin-qa input:focus{border-color:var(--work);background:var(--surface);}
+  .pin-qa button{border:none;background:var(--work);color:#fff;border-radius:6px;font-size:11.5px;font-weight:700;padding:6px 10px;flex:none;}
   .pin-head button.on{background:rgba(255,255,255,.4);}
   .pin-body{padding:8px 10px;overflow:auto;}
   .pin-todo{display:flex;align-items:flex-start;gap:8px;padding:6px;border-radius:7px;margin-bottom:4px;}
@@ -505,6 +511,7 @@
   <div class="pin-widget" id="pin-widget" hidden>
     <div class="pin-head" id="pin-head">
       <span class="pin-title"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M9 4h6l-1 6 3 3v2H7v-2l3-3-1-6z"/><path d="M12 15v5"/></svg>오늘 할 일</span>
+      <button id="pin-add" title="추가">+</button>
       <button id="pin-optoggle" title="투명도"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" style="width:13px;height:13px;stroke:#fff"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 000 18z" fill="#fff" stroke="none"/></svg></button>
       <button id="pin-collapse" title="접기/펼치기">–</button>
       <button id="pin-hide" title="닫기">×</button>
@@ -513,6 +520,11 @@
       투명도
       <input type="range" id="pin-opacity" min="35" max="100" value="100" />
       <span id="pin-opacity-val">100%</span>
+    </div>
+    <div class="pin-qa" id="pin-qa" hidden>
+      <select id="pin-qa-kind"><option value="todo">할 일</option><option value="event">일정</option></select>
+      <input id="pin-qa-input" type="text" placeholder="제목 입력 후 Enter" autocomplete="off" />
+      <button id="pin-qa-go">추가</button>
     </div>
     <div class="pin-body" id="pin-body"></div>
   </div>
@@ -527,7 +539,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-22 · PiP투명도토글 버그수정";
+const APP_VERSION = "2026-09-22 · 핀 빠른추가(+) 버튼";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1258,6 +1270,22 @@ function pinBodyClick(e) {
   const tb = e.target.closest("[data-pin-toggle]"); if (tb) { Store.toggleTodo(tb.dataset.pinToggle); return; }
   const eb = e.target.closest("[data-pin-ev-toggle]"); if (eb) { Store.toggleEvent(eb.dataset.pinEvToggle); return; }
 }
+// 핀 팝업 빠른 추가 (오늘 기준)
+function quickAddPin(kind, title) {
+  title = (title || "").trim(); if (!title) return false;
+  if (kind === "event") Store.addEvent({ title, cat: "work", priority: "normal", date: todayStr(), time: "09:00", endTime: "09:30", reminder: "0" });
+  else Store.addTodo({ title, cat: "work", priority: "normal", due: todayStr() });
+  toast(kind === "event" ? "일정을 추가했습니다" : "할 일을 추가했습니다");
+  return true;
+}
+// 빠른 추가 입력창 와이어링 (앱 위젯/PiP 공용) — root: 요소가 있는 document
+function wireQuickAdd(root, kindId, inputId, goId) {
+  const kindEl = root.getElementById(kindId), inputEl = root.getElementById(inputId), goEl = root.getElementById(goId);
+  if (!inputEl) return;
+  const submit = () => { if (quickAddPin(kindEl ? kindEl.value : "todo", inputEl.value)) { inputEl.value = ""; inputEl.focus(); } };
+  goEl && goEl.addEventListener("click", submit);
+  inputEl.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); submit(); } });
+}
 
 async function openPip() {
   try {
@@ -1275,15 +1303,23 @@ async function openPip() {
       <div style="position:sticky;top:0;background:var(--work);color:#fff;padding:9px 12px;font-weight:800;font-size:13px;display:flex;align-items:center;gap:6px;">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px;stroke:#fff"><path d="M9 4h6l-1 6 3 3v2H7v-2l3-3-1-6z"/><path d="M12 15v5"/></svg>
         <span style="flex:1">오늘 할 일</span>
+        <button id="pip-add" title="추가" style="border:none;background:rgba(255,255,255,.2);color:#fff;width:24px;height:22px;border-radius:6px;font-size:15px;line-height:1;">+</button>
         <button id="pip-optoggle" title="투명도" style="border:none;background:rgba(255,255,255,.2);color:#fff;width:24px;height:22px;border-radius:6px;font-size:11px;">◐</button>
       </div>
       <div id="pip-op-row" style="display:none;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--border);font-size:10.5px;color:var(--text-faint);">
         투명도 <input type="range" id="pip-opacity" min="35" max="100" value="${pinState.opacity}" style="flex:1"/> <span id="pip-opacity-val">${pinState.opacity}%</span>
       </div>
+      <div id="pip-qa" class="pin-qa" style="display:none;">
+        <select id="pip-qa-kind"><option value="todo">할 일</option><option value="event">일정</option></select>
+        <input id="pip-qa-input" type="text" placeholder="제목 입력 후 Enter" autocomplete="off" />
+        <button id="pip-qa-go">추가</button>
+      </div>
       <div id="pip-body" style="padding:8px 12px;"></div>
       <div id="alert-stack" style="position:fixed;left:8px;right:8px;bottom:8px;display:flex;flex-direction:column;gap:8px;z-index:150;"></div>`;
     doc.getElementById("pip-body").addEventListener("click", pinBodyClick);
     doc.getElementById("pip-optoggle").addEventListener("click", () => { const r = doc.getElementById("pip-op-row"); r.style.display = (r.style.display === "none" || !r.style.display) ? "flex" : "none"; });
+    doc.getElementById("pip-add").addEventListener("click", () => { const r = doc.getElementById("pip-qa"); const show = (r.style.display === "none" || !r.style.display); r.style.display = show ? "flex" : "none"; if (show) setTimeout(() => doc.getElementById("pip-qa-input").focus(), 20); });
+    wireQuickAdd(doc, "pip-qa-kind", "pip-qa-input", "pip-qa-go");
     const pop = doc.getElementById("pip-opacity");
     pop.addEventListener("input", () => {
       pinState.opacity = parseInt(pop.value, 10);
@@ -1332,6 +1368,12 @@ function wirePin() {
     const w = document.getElementById("pin-widget"); w.classList.toggle("show-op");
     document.getElementById("pin-optoggle").classList.toggle("on", w.classList.contains("show-op"));
   });
+  document.getElementById("pin-add").addEventListener("click", () => {
+    const w = document.getElementById("pin-widget"); w.classList.toggle("show-qa");
+    document.getElementById("pin-add").classList.toggle("on", w.classList.contains("show-qa"));
+    if (w.classList.contains("show-qa")) setTimeout(() => document.getElementById("pin-qa-input").focus(), 20);
+  });
+  wireQuickAdd(document, "pin-qa-kind", "pin-qa-input", "pin-qa-go");
   const op = document.getElementById("pin-opacity");
   op.addEventListener("input", () => { pinState.opacity = parseInt(op.value, 10); document.getElementById("pin-opacity-val").textContent = pinState.opacity + "%"; document.getElementById("pin-widget").style.opacity = (pinState.opacity / 100).toFixed(2); });
   op.addEventListener("change", savePin);
