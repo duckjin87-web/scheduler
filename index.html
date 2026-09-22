@@ -193,6 +193,7 @@
   .week-grid .cell{text-align:left;}
   .evt .t{font-size:9.5px;opacity:.75;margin-right:4px;}
   .evt .ci{margin-right:1px;}
+  .evt-d{font-size:9px;font-weight:800;color:#fff;background:var(--urgent);padding:0 3px;border-radius:3px;margin-right:2px;}
   /* 배경 = 우선순위(긴급 빨강/높음 주황/보통 초록), 좌측 선 = 분류 */
   .evt.pri-urgent{background:var(--pri-urgent);}
   .evt.pri-high{background:var(--pri-high);}
@@ -539,7 +540,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-22 · 핀 빠른추가(+) 버튼";
+const APP_VERSION = "2026-09-23 · 자정 자동이동·자동이월(D+N)";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -637,6 +638,20 @@ const Store = (() => {
       const ke = state.events.filter((e) => !(e.done && e.doneAt && e.doneAt < cut)); n += state.events.length - ke.length; state.events = ke;
       if (n) emit(); return n;
     },
+    // 어제까지 처리 못한 미완료 항목을 오늘로 이월(같은 시간 유지, 원래 날짜 rolledFrom 기록 → D+N)
+    autoCarry() {
+      const today = todayStr(); let n = 0;
+      state.events.forEach((e) => {
+        if (e.done || e.allDay) return;
+        if (e.repeat && e.repeat !== "none") return; // 반복 일정 제외
+        if (e.date < today) { e.rolledFrom = e.rolledFrom || e.date; e.date = today; n++; }
+      });
+      state.todos.forEach((t) => {
+        if (t.done || !t.due) return;
+        if (t.due < today) { t.rolledFrom = t.rolledFrom || t.due; t.due = today; n++; }
+      });
+      if (n) emit(); return n;
+    },
     deleteTodo(id) { state.todos = state.todos.filter((x) => x.id !== id); emit(); },
     rollover() { const today = todayStr(); let n = 0; state.todos.forEach((t) => { if (!t.done && t.due && t.due < today) { t.rolledFrom = t.due; t.due = today; n++; } }); if (n) emit(); return n; },
     replaceAll(next) { if (next && Array.isArray(next.events) && Array.isArray(next.todos)) { state = { version: 2, events: next.events.map(normalizeEvent), todos: next.todos.map(normalizeTodo) }; emit(); return true; } return false; },
@@ -698,16 +713,12 @@ function evTimeText(e) { if (e.allDay) return "종일"; if (!e.time) return ""; 
 function catIcon(cat) { return cat === "personal" ? "👤" : "🏢"; }
 const daysBetween = (a, b) => Math.round((parseYMD(b) - parseYMD(a)) / 86400000);
 
-// 오늘 일정 목록 = 오늘 발생 이벤트 + 어제까지 처리 못한(미완료·비반복) 이벤트를 그 시간 그대로 이월(D+N)
+// 오늘 일정 목록 = 오늘 발생 이벤트(이월된 항목 포함, D+N = 원래 날짜로부터 지연일)
 function todayAgendaEvents() {
   const today = todayStr();
-  const list = eventsOn(today).filter((e) => !e.done).map((e) => ({ ...e, _delay: 0 }));
-  Store.state.events.forEach((e) => {
-    if (e.done || e.allDay) return;
-    if (e.repeat && e.repeat !== "none") return;   // 반복 일정은 이월 대상 아님
-    if (e.date < today && eventMatches(e)) list.push({ ...e, _base: e.id, _delay: daysBetween(e.date, today) });
-  });
-  return list.sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+  return eventsOn(today).filter((e) => !e.done)
+    .map((e) => ({ ...e, _delay: e.rolledFrom ? daysBetween(e.rolledFrom, today) : 0 }))
+    .sort((a, b) => (a.time || "").localeCompare(b.time || ""));
 }
 
 /* ---------- 렌더: 오늘 ---------- */
@@ -780,7 +791,7 @@ function renderCalendar() {
       const isToday = ds === today;
       const cellEvts = eventsOn(ds).filter((e) => !e.allDay && parseInt((e.time || "0").slice(0, 2), 10) === h);
       grid += `<div class="cell ${isToday ? "today-col" : ""}" data-date="${ds}" data-hour="${pad(h)}:00">` +
-        cellEvts.map((e) => `<div class="evt pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}" draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span><span class="t">${esc(evTimeText(e))}</span><span class="ci">${catIcon(e.cat)}</span>${esc(e.title)}${e.repeat !== "none" ? " ↻" : ""}</div>`).join("") +
+        cellEvts.map((e) => `<div class="evt pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}" draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span><span class="t">${esc(evTimeText(e))}</span><span class="ci">${catIcon(e.cat)}</span>${e.rolledFrom ? `<span class="evt-d">D+${daysBetween(e.rolledFrom, e.date)}</span>` : ""}${esc(e.title)}${e.repeat !== "none" ? " ↻" : ""}</div>`).join("") +
         `</div>`;
     });
   }
@@ -853,7 +864,8 @@ function todoRow(t) {
   const tag = t.priority !== "normal" ? `<span class="tag ${t.priority}">${PRIO[t.priority].label}</span>` : "";
   const overdue = !t.done && t.due && t.due < todayStr();
   const dueTxt = t.due ? `<span class="${overdue ? "tag overdue" : ""}">${fmtDueMeta(t.due)}</span>` : "";
-  const roll = t.rolledFrom ? `<span class="badge-roll">${IC.roll}이월</span>` : "";
+  const late = t.rolledFrom ? daysBetween(t.rolledFrom, todayStr()) : 0;
+  const roll = late > 0 ? `<span class="dbadge">D+${late}</span>` : "";
   return `<div class="todo ${t.done ? "done" : ""}">
     <div class="box ${t.done ? "done" : ""}" data-toggle="${t.id}">${t.done ? IC.check : ""}</div>
     <div class="tx" data-edit-todo="${t.id}">
@@ -1235,7 +1247,7 @@ function pinItemsHtml() {
   const events = todayAgendaEvents();
   let h = `<div class="pin-sec">할 일 · ${todos.length}</div>`;
   h += todos.length ? todos.map((t) => {
-    const late = t.due && t.due < today ? `<span class="dd">D+${daysBetween(t.due, today)}</span>` : "";
+    const late = t.rolledFrom ? `<span class="dd">D+${daysBetween(t.rolledFrom, today)}</span>` : (t.due && t.due < today ? `<span class="dd">D+${daysBetween(t.due, today)}</span>` : "");
     return `<div class="pin-todo pri-${t.priority}">
       <div class="box" data-pin-toggle="${t.id}"></div>
       <div><div class="t">${late}${esc(t.title)}</div><div class="m">${t.due ? fmtDueMeta(t.due) : "기한 없음"} · ${PRIO[t.priority].label}</div></div>
@@ -1498,9 +1510,26 @@ function wireGlobal() {
   loadUI(); loadPin(); loadFS(); applyFontSize(fontSize);
   Store.subscribe(render); Store.load();
   Store.purgeOld();                                   // 완료 후 1주일 지난 항목 자동 삭제
+  Store.autoCarry();                                  // 어제까지 미완료 항목을 오늘로 이월(D+N)
   setInterval(() => Store.purgeOld(), 60 * 60 * 1000); // 1시간마다 정리
   wireGlobal(); wirePin();
   render();
+
+  // 날짜(자정) 변경 감지 → 캘린더를 오늘 주간으로 이동 + 이월/정리/재렌더
+  let _curDay = todayStr();
+  function dayTick() {
+    const d = todayStr();
+    if (d !== _curDay) {
+      _curDay = d;
+      ui.weekRef = startOfWeek(new Date());
+      Store.autoCarry();
+      Store.purgeOld();
+      render();
+    }
+  }
+  setInterval(dayTick, 30 * 1000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) dayTick(); });
+  window.addEventListener("focus", dayTick);
   // PWA: 서비스 워커 등록 + 새 버전 자동 갱신
   if ("serviceWorker" in navigator) {
     const hadController = !!navigator.serviceWorker.controller;
