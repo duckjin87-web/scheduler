@@ -540,7 +540,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-23 · 자정 자동이동·자동이월(D+N)";
+const APP_VERSION = "2026-09-23 · 일정 D+N 유지 수정";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -583,6 +583,7 @@ const Store = (() => {
       repeat: e.repeat || "none",
       priority: PRIO[e.priority] ? e.priority : "normal",
       done: !!e.done, doneAt: e.doneAt || null,
+      rolledFrom: e.rolledFrom || null,
       createdAt: e.createdAt || Date.now(),
     };
   }
