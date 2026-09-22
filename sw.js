@@ -1,7 +1,7 @@
 /* 스케줄러 서비스 워커
    전략: 네트워크 우선(network-first). 온라인이면 항상 최신을 보여주고,
    오프라인일 때만 캐시로 대체 → 업데이트가 즉시 반영되면서 오프라인도 지원. */
-const CACHE = "scheduler-cache-v6";
+const CACHE = "scheduler-cache-v7";
 const ASSETS = [
   "./",
   "./index.html",

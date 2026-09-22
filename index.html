@@ -527,7 +527,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-22 · 탭한행통합/완료접힘/투명도토글";
+const APP_VERSION = "2026-09-22 · 자동업데이트(탭한행/완료접힘/투명도토글)";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1459,9 +1459,20 @@ function wireGlobal() {
   setInterval(() => Store.purgeOld(), 60 * 60 * 1000); // 1시간마다 정리
   wireGlobal(); wirePin();
   render();
-  // PWA: 서비스 워커 등록 (설치형 앱 + 오프라인)
+  // PWA: 서비스 워커 등록 + 새 버전 자동 갱신
   if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
+    const hadController = !!navigator.serviceWorker.controller;
+    let reloading = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (!hadController || reloading) return; // 최초 설치 때는 새로고침 안 함
+      reloading = true; location.reload();     // 새 버전 활성화되면 한 번 자동 새로고침
+    });
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then((reg) => {
+        reg.update();                                   // 방문 시 새 버전 확인
+        setInterval(() => reg.update(), 60 * 60 * 1000); // 1시간마다 확인
+      }).catch(() => {});
+    });
   }
 })();
 </script>
