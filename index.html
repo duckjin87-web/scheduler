@@ -166,12 +166,14 @@
   .week-nav button{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;}
   .week-nav button svg{width:13px;height:13px;stroke:var(--text-soft);}
   .week-nav .today-btn{width:auto;padding:0 10px;font-size:12px;font-weight:700;color:var(--text-soft);}
-  .week-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  .week-grid{display:grid;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--surface);}
-  .week-grid .corner{background:var(--surface-2);border-bottom:1px solid var(--border);}
+  .week-scroll{overflow:auto;-webkit-overflow-scrolling:touch;max-height:calc(100vh - 128px);border:1px solid var(--border);border-radius:10px;}
+  .week-grid{display:grid;background:var(--surface);}
+  /* 요일/날짜 헤더 행 고정 (세로 스크롤 시 상단 유지) */
+  .week-grid .corner{background:var(--surface-2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:6;}
   .week-grid .head{
     background:var(--surface-2);border-bottom:1px solid var(--border);border-left:1px solid var(--border);
     text-align:center;padding:8px 2px;font-size:11.5px;font-weight:700;color:var(--text-soft);
+    position:sticky;top:0;z-index:5;
   }
   .week-grid .head .dow{font-size:10.5px;color:var(--text-faint);display:block;}
   .week-grid .head.today{color:var(--work);}
@@ -545,7 +547,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-23 · 시계선택기·시간범위 블록";
+const APP_VERSION = "2026-09-23 · 헤더 고정·오늘열 1.5배";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -770,7 +772,8 @@ function renderCalendar() {
   const week = [...Array(nDays)].map((_, i) => addDays(ui.weekRef, i));
   const today = todayStr();
   const head = "";
-  const cols = `grid-template-columns:46px repeat(${nDays},minmax(72px,1fr));`;
+  // 오늘 열은 다른 날보다 좌우 폭 1.5배
+  const cols = `grid-template-columns:46px ` + week.map((d) => ymd(d) === today ? "minmax(96px,1.5fr)" : "minmax(60px,1fr)").join(" ") + ";";
   let grid = `<div class="week-scroll"><div class="week-grid" style="${cols}"><div class="corner"></div>`;
   week.forEach((d) => {
     const isToday = ymd(d) === today;
