@@ -376,6 +376,7 @@
   .pin-todo .box{width:16px;height:16px;flex:none;border-radius:5px;border:1.6px solid var(--border-strong);display:flex;align-items:center;justify-content:center;cursor:pointer;margin-top:1px;background:var(--surface);}
   .pin-todo .box.done{background:var(--done);border-color:var(--done);}
   .pin-todo .box svg{width:10px;height:10px;stroke:#fff;}
+  .pin-tx{flex:1;min-width:0;cursor:pointer;}
   .pin-todo .t{font-size:12.5px;font-weight:600;}
   .pin-todo.done .t{text-decoration:line-through;color:var(--text-faint);}
   .pin-todo.done{opacity:.7;}
@@ -540,7 +541,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-23 · 일정 D+N 유지 수정";
+const APP_VERSION = "2026-09-23 · 핀 항목 클릭 수정";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1251,7 +1252,7 @@ function pinItemsHtml() {
     const late = t.rolledFrom ? `<span class="dd">D+${daysBetween(t.rolledFrom, today)}</span>` : (t.due && t.due < today ? `<span class="dd">D+${daysBetween(t.due, today)}</span>` : "");
     return `<div class="pin-todo pri-${t.priority}">
       <div class="box" data-pin-toggle="${t.id}"></div>
-      <div><div class="t">${late}${esc(t.title)}</div><div class="m">${t.due ? fmtDueMeta(t.due) : "기한 없음"} · ${PRIO[t.priority].label}</div></div>
+      <div class="pin-tx" data-pin-edit-todo="${t.id}"><div class="t">${late}${esc(t.title)}</div><div class="m">${t.due ? fmtDueMeta(t.due) : "기한 없음"} · ${PRIO[t.priority].label}</div></div>
     </div>`;
   }).join("") : `<div class="pin-empty">${IC.check} 할 일 없음</div>`;
   h += `<div class="pin-divider">오늘 일정</div>`;
@@ -1259,7 +1260,7 @@ function pinItemsHtml() {
     const dd = e._delay ? `<span class="dd">D+${e._delay}</span>` : "";
     return `<div class="pin-todo pri-${e.priority}">
       <div class="box" data-pin-ev-toggle="${e._base || e.id}"></div>
-      <div><div class="t">${dd}${catIcon(e.cat)} ${esc(e.title)}</div><div class="m">${esc(evTimeText(e))}${e.location ? " · " + esc(e.location) : ""}</div></div>
+      <div class="pin-tx" data-pin-edit-event="${e._base || e.id}"><div class="t">${dd}${catIcon(e.cat)} ${esc(e.title)}</div><div class="m">${esc(evTimeText(e))}${e.location ? " · " + esc(e.location) : ""}</div></div>
     </div>`;
   }).join("") : `<div class="pin-empty">오늘 일정 없음</div>`;
 
@@ -1282,6 +1283,11 @@ function pinBodyClick(e) {
   if (e.target.closest("[data-pin-donetoggle]")) { pinState.doneOpen = !pinState.doneOpen; savePin(); renderPin(); return; }
   const tb = e.target.closest("[data-pin-toggle]"); if (tb) { Store.toggleTodo(tb.dataset.pinToggle); return; }
   const eb = e.target.closest("[data-pin-ev-toggle]"); if (eb) { Store.toggleEvent(eb.dataset.pinEvToggle); return; }
+  // 글자 클릭 → 수정창 (본 앱 창에서 열림; PiP인 경우 본 창을 앞으로)
+  const et = e.target.closest("[data-pin-edit-todo]");
+  if (et) { const td = Store.state.todos.find((x) => x.id === et.dataset.pinEditTodo); if (td) { try { window.focus(); } catch (_) {} openModal("todo", td); } return; }
+  const ee = e.target.closest("[data-pin-edit-event]");
+  if (ee) { const ev = Store.state.events.find((x) => x.id === ee.dataset.pinEditEvent); if (ev) { try { window.focus(); } catch (_) {} openModal("event", ev); } return; }
 }
 // 핀 팝업 빠른 추가 (오늘 기준)
 function quickAddPin(kind, title) {
