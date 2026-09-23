@@ -181,8 +181,10 @@
   .week-grid .band-cell{border-bottom:1px solid var(--border);border-left:1px solid var(--border);min-height:32px;padding:3px;display:flex;flex-direction:column;gap:3px;}
   .week-grid .band-cell.today-col{background:color-mix(in srgb, var(--work) 14%, var(--surface));}
   .week-grid .hourlabel{font-size:10.5px;color:var(--text-faint);text-align:right;padding:4px 6px 0 0;border-top:1px solid var(--border);height:46px;}
-  .week-grid .cell{border-top:1px solid var(--border);border-left:1px solid var(--border);min-height:46px;padding:2px;position:relative;cursor:pointer;transition:background .1s;}
+  .week-grid .cell{border-top:1px solid var(--border);border-left:1px solid var(--border);height:46px;padding:0;position:relative;cursor:pointer;transition:background .1s;}
   .week-grid .cell:hover{background:var(--surface-2);}
+  .week-grid .cell.has-evt{z-index:2;}
+  .evt.timed{position:absolute;margin:0;padding:2px 5px;overflow:hidden;box-shadow:var(--shadow);}
   .week-grid .cell.today-col{background:color-mix(in srgb, var(--work) 10%, var(--surface));}
   .week-grid .head.today{background:color-mix(in srgb, var(--work) 16%, var(--surface));}
   .week-grid .drop-hover{background:var(--work-soft) !important;outline:2px dashed var(--work);outline-offset:-2px;}
@@ -442,19 +444,21 @@
   .tp-wrap{position:relative;}
   .tp-input{cursor:pointer;}
   .tp-ic{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:14px;height:14px;stroke:var(--text-faint);pointer-events:none;}
-  .timepop{position:fixed;z-index:120;background:var(--surface);border:1px solid var(--border-strong);border-radius:12px;box-shadow:var(--shadow-lg);padding:10px;width:212px;}
+  .timepop{position:fixed;z-index:120;background:var(--surface);border:1px solid var(--border-strong);border-radius:12px;box-shadow:var(--shadow-lg);padding:10px;width:224px;}
   .timepop[hidden]{display:none;}
   .tp-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
   .tp-cur{font-size:15px;font-weight:800;}
   .tp-steps{display:inline-flex;gap:3px;background:var(--surface-2);padding:3px;border-radius:8px;}
   .tp-steps button{border:none;background:transparent;padding:4px 9px;border-radius:6px;font-size:11.5px;font-weight:700;color:var(--text-soft);}
   .tp-steps button.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow);}
-  .tp-grid{display:grid;gap:4px;}
-  .tp-grid.h{grid-template-columns:repeat(6,1fr);}
-  .tp-grid.m{grid-template-columns:repeat(4,1fr);}
-  .tp-grid button{border:1px solid var(--border);background:var(--surface);border-radius:7px;padding:7px 0;font-size:12px;font-weight:700;color:var(--text);}
-  .tp-grid button.sel{background:var(--work);color:#fff;border-color:var(--work);}
-  .tp-grid button:hover{border-color:var(--work);}
+  /* 아날로그 시계 선택 */
+  .tp-clock{position:relative;width:204px;height:204px;margin:6px auto 2px;border-radius:50%;background:var(--surface-2);border:1px solid var(--border);}
+  .tp-clock .tp-center{position:absolute;left:50%;top:50%;width:6px;height:6px;border-radius:50%;background:var(--work);transform:translate(-50%,-50%);}
+  .tp-clock button{position:absolute;width:28px;height:28px;border-radius:50%;transform:translate(-50%,-50%);border:none;background:transparent;font-size:12.5px;font-weight:700;color:var(--text);cursor:pointer;padding:0;}
+  .tp-clock button.inner{font-size:10.5px;color:var(--text-faint);}
+  .tp-clock button:hover{background:var(--surface-3);}
+  .tp-clock button.sel{background:var(--work);color:#fff;}
+  .tp-hint{text-align:center;font-size:10.5px;color:var(--text-faint);margin-top:2px;}
   /* 모달 안 [추가 옵션] 접기 */
   .more-btn{width:100%;border:1px dashed var(--border-strong);background:transparent;color:var(--text-soft);border-radius:8px;padding:8px;font-size:12px;font-weight:700;margin-bottom:10px;}
   #m-extra[hidden]{display:none;}
@@ -541,7 +545,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-23 · 핀 항목 클릭 수정";
+const APP_VERSION = "2026-09-23 · 시계선택기·시간범위 블록";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -785,16 +789,25 @@ function renderCalendar() {
     cell += `</div>`;
     grid += cell;
   });
-  // 시간 행
+  // 시간 행 — 시간 범위(시작~종료)만큼 세로로 채워지는 블록으로 표시
+  const CELL_H = 46;
+  const toMin = (t) => { const [a, b] = (t || "0:0").split(":").map(Number); return a * 60 + (b || 0); };
   for (let h = 8; h <= 20; h++) {
     grid += `<div class="hourlabel">${h}:00</div>`;
     week.forEach((d) => {
       const ds = ymd(d);
       const isToday = ds === today;
-      const cellEvts = eventsOn(ds).filter((e) => !e.allDay && parseInt((e.time || "0").slice(0, 2), 10) === h);
-      grid += `<div class="cell ${isToday ? "today-col" : ""}" data-date="${ds}" data-hour="${pad(h)}:00">` +
-        cellEvts.map((e) => `<div class="evt pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}" draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span><span class="t">${esc(evTimeText(e))}</span><span class="ci">${catIcon(e.cat)}</span>${e.rolledFrom ? `<span class="evt-d">D+${daysBetween(e.rolledFrom, e.date)}</span>` : ""}${esc(e.title)}${e.repeat !== "none" ? " ↻" : ""}</div>`).join("") +
-        `</div>`;
+      const starts = eventsOn(ds).filter((e) => !e.allDay && parseInt((e.time || "0").slice(0, 2), 10) === h);
+      const n = Math.max(1, starts.length);
+      const inner = starts.map((e, i) => {
+        const sM = toMin(e.time), eM = e.endTime ? toMin(e.endTime) : sM + 30;
+        const dur = Math.max(30, eM - sM);
+        const top = ((sM - h * 60) / 60) * CELL_H;
+        const height = (dur / 60) * CELL_H - 2;
+        const w = 100 / n, left = i * w;
+        return `<div class="evt timed pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}" style="top:${top.toFixed(1)}px;left:calc(${left}% + 1px);width:calc(${w}% - 3px);height:${height.toFixed(1)}px;" draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span><span class="t">${esc(evTimeText(e))}</span><span class="ci">${catIcon(e.cat)}</span>${e.rolledFrom ? `<span class="evt-d">D+${daysBetween(e.rolledFrom, e.date)}</span>` : ""}${esc(e.title)}${e.repeat !== "none" ? " ↻" : ""}</div>`;
+      }).join("");
+      grid += `<div class="cell ${starts.length ? "has-evt" : ""} ${isToday ? "today-col" : ""}" data-date="${ds}" data-hour="${pad(h)}:00">${inner}</div>`;
     });
   }
   grid += `</div></div>`;
@@ -967,12 +980,12 @@ function ensureTimePop() {
   let el = document.getElementById("timepop");
   if (el) return el;
   el = document.createElement("div"); el.id = "timepop"; el.className = "timepop"; el.hidden = true;
-  el.innerHTML = `<div class="tp-head"><span class="tp-cur" id="tp-cur"></span><div class="tp-steps"><button type="button" data-step="h">시</button><button type="button" data-step="m">분</button></div></div><div class="tp-grid" id="tp-grid"></div>`;
+  el.innerHTML = `<div class="tp-head"><span class="tp-cur" id="tp-cur"></span><div class="tp-steps"><button type="button" data-step="h">시</button><button type="button" data-step="m">분</button></div></div><div class="tp-clock" id="tp-grid"></div><div class="tp-hint" id="tp-hint"></div>`;
   document.body.appendChild(el);
   el.addEventListener("click", (e) => {
     e.stopPropagation();
     const s = e.target.closest(".tp-steps button"); if (s) { tpRender(s.dataset.step); return; }
-    const g = e.target.closest(".tp-grid button"); if (g) tpPick(g.dataset.v);
+    const g = e.target.closest("#tp-grid button"); if (g) tpPick(g.dataset.v);
   });
   return el;
 }
@@ -992,10 +1005,20 @@ function tpRender(step) {
   if (!tpState) return; tpState.step = step;
   const el = document.getElementById("timepop");
   document.getElementById("tp-cur").textContent = pad(tpState.h) + ":" + pad(tpState.m);
+  document.getElementById("tp-hint").textContent = step === "h" ? "시(hour)를 선택하세요" : "분(minute)을 선택하세요";
   el.querySelectorAll(".tp-steps button").forEach((b) => b.classList.toggle("active", b.dataset.step === step));
-  const grid = document.getElementById("tp-grid"); grid.className = "tp-grid " + step;
-  if (step === "h") grid.innerHTML = [...Array(24)].map((_, i) => `<button type="button" data-v="${i}" class="${i === tpState.h ? "sel" : ""}">${pad(i)}</button>`).join("");
-  else grid.innerHTML = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((v) => `<button type="button" data-v="${v}" class="${v === tpState.m ? "sel" : ""}">${pad(v)}</button>`).join("");
+  const clock = document.getElementById("tp-grid");
+  const C = 102; // 시계 중심
+  const btn = (val, label, x, y, cls, sel) => `<button type="button" data-v="${val}" class="${cls || ""} ${sel ? "sel" : ""}" style="left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;">${label}</button>`;
+  let html = "";
+  if (step === "h") {
+    // 바깥 고리: 1~12, 안쪽 고리: 0,13~23 (12·00을 맨 위로)
+    for (let i = 1; i <= 12; i++) { const a = (i / 12) * 2 * Math.PI; html += btn(i, pad(i), C + 82 * Math.sin(a), C - 82 * Math.cos(a), "", i === tpState.h); }
+    for (let i = 0; i < 12; i++) { const val = i === 0 ? 0 : i + 12; const a = (i / 12) * 2 * Math.PI; html += btn(val, pad(val), C + 52 * Math.sin(a), C - 52 * Math.cos(a), "inner", val === tpState.h); }
+  } else {
+    for (let m = 0; m < 60; m += 5) { const a = (m / 60) * 2 * Math.PI; html += btn(m, pad(m), C + 82 * Math.sin(a), C - 82 * Math.cos(a), "", m === tpState.m); }
+  }
+  clock.innerHTML = html + `<div class="tp-center"></div>`;
 }
 function tpPick(v) {
   v = parseInt(v, 10);
