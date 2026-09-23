@@ -175,12 +175,17 @@
   .week-grid .corner{background:var(--surface-2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:6;}
   .week-grid .head{
     background:var(--surface-2);border-bottom:1px solid var(--border);border-left:1px solid var(--border);
-    text-align:center;padding:8px 2px;font-size:11.5px;font-weight:700;color:var(--text-soft);
+    text-align:center;padding:8px 2px;font-size:17px;font-weight:700;color:var(--text-soft);
     position:sticky;top:0;z-index:5;
+    display:flex;align-items:center;justify-content:center;min-height:34px;
   }
-  .week-grid .head .dow{font-size:10.5px;color:var(--text-faint);display:block;}
+  /* 요일: 왼쪽 좌측정렬, 날짜: 중앙 정렬 (한 줄) */
+  .week-grid .head .dow{position:absolute;left:6px;top:50%;transform:translateY(-50%);font-size:15.75px;color:var(--text-faint);font-weight:700;}
+  .week-grid .head .num{font-size:17px;line-height:1;}
   .week-grid .head.today{color:var(--work);}
-  .week-grid .head.today .num{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;border-radius:50%;background:var(--work);color:#fff;}
+  .week-grid .head.today .num{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:28px;border-radius:50%;background:var(--work);color:#fff;}
+  /* 설정 화면: 설정 내용만 표시 (상단 검색/탭/칩 숨김) */
+  body.settings-only .topbar{display:none;}
   /* all-day / todo band */
   .week-grid .band-label{background:var(--surface-2);border-bottom:1px solid var(--border);font-size:10px;color:var(--text-faint);font-weight:700;display:flex;align-items:center;justify-content:center;padding:4px 2px;}
   .week-grid .band-cell{border-bottom:1px solid var(--border);border-left:1px solid var(--border);min-height:32px;padding:3px;display:flex;flex-direction:column;gap:3px;}
@@ -538,7 +543,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-23 · 상단 한 행 통합바";
+const APP_VERSION = "2026-09-23 · 요일/날짜 확대·설정 전용 화면·ESC 닫기";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -819,7 +824,7 @@ function renderTodo() {
 /* ---------- 렌더: 설정 ---------- */
 function renderSettings() {
   const dark = currentDark();
-  return `<div class="view-head"><h2>설정</h2></div>
+  return `<div class="view-head" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><h2>설정</h2><button class="btn-sub" id="set-close">닫기</button></div>
     <div class="set-group">
       <div class="set-row"><div><div class="lab">다크 모드</div><div class="desc">화면 테마를 전환합니다</div></div>
         <button class="switch ${dark ? "on" : ""}" id="set-theme"></button></div>
@@ -937,6 +942,7 @@ function render() {
   const app = document.getElementById("app");
   app.classList.remove("has-dash", "dash-collapsed");
   app.classList.toggle("cal-view", ui.view === "calendar");
+  document.body.classList.toggle("settings-only", ui.view === "settings");
   document.getElementById("dash-reopen").style.display = "none";
   document.getElementById("dash").innerHTML = "";
 
@@ -1457,7 +1463,7 @@ function wireCalendarDnD() {
 }
 
 /* ---------- 전역 이벤트 ---------- */
-function setView(v) { ui.view = v; saveUI(); render(); window.scrollTo(0, 0); }
+function setView(v) { if (v === "settings" && ui.view !== "settings") ui.prevView = ui.view; ui.view = v; saveUI(); render(); window.scrollTo(0, 0); }
 function wireGlobal() {
   document.querySelectorAll(".tab[data-view], .bottom-nav button[data-view]").forEach((b) => b.addEventListener("click", () => setView(b.dataset.view)));
   document.getElementById("add-btn").addEventListener("click", () => openModal(ui.view === "todo" ? "todo" : "event", { cat: ui.cat === "personal" ? "personal" : "work" }));
@@ -1467,15 +1473,21 @@ function wireGlobal() {
   });
   document.getElementById("theme-btn").addEventListener("click", () => setTheme(!currentDark()));
   document.getElementById("modal-backdrop").addEventListener("click", (e) => { if (e.target.id === "modal-backdrop") closeModal(); });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape" && e.key !== "Esc") return;
+    const tp = document.getElementById("timepop");
+    if (tp && !tp.hidden) { closeTimePicker(); e.preventDefault(); return; }
+    if (document.getElementById("modal-backdrop").classList.contains("open")) { closeModal(); e.preventDefault(); }
+  });
 
   document.addEventListener("click", (e) => {
     if (e.target.closest("#timepop") || e.target.closest(".pin-widget")) return; // 별도 핸들러 처리
-    const t = e.target.closest("[data-cat],[data-todo-filter],[data-toggle],[data-ev-toggle],[data-edit-event],[data-del-event],[data-edit-todo],[data-del-todo],[data-ww],[data-dash-toggle],#dash-collapse,#wk-prev,#wk-next,#wk-today,#roll-desktop,#roll-mobile,#set-theme,#set-pin,#set-export,#set-import,#set-clear,#set-alert-demo");
+    const t = e.target.closest("[data-cat],[data-todo-filter],[data-toggle],[data-ev-toggle],[data-edit-event],[data-del-event],[data-edit-todo],[data-del-todo],[data-ww],[data-dash-toggle],#dash-collapse,#wk-prev,#wk-next,#wk-today,#roll-desktop,#roll-mobile,#set-theme,#set-pin,#set-export,#set-import,#set-clear,#set-alert-demo,#set-close");
     if (!t) return;
     if (t.dataset.evToggle) { Store.toggleEvent(t.dataset.evToggle); return; }
     if (t.dataset.dashToggle) { ui.dashExp[t.dataset.dashToggle] = !ui.dashExp[t.dataset.dashToggle]; saveUI(); render(); return; }
     if (t.id === "dash-collapse") { ui.dashCollapsed = true; saveUI(); render(); return; }
+    if (t.id === "set-close") { setView(ui.prevView && ui.prevView !== "settings" ? ui.prevView : "today"); return; }
     if (t.id === "set-alert-demo") { showAlertCard({ title: "○○업체 방문 (예시 알림)", time: "14:00", endTime: "16:00", location: "세종 공장", allDay: false }, "demo-" + Date.now()); toast("알림 팝업 예시를 띄웠습니다"); return; }
     if (t.dataset.cat != null) { ui.cat = t.dataset.cat; render(); return; }
     if (t.dataset.todoFilter != null) { ui.todoFilter = t.dataset.todoFilter; render(); return; }
