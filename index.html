@@ -136,9 +136,9 @@
   /* 캘린더는 여백 없이 꽉 차게 */
   .app.cal-view .content{padding:0;}
   .app.cal-view .week-scroll{border:none;border-radius:0;}
-  /* 스크롤바 숨김 (스크롤 기능은 유지) */
-  .content, .week-scroll, .dash{scrollbar-width:none;}
-  .content::-webkit-scrollbar, .week-scroll::-webkit-scrollbar, .dash::-webkit-scrollbar{display:none;}
+  /* 스크롤바 전부 숨김 (스크롤 기능은 유지) */
+  *{scrollbar-width:none;-ms-overflow-style:none;}
+  *::-webkit-scrollbar{width:0;height:0;display:none;}
   .gutter{flex:0 0 10px;cursor:col-resize;position:relative;display:none;touch-action:none;}
   .gutter::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--border);transform:translateX(-50%);}
   .gutter::after{content:"⋮";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:var(--text-faint);font-size:14px;line-height:1;}
@@ -551,7 +551,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-23 · 윈도우알림·요약제거·캘린더 풀블리드";
+const APP_VERSION = "2026-09-23 · 캘린더탭 월일월금 제거·스크롤바 숨김";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -752,13 +752,9 @@ function renderToday() {
   return html;
 }
 
-// 캘린더 컨트롤(주간 전환 + 주 이동 + 날짜 범위) — 상단 탭바 우측에 표시
+// 캘린더 컨트롤(주 이동) — 상단 탭바 우측에 표시. 월~일/월~금은 설정에서 변경
 function calControlsHtml() {
-  return `<div class="seg" id="wk-mode">
-      <button class="${!ui.workweek ? "active" : ""}" data-ww="0">월~일</button>
-      <button class="${ui.workweek ? "active" : ""}" data-ww="1">월~금</button>
-    </div>
-    <div class="week-nav">
+  return `<div class="week-nav">
       <button id="wk-prev">${IC.left}</button>
       <button class="today-btn" id="wk-today">오늘</button>
       <button id="wk-next">${IC.right}</button>
