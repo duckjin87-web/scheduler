@@ -59,14 +59,43 @@
     --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.35);
     --shadow-lg: 0 10px 40px rgba(0,0,0,0.55);
   }
+  /* 위젯 설정용 전역 변수 (테마/투명도/세부 글자크기) */
+  :root{ --panel-op:100%; --cal-scale:1; --alert-scale:1; }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;height:100%;}
+  html{background:var(--bg);}
   body{
-    background:var(--bg); color:var(--text);
+    background:transparent; color:var(--text);
     font-family:"Noto Sans KR", -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif;
     font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;
     display:flex; flex-direction:column; min-height:100%;
   }
+  /* ---------- 종이 질감 배경 ---------- */
+  #paper{position:fixed; inset:0; z-index:-1; pointer-events:none; background-color:var(--bg);}
+  #paper::after{
+    content:""; position:absolute; inset:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.018' numOctaves='5' seed='4' result='t'/%3E%3CfeDiffuseLighting in='t' surfaceScale='2.2' diffuseConstant='1.1' lighting-color='white' result='d'%3E%3CfeDistantLight azimuth='235' elevation='55'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='600' height='600' filter='url(%23c)'/%3E%3C/svg%3E");
+    background-size:460px 460px; mix-blend-mode:soft-light; opacity:1;
+  }
+  body.no-paper #paper::after{display:none;}
+  /* ---------- 배경 투명도: 주요 패널이 종이 배경을 비침 (높은 우선순위) ---------- */
+  body .topbar, body .set-group, body .week-grid, body .pin-widget, body .modal{
+    background-color:color-mix(in srgb, var(--surface) var(--panel-op), transparent);
+  }
+  /* ---------- 글자 대비 (진하게) ---------- */
+  body.contrast-strong{ --text:#0c0e10; --text-soft:#333941; --text-faint:#565c64; }
+  :root[data-theme="dark"] body.contrast-strong,
+  html[data-theme="dark"] body.contrast-strong{ --text:#ffffff; --text-soft:#ccd0d6; --text-faint:#9aa0a8; }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) body.contrast-strong{ --text:#ffffff; --text-soft:#ccd0d6; --text-faint:#9aa0a8; }
+  }
+  /* ---------- 세부(메뉴별) 글자 크기 ---------- */
+  .app .week-scroll{ zoom:var(--cal-scale,1); }
+  /* ---------- 테마 색상 스와치 ---------- */
+  .swatch-row{display:flex;flex-wrap:wrap;gap:10px;padding:14px;}
+  .swatch{width:34px;height:34px;border-radius:50%;border:2px solid var(--border);position:relative;padding:0;flex:none;box-shadow:inset 0 1px 2px rgba(0,0,0,.08);}
+  .swatch.active{border-color:var(--text);box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--work);}
+  .swatch .rim{position:absolute;left:3px;bottom:3px;width:11px;height:11px;border-radius:50%;}
   button{font-family:inherit; cursor:pointer;}
   input,select,textarea{font-family:inherit;}
   svg{flex:none;}
@@ -128,9 +157,9 @@
 
   /* ---------- App shell (resizable split) ---------- */
   .app{display:flex; flex:1 1 auto; min-height:0;}
-  .content{padding:18px 22px;min-width:0;flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:auto;}
-  /* 캘린더는 여백 없이 꽉 차게 */
-  .app.cal-view .content{padding:0;}
+  .content{padding:18px 22px;min-width:0;flex:1 1 auto;min-height:0;overflow:auto;}
+  /* 캘린더 뷰만 flex 컬럼(주간 스크롤이 높이를 채움). 다른 뷰는 일반 블록 → 내용 높이대로 스크롤 */
+  .app.cal-view .content{padding:0;display:flex;flex-direction:column;}
   .app.cal-view .week-scroll{border:none;border-radius:0;}
   /* 스크롤바 전부 숨김 (스크롤 기능은 유지) */
   *{scrollbar-width:none;-ms-overflow-style:none;}
@@ -472,6 +501,7 @@
 </style>
 </head>
 <body>
+  <div id="paper"></div>
   <!-- 상단 한 행 통합 바 -->
   <div class="topbar">
     <div class="week-nav" id="tabbar-cal"></div>
@@ -543,7 +573,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-23 · 요일/날짜 확대·설정 전용 화면·ESC 닫기";
+const APP_VERSION = "2026-09-26 · 종이질감 배경·테마색상/투명도/대비/세부글자·알림 설정";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -824,21 +854,64 @@ function renderTodo() {
 /* ---------- 렌더: 설정 ---------- */
 function renderSettings() {
   const dark = currentDark();
+  const sliderCss = "display:flex;align-items:center;gap:8px;min-width:160px";
+  const valCss = "font-size:12px;font-weight:700;color:var(--text-soft);width:44px;text-align:right";
+  const swatches = Object.keys(THEMES).map((k) => {
+    const t = THEMES[k];
+    return `<button class="swatch ${prefs.theme === k ? "active" : ""}" data-theme-key="${k}" title="${t.name}" style="background:${t.dot}"><span class="rim" style="background:${t.work}"></span></button>`;
+  }).join("");
   return `<div class="view-head" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><h2>설정</h2><button class="btn-sub" id="set-close">닫기</button></div>
+
+    <p class="panel-title">화면</p>
     <div class="set-group">
       <div class="set-row"><div><div class="lab">다크 모드</div><div class="desc">화면 테마를 전환합니다</div></div>
         <button class="switch ${dark ? "on" : ""}" id="set-theme"></button></div>
-      <div class="set-row"><div><div class="lab">글자 크기</div><div class="desc">앱 전체 텍스트 크기 (5~20)</div></div>
-        <div style="display:flex;align-items:center;gap:8px;min-width:150px">
+      <div class="set-row"><div><div class="lab">종이 질감 배경</div><div class="desc">부드러운 종이 질감을 배경에 입힙니다</div></div>
+        <button class="switch ${prefs.paper ? "on" : ""}" id="set-paper"></button></div>
+      <div class="set-row" style="align-items:flex-start"><div><div class="lab">테마 색상</div><div class="desc">배경 톤과 강조 색을 선택합니다</div></div></div>
+      <div class="swatch-row">${swatches}</div>
+      <div class="set-row"><div><div class="lab">배경 투명도</div><div class="desc">패널이 배경을 비추는 정도 (60~100%)</div></div>
+        <div style="${sliderCss}">
+          <input type="range" id="set-op" min="60" max="100" step="1" value="${prefs.panelOp}" style="flex:1" />
+          <span id="set-op-val" style="${valCss}">${prefs.panelOp}%</span></div></div>
+      <div class="set-row"><div><div class="lab">글자 대비</div><div class="desc">배경이 옅을 때 글자를 더 진하게</div></div>
+        <div class="seg"><button class="${prefs.contrast === "auto" ? "active" : ""}" data-contrast="auto">자동</button><button class="${prefs.contrast === "strong" ? "active" : ""}" data-contrast="strong">진하게</button></div></div>
+    </div>
+
+    <p class="panel-title" style="margin-top:20px">글자 크기</p>
+    <div class="set-group">
+      <div class="set-row"><div><div class="lab">기본(전체) 글자 크기</div><div class="desc">앱 전체 텍스트 크기 (5~20)</div></div>
+        <div style="${sliderCss}">
           <input type="range" id="set-fs" min="5" max="20" step="1" value="${fontSize}" style="flex:1" />
-          <span id="set-fs-val" style="font-size:12px;font-weight:700;color:var(--text-soft);width:34px;text-align:right">${fontSize}px</span></div></div>
+          <span id="set-fs-val" style="${valCss}">${fontSize}px</span></div></div>
+      <div class="set-row"><div><div class="lab">캘린더 글자 크기</div><div class="desc">캘린더만 추가로 확대/축소 (70~150%)</div></div>
+        <div style="${sliderCss}">
+          <input type="range" id="set-cal" min="70" max="150" step="5" value="${prefs.calScale}" style="flex:1" />
+          <span id="set-cal-val" style="${valCss}">${prefs.calScale}%</span></div></div>
+    </div>
+
+    <p class="panel-title" style="margin-top:20px">알림</p>
+    <div class="set-group">
+      <div class="set-row"><div><div class="lab">알림창 크기</div><div class="desc">알림 팝업의 크기 (70~160%)</div></div>
+        <div style="${sliderCss}">
+          <input type="range" id="set-alsize" min="70" max="160" step="5" value="${prefs.alertScale}" style="flex:1" />
+          <span id="set-alsize-val" style="${valCss}">${prefs.alertScale}%</span></div></div>
+      <div class="set-row"><div><div class="lab">알림 표기 시간</div><div class="desc">${prefs.alertSec === 0 ? "확인할 때까지 유지" : prefs.alertSec + "초 후 자동으로 닫힘"} (0=계속)</div></div>
+        <div style="${sliderCss}">
+          <input type="range" id="set-alsec" min="0" max="60" step="5" value="${prefs.alertSec}" style="flex:1" />
+          <span id="set-alsec-val" style="${valCss}">${prefs.alertSec === 0 ? "계속" : prefs.alertSec + "초"}</span></div></div>
+      <div class="set-row"><div><div class="lab">알림 팝업 미리보기</div><div class="desc">현재 설정으로 팝업 예시를 확인합니다</div></div>
+        <button class="btn-sub" id="set-alert-demo">예시 보기</button></div>
+    </div>
+
+    <p class="panel-title" style="margin-top:20px">일반</p>
+    <div class="set-group">
       <div class="set-row"><div><div class="lab">오늘 할 일 고정 (항상 위)</div><div class="desc">${pipSupported() ? "별도 창으로 항상 화면 최상단에 띄웁니다" : "이 브라우저는 항상-위 창을 지원하지 않아 앱 내부 위젯으로 표시됩니다"}</div></div>
         <button class="switch ${pinState.open ? "on" : ""}" id="set-pin"></button></div>
       <div class="set-row"><div><div class="lab">캘린더 기본 보기</div><div class="desc">월~일(주간) / 월~금(작업주간)</div></div>
         <div class="seg"><button class="${!ui.workweek ? "active" : ""}" data-ww="0">월~일</button><button class="${ui.workweek ? "active" : ""}" data-ww="1">월~금</button></div></div>
-      <div class="set-row"><div><div class="lab">알림 팝업 미리보기</div><div class="desc">알림이 뜰 때 나타나는 팝업 예시를 확인합니다</div></div>
-        <button class="btn-sub" id="set-alert-demo">예시 보기</button></div>
     </div>
+
     <p class="panel-title" style="margin-top:20px">데이터 (이 기기에 저장됨)</p>
     <div class="set-group">
       <div class="set-row"><div><div class="lab">백업 내보내기</div><div class="desc">일정·할 일을 JSON 파일로 저장</div></div><button class="btn-sub" id="set-export">내보내기</button></div>
@@ -1150,7 +1223,7 @@ function toast(msg) {
 
 /* ---------- 테마 ---------- */
 function currentDark() { const a = document.documentElement.getAttribute("data-theme"); return a ? a === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches; }
-function setTheme(dark) { document.documentElement.setAttribute("data-theme", dark ? "dark" : "light"); try { localStorage.setItem("scheduler:theme", dark ? "dark" : "light"); } catch (e) {} updateThemeIcon(); }
+function setTheme(dark) { document.documentElement.setAttribute("data-theme", dark ? "dark" : "light"); try { localStorage.setItem("scheduler:theme", dark ? "dark" : "light"); } catch (e) {} updateThemeIcon(); if (typeof applyThemeColors === "function") applyThemeColors(); }
 function updateThemeIcon() {
   document.getElementById("theme-icon").innerHTML = currentDark()
     ? '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'
@@ -1166,6 +1239,57 @@ function applyFontSize(px) {
   // 앱 전체를 기준(14px) 대비 배율로 확대/축소
   document.body.style.zoom = (fontSize / 14).toFixed(4);
 }
+
+/* ---------- 위젯 설정: 테마 색상 · 투명도 · 대비 · 세부 글자크기 · 알림 ---------- */
+const THEMES = {
+  cream:    { name: "기본", dot: "#EAE6DC", bg: "#F4F1EA", surface: "#FFFDF8", s2: "#EFEBE1", s3: "#E6E1D4", work: "#2F5D62" },
+  white:    { name: "화이트", dot: "#FFFFFF", bg: "#F3F4F6", surface: "#FFFFFF", s2: "#EDEEF1", s3: "#E3E5E9", work: "#3A4048" },
+  pink:     { name: "핑크", dot: "#EFA9BE", bg: "#FBEEF3", surface: "#FFF7FA", s2: "#F6E3EB", s3: "#EFD3DF", work: "#C25B7E" },
+  sky:      { name: "하늘색", dot: "#8FC0EA", bg: "#EAF1FB", surface: "#F6FAFF", s2: "#DEE9F7", s3: "#CDDDF1", work: "#3E77B5" },
+  mint:     { name: "민트", dot: "#8CCBAE", bg: "#E8F5EE", surface: "#F4FBF7", s2: "#DAEEE3", s3: "#C9E6D5", work: "#2F8F6B" },
+  lavender: { name: "라벤더", dot: "#B3A6E3", bg: "#F0ECFA", surface: "#F9F6FF", s2: "#E5DEF6", s3: "#D7CDEF", work: "#6E5FB0" },
+};
+const prefs = { paper: true, theme: "cream", panelOp: 100, contrast: "auto", calScale: 100, alertScale: 100, alertSec: 0 };
+function loadPrefs() {
+  try {
+    const p = JSON.parse(localStorage.getItem("scheduler:prefs") || "{}");
+    if (typeof p.paper === "boolean") prefs.paper = p.paper;
+    if (p.theme && THEMES[p.theme]) prefs.theme = p.theme;
+    if (Number.isFinite(p.panelOp)) prefs.panelOp = Math.max(60, Math.min(100, p.panelOp));
+    if (p.contrast === "strong" || p.contrast === "auto") prefs.contrast = p.contrast;
+    if (Number.isFinite(p.calScale)) prefs.calScale = Math.max(70, Math.min(150, p.calScale));
+    if (Number.isFinite(p.alertScale)) prefs.alertScale = Math.max(70, Math.min(160, p.alertScale));
+    if (Number.isFinite(p.alertSec)) prefs.alertSec = Math.max(0, Math.min(120, p.alertSec));
+  } catch (e) {}
+}
+function savePrefs() { try { localStorage.setItem("scheduler:prefs", JSON.stringify(prefs)); } catch (e) {} }
+function applyThemeColors() {
+  const t = THEMES[prefs.theme] || THEMES.cream;
+  const el = document.documentElement;
+  const dark = currentDark();
+  const base = dark ? "#1c1f22" : "#ffffff";
+  el.style.setProperty("--work", t.work);
+  el.style.setProperty("--work-soft", `color-mix(in srgb, ${t.work} 12%, ${base})`);
+  el.style.setProperty("--work-line", `color-mix(in srgb, ${t.work} 30%, ${base})`);
+  if (!dark) {
+    el.style.setProperty("--bg", t.bg);
+    el.style.setProperty("--surface", t.surface);
+    el.style.setProperty("--surface-2", t.s2);
+    el.style.setProperty("--surface-3", t.s3);
+  } else {
+    ["--bg", "--surface", "--surface-2", "--surface-3"].forEach((v) => el.style.removeProperty(v));
+  }
+}
+function applyPrefs() {
+  document.body.classList.toggle("no-paper", !prefs.paper);
+  document.body.classList.toggle("contrast-strong", prefs.contrast === "strong");
+  const el = document.documentElement;
+  el.style.setProperty("--panel-op", prefs.panelOp + "%");
+  el.style.setProperty("--cal-scale", (prefs.calScale / 100).toFixed(3));
+  el.style.setProperty("--alert-scale", (prefs.alertScale / 100).toFixed(3));
+  applyThemeColors();
+}
+function setPref(key, val) { prefs[key] = val; savePrefs(); applyPrefs(); }
 
 /* ---------- 알림 (지속형 팝업 + 브라우저 Notification 백업) ---------- */
 let reminderTimers = [];
@@ -1217,6 +1341,7 @@ function showAlertCard(e, key) {
   const host = stacks[0];
   const card = document.createElement("div");
   card.className = "alert-card";
+  if (prefs.alertScale && prefs.alertScale !== 100) card.style.zoom = (prefs.alertScale / 100).toFixed(3);
   card.innerHTML = `<div class="ac-head"><span class="ac-badge">${IC.bell}알림</span><span class="ac-time">${esc(evTimeText(e))}</span></div>
     <div class="ac-title">${esc(e.title)}</div>${e.location ? `<div class="ac-loc">${esc(e.location)}</div>` : ""}
     <div class="ac-actions"><button data-a="ok" class="ac-ok">확인</button><button data-a="30">30분 뒤</button><button data-a="60">1시간 뒤</button></div>`;
@@ -1231,6 +1356,10 @@ function showAlertCard(e, key) {
     }
   });
   host.appendChild(card);
+  // 표기 시간(초)이 설정되어 있으면 자동으로 닫힘 (0 = 확인 전까지 유지)
+  if (prefs.alertSec && prefs.alertSec > 0) {
+    setTimeout(() => { if (card.isConnected) card.remove(); }, prefs.alertSec * 1000);
+  }
 }
 
 /* ---------- 백업 ---------- */
@@ -1469,7 +1598,12 @@ function wireGlobal() {
   document.getElementById("add-btn").addEventListener("click", () => openModal(ui.view === "todo" ? "todo" : "event", { cat: ui.cat === "personal" ? "personal" : "work" }));
   document.getElementById("search").addEventListener("input", (e) => { ui.search = e.target.value; render(); });
   document.querySelector(".app").addEventListener("input", (e) => {
-    if (e.target.id === "set-fs") { applyFontSize(parseInt(e.target.value, 10)); const l = document.getElementById("set-fs-val"); if (l) l.textContent = fontSize + "px"; }
+    const id = e.target.id; const v = parseInt(e.target.value, 10);
+    if (id === "set-fs") { applyFontSize(v); const l = document.getElementById("set-fs-val"); if (l) l.textContent = fontSize + "px"; }
+    else if (id === "set-op") { setPref("panelOp", v); const l = document.getElementById("set-op-val"); if (l) l.textContent = v + "%"; }
+    else if (id === "set-cal") { setPref("calScale", v); const l = document.getElementById("set-cal-val"); if (l) l.textContent = v + "%"; }
+    else if (id === "set-alsize") { setPref("alertScale", v); const l = document.getElementById("set-alsize-val"); if (l) l.textContent = v + "%"; }
+    else if (id === "set-alsec") { setPref("alertSec", v); const l = document.getElementById("set-alsec-val"); if (l) l.textContent = v === 0 ? "계속" : v + "초"; }
   });
   document.getElementById("theme-btn").addEventListener("click", () => setTheme(!currentDark()));
   document.getElementById("modal-backdrop").addEventListener("click", (e) => { if (e.target.id === "modal-backdrop") closeModal(); });
@@ -1482,7 +1616,7 @@ function wireGlobal() {
 
   document.addEventListener("click", (e) => {
     if (e.target.closest("#timepop") || e.target.closest(".pin-widget")) return; // 별도 핸들러 처리
-    const t = e.target.closest("[data-cat],[data-todo-filter],[data-toggle],[data-ev-toggle],[data-edit-event],[data-del-event],[data-edit-todo],[data-del-todo],[data-ww],[data-dash-toggle],#dash-collapse,#wk-prev,#wk-next,#wk-today,#roll-desktop,#roll-mobile,#set-theme,#set-pin,#set-export,#set-import,#set-clear,#set-alert-demo,#set-close");
+    const t = e.target.closest("[data-cat],[data-todo-filter],[data-toggle],[data-ev-toggle],[data-edit-event],[data-del-event],[data-edit-todo],[data-del-todo],[data-ww],[data-dash-toggle],#dash-collapse,#wk-prev,#wk-next,#wk-today,#roll-desktop,#roll-mobile,#set-theme,#set-pin,#set-export,#set-import,#set-clear,#set-alert-demo,#set-close,#set-paper,[data-theme-key],[data-contrast]");
     if (!t) return;
     if (t.dataset.evToggle) { Store.toggleEvent(t.dataset.evToggle); return; }
     if (t.dataset.dashToggle) { ui.dashExp[t.dataset.dashToggle] = !ui.dashExp[t.dataset.dashToggle]; saveUI(); render(); return; }
@@ -1501,6 +1635,9 @@ function wireGlobal() {
     if (t.id === "wk-next") { ui.weekRef = addDays(ui.weekRef, 7); render(); return; }
     if (t.id === "wk-today") { ui.weekRef = startOfWeek(new Date()); render(); return; }
     if (t.id === "roll-desktop" || t.id === "roll-mobile") { const n = Store.rollover(); toast(n ? `${n}건을 오늘로 이월했습니다` : "이월할 업무가 없습니다"); return; }
+    if (t.dataset.themeKey) { setPref("theme", t.dataset.themeKey); render(); return; }
+    if (t.dataset.contrast) { setPref("contrast", t.dataset.contrast); render(); return; }
+    if (t.id === "set-paper") { setPref("paper", !prefs.paper); render(); return; }
     if (t.id === "set-theme") { setTheme(!currentDark()); render(); return; }
     if (t.id === "set-pin") { togglePin(); render(); return; }
     if (t.id === "set-export") { exportData(); return; }
@@ -1540,6 +1677,7 @@ function wireGlobal() {
   try { const th = localStorage.getItem("scheduler:theme"); if (th) document.documentElement.setAttribute("data-theme", th); } catch (e) {}
   updateThemeIcon();
   loadUI(); loadPin(); loadFS(); applyFontSize(fontSize);
+  loadPrefs(); applyPrefs();                           // 위젯 설정(테마/투명도/대비/세부 글자/알림)
   Store.subscribe(render); Store.load();
   Store.purgeOld();                                   // 완료 후 1주일 지난 항목 자동 삭제
   Store.autoCarry();                                  // 어제까지 미완료 항목을 오늘로 이월(D+N)
