@@ -70,14 +70,20 @@
     font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;
     display:flex; flex-direction:column; min-height:100%;
   }
-  /* ---------- 종이 질감 배경 ---------- */
+  /* ---------- 종이 질감 배경 (구겨진 종이) ----------
+     두 개의 고정 레이어로 "구겨진 종이에 인쇄한" 느낌을 냄:
+     - #paper      : 콘텐츠 뒤(배경). 종이색 위에 구김 음영
+     - #paper-top  : 콘텐츠 위(z-50, 클릭통과). 구김 주름이 카드 위까지 가로지름 */
   #paper{position:fixed; inset:0; z-index:-1; pointer-events:none; background-color:var(--bg);}
-  #paper::after{
-    content:""; position:absolute; inset:0;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.018' numOctaves='5' seed='4' result='t'/%3E%3CfeDiffuseLighting in='t' surfaceScale='2.2' diffuseConstant='1.1' lighting-color='white' result='d'%3E%3CfeDistantLight azimuth='235' elevation='55'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='600' height='600' filter='url(%23c)'/%3E%3C/svg%3E");
-    background-size:460px 460px; mix-blend-mode:soft-light; opacity:1;
+  #paper::after, #paper-top{
+    content:""; position:fixed; inset:0; pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1000' height='1000'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.006 0.007' numOctaves='6' seed='11' result='t'/%3E%3CfeDiffuseLighting in='t' surfaceScale='6' diffuseConstant='1.2' lighting-color='white' result='d'%3E%3CfeDistantLight azimuth='235' elevation='40'/%3E%3C/feDiffuseLighting%3E%3CfeColorMatrix in='d' type='saturate' values='0' result='g'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='2.2' intercept='-0.6'/%3E%3CfeFuncG type='linear' slope='2.2' intercept='-0.6'/%3E%3CfeFuncB type='linear' slope='2.2' intercept='-0.6'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='1000' height='1000' filter='url(%23c)'/%3E%3C/svg%3E");
+    background-size:900px 900px; background-position:center; background-repeat:repeat;
+    mix-blend-mode:soft-light;
   }
-  body.no-paper #paper::after{display:none;}
+  #paper::after{opacity:1;}
+  #paper-top{z-index:50; opacity:.92;}
+  body.no-paper #paper::after, body.no-paper #paper-top{display:none;}
   /* ---------- 배경 투명도: 주요 패널이 종이 배경을 비침 (높은 우선순위) ---------- */
   body .topbar, body .set-group, body .week-grid, body .pin-widget, body .modal{
     background-color:color-mix(in srgb, var(--surface) var(--panel-op), transparent);
@@ -502,6 +508,7 @@
 </head>
 <body>
   <div id="paper"></div>
+  <div id="paper-top"></div>
   <!-- 상단 한 행 통합 바 -->
   <div class="topbar">
     <div class="week-nav" id="tabbar-cal"></div>
@@ -573,7 +580,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-26 · 종이질감 배경·테마색상/투명도/대비/세부글자·알림 설정";
+const APP_VERSION = "2026-09-26 · 구겨진 종이질감 강화(카드 위까지 주름)·위젯 설정";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
