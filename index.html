@@ -109,6 +109,31 @@
   body.paper-excel .cal-chip, body.paper-excel .evt.timed{border-radius:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   /* 엑셀 테마에서 캘린더 내부 세로 스크롤바 자리 확보용 셀 정렬 */
   body.paper-excel .week-grid .band-cell{justify-content:flex-start;}
+
+  /* ========== 배경 테마를 캘린더/목록에 자연스럽게 통합 ========== */
+  /* 캘린더는 자기 격자를 테마 색으로 칠해 '그 종이 위에 그린' 느낌 (이중격자 방지 위해 불투명) */
+  body:is(.paper-grid,.paper-ruled,.paper-dot,.paper-excel) .week-grid{background-color:var(--surface);}
+  body.paper-grid .week-grid :is(.cell,.head,.band-cell,.corner,.hourlabel,.band-label),
+  body.paper-dot  .week-grid :is(.cell,.head,.band-cell,.corner,.hourlabel,.band-label){border-color:var(--pp-line);}
+  body.paper-ruled .week-grid :is(.cell,.hourlabel){border-top-color:var(--pp-rule);}
+  body.paper-ruled .week-grid :is(.cell,.band-cell,.head){border-left-color:transparent;}
+  /* 목록(오늘/할일): 배경 종이가 자연스럽게 비치도록 카드 살짝 투명 (엑셀 제외) */
+  body:is(.paper-grid,.paper-ruled,.paper-dot) .agenda .row-item{background-color:color-mix(in srgb, var(--surface) 55%, transparent);}
+  body:is(.paper-grid,.paper-ruled,.paper-dot) .agenda .row-item.pri-urgent{background-color:color-mix(in srgb, var(--pri-urgent) 62%, transparent);}
+  body:is(.paper-grid,.paper-ruled,.paper-dot) .agenda .row-item.pri-high{background-color:color-mix(in srgb, var(--pri-high) 62%, transparent);}
+  body:is(.paper-grid,.paper-ruled,.paper-dot) .agenda .row-item.pri-normal{background-color:color-mix(in srgb, var(--pri-normal) 62%, transparent);}
+
+  /* ========== 엑셀: 진짜 스프레드시트 창처럼 (열 문자 A·B·C + 회색 헤더/거터) ========== */
+  body.paper-excel .week-grid{counter-reset:xcol; background-color:#ffffff;}
+  :root[data-theme="dark"] body.paper-excel .week-grid,
+  html[data-theme="dark"] body.paper-excel .week-grid{background-color:#191b1e;}
+  @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) body.paper-excel .week-grid{background-color:#191b1e;} }
+  body.paper-excel .week-grid .corner{background:var(--xl-head);}
+  body.paper-excel .week-grid .head{background:var(--xl-head); color:var(--xl-head-ink);}
+  body.paper-excel .week-grid .head::before{counter-increment:xcol; content:counter(xcol,upper-latin);
+    display:block; font-size:8px; font-weight:800; letter-spacing:.06em; color:var(--xl-head-ink); opacity:.75; margin-bottom:1px;}
+  body.paper-excel .week-grid .head.today{outline:2px solid #217346; outline-offset:-2px;}
+  body.paper-excel .week-grid .band-label, body.paper-excel .week-grid .hourlabel{background:var(--xl-head); color:var(--xl-head-ink); font-weight:700;}
   /* ---------- 글자 대비 (진하게) ---------- */
   body.contrast-strong{ --text:#0c0e10; --text-soft:#333941; --text-faint:#565c64; }
   :root[data-theme="dark"] body.contrast-strong,
@@ -134,6 +159,14 @@
   .pp.pp-excel{background-image:repeating-linear-gradient(#cdd3d1 0 1px,transparent 1px 6px),repeating-linear-gradient(90deg,#cdd3d1 0 1px,transparent 1px 6px);border-top:5px solid #217346;}
   .pp.pp-dot{background-image:radial-gradient(circle,#c3bca8 1px,transparent 1.4px);background-size:6px 6px;}
   .pp.pp-none{background-image:linear-gradient(135deg,transparent 45%,#c86 46% 54%,transparent 55%);}
+  /* 슬라이더 + 상하(−/+) 미세조정 버튼 */
+  .slider-ctl{display:flex;align-items:center;gap:6px;min-width:190px;}
+  .slider-ctl input[type=range]{flex:1;min-width:56px;}
+  .step-btn{width:30px;height:30px;flex:none;border:1px solid var(--border);background:var(--surface);color:var(--text-soft);
+    border-radius:8px;font-size:17px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;
+    -webkit-user-select:none;user-select:none;touch-action:manipulation;}
+  .step-btn:active{background:var(--surface-2);transform:scale(.94);}
+  .slider-ctl .sval{font-size:12px;font-weight:700;color:var(--text-soft);width:46px;text-align:right;font-variant-numeric:tabular-nums;flex:none;}
   button{font-family:inherit; cursor:pointer;}
   input,select,textarea{font-family:inherit;}
   svg{flex:none;}
@@ -611,7 +644,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-27 · 배경 테마 4종(모눈·유선·엑셀·도트) 설정 + 엑셀 셀 정렬";
+const APP_VERSION = "2026-09-27 · 배경 테마를 캘린더/목록에 통합·엑셀 열문자·슬라이더 ± 버튼";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -901,6 +934,13 @@ function renderSettings() {
   const paperOpts = PAPER_STYLES.map((s) =>
     `<button class="paper-opt ${prefs.paperStyle === s ? "active" : ""}" data-paper="${s}"><span class="pp pp-${s}"></span>${PAPER_LABEL[s]}</button>`
   ).join("");
+  const slider = (id, min, max, step, val, valStr) =>
+    `<div class="slider-ctl">
+      <button class="step-btn" data-step="${id}" data-dir="-1" aria-label="줄이기">−</button>
+      <input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}" />
+      <button class="step-btn" data-step="${id}" data-dir="1" aria-label="늘리기">+</button>
+      <span id="${id}-val" class="sval">${valStr}</span>
+    </div>`;
   return `<div class="view-head" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><h2>설정</h2><button class="btn-sub" id="set-close">닫기</button></div>
 
     <p class="panel-title">화면</p>
@@ -912,9 +952,7 @@ function renderSettings() {
       <div class="set-row" style="align-items:flex-start"><div><div class="lab">테마 색상</div><div class="desc">배경 톤과 강조 색을 선택합니다</div></div></div>
       <div class="swatch-row">${swatches}</div>
       <div class="set-row"><div><div class="lab">배경 투명도</div><div class="desc">패널이 배경을 비추는 정도 (60~100%)</div></div>
-        <div style="${sliderCss}">
-          <input type="range" id="set-op" min="60" max="100" step="1" value="${prefs.panelOp}" style="flex:1" />
-          <span id="set-op-val" style="${valCss}">${prefs.panelOp}%</span></div></div>
+        ${slider("set-op", 60, 100, 1, prefs.panelOp, prefs.panelOp + "%")}</div>
       <div class="set-row"><div><div class="lab">글자 대비</div><div class="desc">배경이 옅을 때 글자를 더 진하게</div></div>
         <div class="seg"><button class="${prefs.contrast === "auto" ? "active" : ""}" data-contrast="auto">자동</button><button class="${prefs.contrast === "strong" ? "active" : ""}" data-contrast="strong">진하게</button></div></div>
     </div>
@@ -922,25 +960,17 @@ function renderSettings() {
     <p class="panel-title" style="margin-top:20px">글자 크기</p>
     <div class="set-group">
       <div class="set-row"><div><div class="lab">기본(전체) 글자 크기</div><div class="desc">앱 전체 텍스트 크기 (5~20)</div></div>
-        <div style="${sliderCss}">
-          <input type="range" id="set-fs" min="5" max="20" step="1" value="${fontSize}" style="flex:1" />
-          <span id="set-fs-val" style="${valCss}">${fontSize}px</span></div></div>
+        ${slider("set-fs", 5, 20, 1, fontSize, fontSize + "px")}</div>
       <div class="set-row"><div><div class="lab">캘린더 글자 크기</div><div class="desc">캘린더만 추가로 확대/축소 (70~150%)</div></div>
-        <div style="${sliderCss}">
-          <input type="range" id="set-cal" min="70" max="150" step="5" value="${prefs.calScale}" style="flex:1" />
-          <span id="set-cal-val" style="${valCss}">${prefs.calScale}%</span></div></div>
+        ${slider("set-cal", 70, 150, 5, prefs.calScale, prefs.calScale + "%")}</div>
     </div>
 
     <p class="panel-title" style="margin-top:20px">알림</p>
     <div class="set-group">
       <div class="set-row"><div><div class="lab">알림창 크기</div><div class="desc">알림 팝업의 크기 (70~160%)</div></div>
-        <div style="${sliderCss}">
-          <input type="range" id="set-alsize" min="70" max="160" step="5" value="${prefs.alertScale}" style="flex:1" />
-          <span id="set-alsize-val" style="${valCss}">${prefs.alertScale}%</span></div></div>
+        ${slider("set-alsize", 70, 160, 5, prefs.alertScale, prefs.alertScale + "%")}</div>
       <div class="set-row"><div><div class="lab">알림 표기 시간</div><div class="desc">${prefs.alertSec === 0 ? "확인할 때까지 유지" : prefs.alertSec + "초 후 자동으로 닫힘"} (0=계속)</div></div>
-        <div style="${sliderCss}">
-          <input type="range" id="set-alsec" min="0" max="60" step="5" value="${prefs.alertSec}" style="flex:1" />
-          <span id="set-alsec-val" style="${valCss}">${prefs.alertSec === 0 ? "계속" : prefs.alertSec + "초"}</span></div></div>
+        ${slider("set-alsec", 0, 60, 5, prefs.alertSec, prefs.alertSec === 0 ? "계속" : prefs.alertSec + "초")}</div>
       <div class="set-row"><div><div class="lab">알림 팝업 미리보기</div><div class="desc">현재 설정으로 팝업 예시를 확인합니다</div></div>
         <button class="btn-sub" id="set-alert-demo">예시 보기</button></div>
     </div>
@@ -1660,7 +1690,7 @@ function wireGlobal() {
 
   document.addEventListener("click", (e) => {
     if (e.target.closest("#timepop") || e.target.closest(".pin-widget")) return; // 별도 핸들러 처리
-    const t = e.target.closest("[data-cat],[data-todo-filter],[data-toggle],[data-ev-toggle],[data-edit-event],[data-del-event],[data-edit-todo],[data-del-todo],[data-ww],[data-dash-toggle],#dash-collapse,#wk-prev,#wk-next,#wk-today,#roll-desktop,#roll-mobile,#set-theme,#set-pin,#set-export,#set-import,#set-clear,#set-alert-demo,#set-close,[data-paper],[data-theme-key],[data-contrast]");
+    const t = e.target.closest("[data-cat],[data-todo-filter],[data-toggle],[data-ev-toggle],[data-edit-event],[data-del-event],[data-edit-todo],[data-del-todo],[data-ww],[data-dash-toggle],#dash-collapse,#wk-prev,#wk-next,#wk-today,#roll-desktop,#roll-mobile,#set-theme,#set-pin,#set-export,#set-import,#set-clear,#set-alert-demo,#set-close,[data-paper],[data-theme-key],[data-contrast],[data-step]");
     if (!t) return;
     if (t.dataset.evToggle) { Store.toggleEvent(t.dataset.evToggle); return; }
     if (t.dataset.dashToggle) { ui.dashExp[t.dataset.dashToggle] = !ui.dashExp[t.dataset.dashToggle]; saveUI(); render(); return; }
@@ -1681,6 +1711,18 @@ function wireGlobal() {
     if (t.id === "roll-desktop" || t.id === "roll-mobile") { const n = Store.rollover(); toast(n ? `${n}건을 오늘로 이월했습니다` : "이월할 업무가 없습니다"); return; }
     if (t.dataset.themeKey) { setPref("theme", t.dataset.themeKey); render(); return; }
     if (t.dataset.contrast) { setPref("contrast", t.dataset.contrast); render(); return; }
+    if (t.dataset.step) {
+      const inp = document.getElementById(t.dataset.step);
+      if (inp) {
+        const step = parseFloat(inp.step) || 1;
+        const dir = parseInt(t.dataset.dir, 10) || 1;
+        let v = (parseFloat(inp.value) || 0) + dir * step;
+        v = Math.max(parseFloat(inp.min), Math.min(parseFloat(inp.max), v));
+        inp.value = v;
+        inp.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+      return;
+    }
     if (t.dataset.paper) { setPref("paperStyle", t.dataset.paper); render(); return; }
     if (t.id === "set-theme") { setTheme(!currentDark()); render(); return; }
     if (t.id === "set-pin") { togglePin(); render(); return; }
