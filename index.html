@@ -70,24 +70,45 @@
     font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;
     display:flex; flex-direction:column; min-height:100%;
   }
-  /* ---------- 종이 질감 배경 (구겨진 종이) ----------
-     두 개의 고정 레이어로 "구겨진 종이에 인쇄한" 느낌을 냄:
-     - #paper      : 콘텐츠 뒤(배경). 종이색 위에 구김 음영
-     - #paper-top  : 콘텐츠 위(z-50, 클릭통과). 구김 주름이 카드 위까지 가로지름 */
-  #paper{position:fixed; inset:0; z-index:-1; pointer-events:none; background-color:var(--bg);}
-  #paper::after, #paper-top{
-    content:""; position:fixed; inset:0; pointer-events:none;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1000' height='1000'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.006 0.007' numOctaves='6' seed='11' result='t'/%3E%3CfeDiffuseLighting in='t' surfaceScale='6' diffuseConstant='1.2' lighting-color='white' result='d'%3E%3CfeDistantLight azimuth='235' elevation='40'/%3E%3C/feDiffuseLighting%3E%3CfeColorMatrix in='d' type='saturate' values='0' result='g'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='2.2' intercept='-0.6'/%3E%3CfeFuncG type='linear' slope='2.2' intercept='-0.6'/%3E%3CfeFuncB type='linear' slope='2.2' intercept='-0.6'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='1000' height='1000' filter='url(%23c)'/%3E%3C/svg%3E");
-    background-size:900px 900px; background-position:center; background-repeat:repeat;
-    mix-blend-mode:soft-light;
+  /* ---------- 배경 테마 (종이/엑셀): 선·격자 기반이라 휴대폰에서도 확실히 표시 ---------- */
+  :root{
+    --pp-line:#d3d8e2; --pp-rule:#e2dac6; --pp-dot:#cbc4b4; --xl-line:#dadde1;
+    --xl-head:#e8f2ec; --xl-head-line:#c8dfd1; --xl-head-ink:#1c6b3f;
   }
-  #paper::after{opacity:1;}
-  #paper-top{z-index:50; opacity:.92;}
-  body.no-paper #paper::after, body.no-paper #paper-top{display:none;}
-  /* ---------- 배경 투명도: 주요 패널이 종이 배경을 비침 (높은 우선순위) ---------- */
-  body .topbar, body .set-group, body .week-grid, body .pin-widget, body .modal{
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+    --pp-line:#2f333b; --pp-rule:#332f28; --pp-dot:#39342b; --xl-line:#2e3138;
+    --xl-head:#18241d; --xl-head-line:#284433; --xl-head-ink:#7fb3a6;
+  }}
+  :root[data-theme="dark"]{
+    --pp-line:#2f333b; --pp-rule:#332f28; --pp-dot:#39342b; --xl-line:#2e3138;
+    --xl-head:#18241d; --xl-head-line:#284433; --xl-head-ink:#7fb3a6;
+  }
+  #paper{position:fixed; inset:0; z-index:-1; pointer-events:none; background-color:var(--bg); background-attachment:fixed;}
+  body.paper-grid  #paper{background-image:repeating-linear-gradient(var(--pp-line) 0 1px,transparent 1px 24px),repeating-linear-gradient(90deg,var(--pp-line) 0 1px,transparent 1px 24px);}
+  body.paper-ruled #paper{background-image:repeating-linear-gradient(var(--pp-rule) 0 1px,transparent 1px 30px);}
+  body.paper-excel #paper{background-image:repeating-linear-gradient(var(--xl-line) 0 1px,transparent 1px 26px),repeating-linear-gradient(90deg,var(--xl-line) 0 1px,transparent 1px 26px);}
+  body.paper-dot   #paper{background-image:radial-gradient(circle,var(--pp-dot) 1.2px,transparent 1.6px); background-size:20px 20px;}
+  /* ---------- 배경 투명도: 주요 패널이 배경 종이를 비침 (높은 우선순위) ---------- */
+  body .topbar, body .set-group, body .week-grid, body .pin-widget, body .modal, body .row-item{
     background-color:color-mix(in srgb, var(--surface) var(--panel-op), transparent);
   }
+  /* ---------- ③ 엑셀 그리드: 셀 안에 글자가 딱 맞게 들어가도록 ---------- */
+  body.paper-excel .agenda{gap:0;}
+  body.paper-excel .panel-title{background:var(--xl-head); border:1px solid var(--xl-head-line); color:var(--xl-head-ink);
+    padding:6px 11px; margin:0; border-radius:5px 5px 0 0; font-weight:800; letter-spacing:0;}
+  body.paper-excel .agenda .row-item{border-radius:0; border-color:var(--xl-line); margin-top:-1px; min-height:44px; box-shadow:none;}
+  body.paper-excel .agenda .row-item:first-child{border-top-color:var(--xl-head-line);}
+  body.paper-excel .row-item{align-items:center;}
+  body.paper-excel .row-item .body{min-width:0;}
+  body.paper-excel .row-item .title{white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  body.paper-excel .row-item .place{white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  body.paper-excel .topbar{border-bottom:2px solid var(--xl-head-line);}
+  body.paper-excel .week-grid .cell, body.paper-excel .week-grid .band-cell,
+  body.paper-excel .week-grid .head, body.paper-excel .week-grid .corner,
+  body.paper-excel .week-grid .hourlabel{border-color:var(--xl-line);}
+  body.paper-excel .cal-chip, body.paper-excel .evt.timed{border-radius:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  /* 엑셀 테마에서 캘린더 내부 세로 스크롤바 자리 확보용 셀 정렬 */
+  body.paper-excel .week-grid .band-cell{justify-content:flex-start;}
   /* ---------- 글자 대비 (진하게) ---------- */
   body.contrast-strong{ --text:#0c0e10; --text-soft:#333941; --text-faint:#565c64; }
   :root[data-theme="dark"] body.contrast-strong,
@@ -102,6 +123,17 @@
   .swatch{width:34px;height:34px;border-radius:50%;border:2px solid var(--border);position:relative;padding:0;flex:none;box-shadow:inset 0 1px 2px rgba(0,0,0,.08);}
   .swatch.active{border-color:var(--text);box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--work);}
   .swatch .rim{position:absolute;left:3px;bottom:3px;width:11px;height:11px;border-radius:50%;}
+  /* 배경 테마 선택 */
+  .paper-seg{display:flex;flex-wrap:wrap;gap:8px;padding:12px 14px;}
+  .paper-opt{display:flex;align-items:center;gap:8px;border:1.5px solid var(--border);background:var(--surface);
+    border-radius:11px;padding:6px 12px 6px 6px;font-size:12.5px;font-weight:700;color:var(--text-soft);}
+  .paper-opt.active{border-color:var(--work);color:var(--text);box-shadow:0 0 0 1px var(--work);}
+  .paper-opt .pp{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background-color:var(--surface-2);flex:none;overflow:hidden;}
+  .pp.pp-grid{background-image:repeating-linear-gradient(#c9d2e0 0 1px,transparent 1px 6px),repeating-linear-gradient(90deg,#c9d2e0 0 1px,transparent 1px 6px);}
+  .pp.pp-ruled{background-color:#faf5e7;background-image:repeating-linear-gradient(#e0d3b3 0 1px,transparent 1px 7px);}
+  .pp.pp-excel{background-image:repeating-linear-gradient(#cdd3d1 0 1px,transparent 1px 6px),repeating-linear-gradient(90deg,#cdd3d1 0 1px,transparent 1px 6px);border-top:5px solid #217346;}
+  .pp.pp-dot{background-image:radial-gradient(circle,#c3bca8 1px,transparent 1.4px);background-size:6px 6px;}
+  .pp.pp-none{background-image:linear-gradient(135deg,transparent 45%,#c86 46% 54%,transparent 55%);}
   button{font-family:inherit; cursor:pointer;}
   input,select,textarea{font-family:inherit;}
   svg{flex:none;}
@@ -508,7 +540,6 @@
 </head>
 <body>
   <div id="paper"></div>
-  <div id="paper-top"></div>
   <!-- 상단 한 행 통합 바 -->
   <div class="topbar">
     <div class="week-nav" id="tabbar-cal"></div>
@@ -580,7 +611,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-26 · 구겨진 종이질감 강화(카드 위까지 주름)·위젯 설정";
+const APP_VERSION = "2026-09-27 · 배경 테마 4종(모눈·유선·엑셀·도트) 설정 + 엑셀 셀 정렬";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -867,14 +898,17 @@ function renderSettings() {
     const t = THEMES[k];
     return `<button class="swatch ${prefs.theme === k ? "active" : ""}" data-theme-key="${k}" title="${t.name}" style="background:${t.dot}"><span class="rim" style="background:${t.work}"></span></button>`;
   }).join("");
+  const paperOpts = PAPER_STYLES.map((s) =>
+    `<button class="paper-opt ${prefs.paperStyle === s ? "active" : ""}" data-paper="${s}"><span class="pp pp-${s}"></span>${PAPER_LABEL[s]}</button>`
+  ).join("");
   return `<div class="view-head" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><h2>설정</h2><button class="btn-sub" id="set-close">닫기</button></div>
 
     <p class="panel-title">화면</p>
     <div class="set-group">
       <div class="set-row"><div><div class="lab">다크 모드</div><div class="desc">화면 테마를 전환합니다</div></div>
         <button class="switch ${dark ? "on" : ""}" id="set-theme"></button></div>
-      <div class="set-row"><div><div class="lab">종이 질감 배경</div><div class="desc">부드러운 종이 질감을 배경에 입힙니다</div></div>
-        <button class="switch ${prefs.paper ? "on" : ""}" id="set-paper"></button></div>
+      <div class="set-row" style="align-items:flex-start"><div><div class="lab">배경 테마</div><div class="desc">모눈·유선·엑셀·도트 종이 (선 기반, 휴대폰에서도 표시)</div></div></div>
+      <div class="paper-seg">${paperOpts}</div>
       <div class="set-row" style="align-items:flex-start"><div><div class="lab">테마 색상</div><div class="desc">배경 톤과 강조 색을 선택합니다</div></div></div>
       <div class="swatch-row">${swatches}</div>
       <div class="set-row"><div><div class="lab">배경 투명도</div><div class="desc">패널이 배경을 비추는 정도 (60~100%)</div></div>
@@ -1256,11 +1290,14 @@ const THEMES = {
   mint:     { name: "민트", dot: "#8CCBAE", bg: "#E8F5EE", surface: "#F4FBF7", s2: "#DAEEE3", s3: "#C9E6D5", work: "#2F8F6B" },
   lavender: { name: "라벤더", dot: "#B3A6E3", bg: "#F0ECFA", surface: "#F9F6FF", s2: "#E5DEF6", s3: "#D7CDEF", work: "#6E5FB0" },
 };
-const prefs = { paper: true, theme: "cream", panelOp: 100, contrast: "auto", calScale: 100, alertScale: 100, alertSec: 0 };
+const PAPER_STYLES = ["none", "grid", "ruled", "excel", "dot"];
+const PAPER_LABEL = { none: "없음", grid: "모눈", ruled: "유선", excel: "엑셀", dot: "도트" };
+const prefs = { paperStyle: "grid", theme: "cream", panelOp: 92, contrast: "auto", calScale: 100, alertScale: 100, alertSec: 0 };
 function loadPrefs() {
   try {
     const p = JSON.parse(localStorage.getItem("scheduler:prefs") || "{}");
-    if (typeof p.paper === "boolean") prefs.paper = p.paper;
+    if (PAPER_STYLES.includes(p.paperStyle)) prefs.paperStyle = p.paperStyle;
+    else if (typeof p.paper === "boolean") prefs.paperStyle = p.paper ? "grid" : "none"; // 구버전 호환
     if (p.theme && THEMES[p.theme]) prefs.theme = p.theme;
     if (Number.isFinite(p.panelOp)) prefs.panelOp = Math.max(60, Math.min(100, p.panelOp));
     if (p.contrast === "strong" || p.contrast === "auto") prefs.contrast = p.contrast;
@@ -1288,7 +1325,7 @@ function applyThemeColors() {
   }
 }
 function applyPrefs() {
-  document.body.classList.toggle("no-paper", !prefs.paper);
+  PAPER_STYLES.forEach((s) => document.body.classList.toggle("paper-" + s, prefs.paperStyle === s));
   document.body.classList.toggle("contrast-strong", prefs.contrast === "strong");
   const el = document.documentElement;
   el.style.setProperty("--panel-op", prefs.panelOp + "%");
@@ -1623,7 +1660,7 @@ function wireGlobal() {
 
   document.addEventListener("click", (e) => {
     if (e.target.closest("#timepop") || e.target.closest(".pin-widget")) return; // 별도 핸들러 처리
-    const t = e.target.closest("[data-cat],[data-todo-filter],[data-toggle],[data-ev-toggle],[data-edit-event],[data-del-event],[data-edit-todo],[data-del-todo],[data-ww],[data-dash-toggle],#dash-collapse,#wk-prev,#wk-next,#wk-today,#roll-desktop,#roll-mobile,#set-theme,#set-pin,#set-export,#set-import,#set-clear,#set-alert-demo,#set-close,#set-paper,[data-theme-key],[data-contrast]");
+    const t = e.target.closest("[data-cat],[data-todo-filter],[data-toggle],[data-ev-toggle],[data-edit-event],[data-del-event],[data-edit-todo],[data-del-todo],[data-ww],[data-dash-toggle],#dash-collapse,#wk-prev,#wk-next,#wk-today,#roll-desktop,#roll-mobile,#set-theme,#set-pin,#set-export,#set-import,#set-clear,#set-alert-demo,#set-close,[data-paper],[data-theme-key],[data-contrast]");
     if (!t) return;
     if (t.dataset.evToggle) { Store.toggleEvent(t.dataset.evToggle); return; }
     if (t.dataset.dashToggle) { ui.dashExp[t.dataset.dashToggle] = !ui.dashExp[t.dataset.dashToggle]; saveUI(); render(); return; }
@@ -1644,7 +1681,7 @@ function wireGlobal() {
     if (t.id === "roll-desktop" || t.id === "roll-mobile") { const n = Store.rollover(); toast(n ? `${n}건을 오늘로 이월했습니다` : "이월할 업무가 없습니다"); return; }
     if (t.dataset.themeKey) { setPref("theme", t.dataset.themeKey); render(); return; }
     if (t.dataset.contrast) { setPref("contrast", t.dataset.contrast); render(); return; }
-    if (t.id === "set-paper") { setPref("paper", !prefs.paper); render(); return; }
+    if (t.dataset.paper) { setPref("paperStyle", t.dataset.paper); render(); return; }
     if (t.id === "set-theme") { setTheme(!currentDark()); render(); return; }
     if (t.id === "set-pin") { togglePin(); render(); return; }
     if (t.id === "set-export") { exportData(); return; }
