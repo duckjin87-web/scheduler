@@ -819,7 +819,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-28 · 완료 프로젝트 캘린더 숨김·단계 바로 수정·색상 10색+직접 선택";
+const APP_VERSION = "2026-09-28 · 프로젝트 추가 창에서 바로 완료";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1593,7 +1593,7 @@ function renderModal(kind, data, cat, isEdit) {
           ${timeInput("np-time", "", "시간")}
           <button type="button" class="np-add" id="np-add" aria-label="단계 추가">＋</button>
         </div>
-        <div class="pj-hint">시간을 넣으면 <b>일정</b>, 비우면 <b>할 일</b>로 만들어져요. 만든 뒤에도 프로젝트 창에서 단계를 더 추가할 수 있어요.</div>
+        <div class="pj-hint">시간을 넣으면 <b>일정</b>, 비우면 <b>할 일</b>로 만들어져요. 추가한 뒤에도 프로젝트 탭이나 캘린더의 프로젝트 막대를 눌러 단계를 더 넣을 수 있어요.</div>
       </div>`;
   } else if (kind === "event") {
     const allDay = !!data.allDay;
@@ -1638,7 +1638,7 @@ function renderModal(kind, data, cat, isEdit) {
       </div>
       <div class="field"><label for="f-note">메모</label><textarea id="f-note" placeholder="메모">${esc(data.note || "")}</textarea></div>`;
   }
-  const submitLabel = isEdit ? "저장" : kind === "project" ? "프로젝트 만들기" : "추가";
+  const submitLabel = isEdit ? "저장" : "추가";
   document.getElementById("modal").innerHTML = `
     <h3>${isEdit ? "수정" : "새로 추가"}</h3>
     ${isEdit ? "" : tabs}
@@ -1727,9 +1727,8 @@ function renderModal(kind, data, cat, isEdit) {
         if (x.time) Store.addEvent({ title: x.title, date: x.date, time: x.time, endTime: addMin(x.time, 30), cat: curCat, priority: "normal", reminder: "0", projectId: pid });
         else Store.addTodo({ title: x.title, due: x.date, cat: curCat, priority: "normal", projectId: pid });
       });
-      returnToProject = null; closeModal();
-      openProject(pid);   // 만든 프로젝트 창을 바로 열어 확인·추가
-      toast(steps.length ? `프로젝트를 만들었습니다 — 단계 ${steps.length}개` : "프로젝트를 만들었습니다 — 단계를 추가하세요");
+      returnToProject = null; closeModal();   // 추가 창에서 바로 완료 (프로젝트 창을 따로 띄우지 않음)
+      toast(`'${name}' 프로젝트를 추가했습니다${steps.length ? ` — 단계 ${steps.length}개` : ""}`);
     });
     setTimeout(() => document.getElementById("p-name").focus(), 30);
     return;
