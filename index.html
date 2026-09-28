@@ -694,6 +694,19 @@
   .np-cnt{font-size:11px;font-weight:800;color:var(--work);}
   #p-colors{padding-top:4px;gap:5px;flex-wrap:nowrap;}
   #p-colors .pj-sw{width:20px;height:20px;}
+  /* 프로젝트 타임라인 아래 단계 칩 */
+  .pj-cellsteps{grid-row:2;display:flex;flex-direction:column;gap:3px;margin:10px 3px 0;min-width:0;}
+  .pj-chip{display:flex;align-items:center;gap:4px;min-width:0;padding:3px 5px;border-radius:5px;cursor:pointer;
+    font-size:10.5px;font-weight:700;line-height:1.3;border-left:3px solid var(--pc);
+    background:color-mix(in srgb, var(--pc) 11%, var(--surface));color:color-mix(in srgb, var(--pc) 60%, var(--text));}
+  .pj-chip .cal-check{flex:none;}
+  .pj-ct{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pj-ct b{font-weight:800;opacity:.75;font-variant-numeric:tabular-nums;}
+  .pj-chip.done{opacity:.55;} .pj-chip.done .pj-ct{text-decoration:line-through;}
+  .pj-chip.late{border-left-color:var(--urgent);}
+  .pj-cd{flex:none;font-size:9px;font-weight:800;color:#fff;background:var(--urgent);border-radius:4px;padding:0 4px;}
+  .pj-chip.dragging{opacity:.4;}
+  .pin-todo .m .ptag{margin-left:6px;font-size:9.5px;}
 </style>
 </head>
 <body>
@@ -771,7 +784,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-28 · 추가 창 일정/할 일/프로젝트 3탭 + 넓은 2열 배치";
+const APP_VERSION = "2026-09-28 · 프로젝트 단계를 타임라인에 표시·고정 팝업에 프로젝트 태그";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1093,6 +1106,25 @@ function calControlsHtml() {
     </div>`;
 }
 
+// 프로젝트 타임라인 아래에 그 주의 단계(세부 일정)를 날짜 칸별로 표시 — 체크·클릭 수정·드래그 이동 가능
+function laneStepChips(st, wStart, wEnd) {
+  const byCol = {};
+  st.items.filter((x) => x.date && x.date >= wStart && x.date <= wEnd)
+    .forEach((x) => { const c = daysBetween(wStart, x.date) + 1; (byCol[c] = byCol[c] || []).push(x); });
+  return Object.entries(byCol).map(([c, xs]) => `<div class="pj-cellsteps" style="grid-column:${c}">${xs.map((x) => {
+    const late = !x.done && x.rolledFrom;
+    const act = x.kind === "todo"
+      ? `data-drag="todo" data-id="${x.id}" data-edit-todo="${x.id}"`
+      : `data-drag="event" data-id="${x.id}" data-edit-event="${x.id}"`;
+    const ck = x.kind === "todo" ? `data-toggle="${x.id}"` : `data-ev-toggle="${x.id}"`;
+    return `<div class="pj-chip ${x.done ? "done" : ""} ${late ? "late" : ""}" draggable="true" ${act} title="${esc(x.title)}${x.time ? " · " + x.time : ""}">`
+      + `<span class="cal-check ${x.done ? "done" : ""}" ${ck}>${x.done ? IC.check : ""}</span>`
+      + `<span class="pj-ct">${x.time ? `<b>${x.time}</b> ` : ""}${esc(x.title)}</span>`
+      + `${late ? `<span class="pj-cd">D+${daysBetween(x.rolledFrom, todayStr())}</span>` : ""}</div>`;
+  }).join("")}</div>`).join("");
+}
+const inProject = (x) => !!(x.projectId && projectById(x.projectId));
+
 /* ---------- 렌더: 캘린더 (주간 그리드) ---------- */
 function renderCalendar() {
   const nDays = ui.workweek ? 5 : 7;
@@ -1126,15 +1158,16 @@ function renderCalendar() {
         <div class="pj-bar ${contL ? "cont-l" : ""} ${contR ? "cont-r" : ""}" style="grid-column:${si + 1} / ${ei + 2}" data-proj="${p.id}" title="${esc(p.name)} · ${st.done}/${st.total} 완료 — 클릭해서 단계 보기">
           <span class="pj-fill" style="width:${st.pct}%"></span>
           <span class="pj-lab">${contL ? "◀ " : ""}${esc(p.name)} · ${st.pct}%${st.delay ? ` <b class="pj-late">D+${st.delay}</b>` : ""}${contR ? " ▶" : ""}</span>
-        </div>${marks}</div>`;
+        </div>${marks}${laneStepChips(st, wStart, wEnd)}</div>`;
     });
   // 종일/할일 밴드
   grid += `<div class="band-label">종일<br>·할일</div>`;
   week.forEach((d) => {
     const ds = ymd(d);
     const isToday = ds === today;
-    const allday = eventsOn(ds).filter((e) => e.allDay);
-    const todos = visibleTodos().filter((t) => t.due === ds);
+    // 프로젝트 단계는 위 타임라인에 표시되므로 종일·할일 칸에서는 제외
+    const allday = eventsOn(ds).filter((e) => e.allDay && !inProject(e));
+    const todos = visibleTodos().filter((t) => t.due === ds && !inProject(t));
     let cell = `<div class="band-cell ${isToday ? "today-col" : ""}" data-date="${ds}" data-band="1">`;
     // 종일·할일은 최대 3개만 보이고 나머지는 ----+N---- 구분선 뒤로 접음 (완료 항목이 뒤로)
     const chips = [];
@@ -1980,7 +2013,7 @@ function pinItemsHtml() {
     const late = t.rolledFrom ? `<span class="dd">D+${daysBetween(t.rolledFrom, today)}</span>` : (t.due && t.due < today ? `<span class="dd">D+${daysBetween(t.due, today)}</span>` : "");
     return `<div class="pin-todo pri-${t.priority}">
       <div class="box" data-pin-toggle="${t.id}"></div>
-      <div class="pin-tx" data-pin-edit-todo="${t.id}"><div class="t">${late}${esc(t.title)}</div><div class="m">${t.due ? fmtDueMeta(t.due) : "기한 없음"} · ${PRIO[t.priority].label}</div></div>
+      <div class="pin-tx" data-pin-edit-todo="${t.id}"><div class="t">${late}${esc(t.title)}</div><div class="m">${t.due ? fmtDueMeta(t.due) : "기한 없음"} · ${PRIO[t.priority].label}${projTag(t.projectId)}</div></div>
     </div>`;
   }).join("") : `<div class="pin-empty">${IC.check} 할 일 없음</div>`;
   h += `<div class="pin-divider">오늘 일정</div>`;
@@ -1988,7 +2021,7 @@ function pinItemsHtml() {
     const dd = e._delay ? `<span class="dd">D+${e._delay}</span>` : "";
     return `<div class="pin-todo pri-${e.priority}">
       <div class="box" data-pin-ev-toggle="${e._base || e.id}"></div>
-      <div class="pin-tx" data-pin-edit-event="${e._base || e.id}"><div class="t">${dd}${catIcon(e.cat)} ${esc(e.title)}</div><div class="m">${esc(evTimeText(e))}${e.location ? " · " + esc(e.location) : ""}</div></div>
+      <div class="pin-tx" data-pin-edit-event="${e._base || e.id}"><div class="t">${dd}${catIcon(e.cat)} ${esc(e.title)}</div><div class="m">${esc(evTimeText(e))}${e.location ? " · " + esc(e.location) : ""}${projTag(e.projectId)}</div></div>
     </div>`;
   }).join("") : `<div class="pin-empty">오늘 일정 없음</div>`;
 
@@ -2009,6 +2042,7 @@ function pinItemsHtml() {
 }
 function pinBodyClick(e) {
   if (e.target.closest("[data-pin-donetoggle]")) { pinState.doneOpen = !pinState.doneOpen; savePin(); renderPin(); return; }
+  const pj = e.target.closest("[data-proj]"); if (pj) { try { window.focus(); } catch (_) {} openProject(pj.dataset.proj); return; }
   const tb = e.target.closest("[data-pin-toggle]"); if (tb) { Store.toggleTodo(tb.dataset.pinToggle); return; }
   const eb = e.target.closest("[data-pin-ev-toggle]"); if (eb) { Store.toggleEvent(eb.dataset.pinEvToggle); return; }
   // 글자 클릭 → 수정창 (본 앱 창에서 열림; PiP인 경우 본 창을 앞으로)
