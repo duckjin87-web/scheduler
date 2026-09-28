@@ -644,7 +644,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-27 · 배경 테마를 캘린더/목록에 통합·엑셀 열문자·슬라이더 ± 버튼";
+const APP_VERSION = "2026-09-28 · 고정(핀) 팝업 창 전체 투명도 적용";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1539,6 +1539,9 @@ async function openPip() {
     });
     doc.title = "오늘 할 일";
     doc.body.style.margin = "0"; doc.body.style.background = "var(--bg)"; doc.body.style.color = "var(--text)";
+    // 팝업(창) 전체에 투명도를 적용 — 제목줄·배경 포함 창 자체가 투명해짐
+    doc.documentElement.style.background = "transparent";
+    doc.documentElement.style.opacity = (pinState.opacity / 100).toFixed(2);
     const dk = document.documentElement.getAttribute("data-theme"); if (dk) doc.documentElement.setAttribute("data-theme", dk);
     doc.body.innerHTML = `
       <div style="position:sticky;top:0;background:var(--work);color:#fff;padding:9px 12px;font-weight:800;font-size:13px;display:flex;align-items:center;gap:6px;">
@@ -1565,7 +1568,7 @@ async function openPip() {
     pop.addEventListener("input", () => {
       pinState.opacity = parseInt(pop.value, 10);
       doc.getElementById("pip-opacity-val").textContent = pinState.opacity + "%";
-      doc.getElementById("pip-body").style.opacity = (pinState.opacity / 100).toFixed(2);
+      doc.documentElement.style.opacity = (pinState.opacity / 100).toFixed(2); // 창 전체에 적용
     });
     pop.addEventListener("change", savePin);
     pipWin.addEventListener("pagehide", () => { pipWin = null; pinState.open = false; savePin(); renderPin(); });
@@ -1587,7 +1590,8 @@ function renderPin() {
   // PiP 창이 열려 있으면 그쪽을 갱신하고 앱 내부 위젯은 숨김
   if (pipWin && pipWin.document) {
     const pb = pipWin.document.getElementById("pip-body");
-    if (pb) { pb.innerHTML = pinItemsHtml(); pb.style.opacity = (pinState.opacity / 100).toFixed(2); }
+    if (pb) { pb.innerHTML = pinItemsHtml(); pb.style.opacity = ""; }
+    pipWin.document.documentElement.style.opacity = (pinState.opacity / 100).toFixed(2); // 창 전체 투명도
     w.hidden = true; return;
   }
   if (!pinState.open) { w.hidden = true; return; }
