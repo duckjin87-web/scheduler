@@ -293,7 +293,7 @@
   .week-grid .hourlabel{font-size:10.5px;color:var(--text-faint);text-align:right;padding:4px 6px 0 0;border-top:1px solid var(--border);height:46px;}
   .week-grid .cell{border-top:1px solid var(--border);border-left:1px solid var(--border);height:46px;padding:0;position:relative;cursor:pointer;transition:background .1s;}
   .week-grid .cell:hover{background:var(--surface-2);}
-  .week-grid .cell.has-evt{z-index:2;}
+  /* 셀 자체는 쌓임 맥락을 만들지 않고, 일정 블록이 다음 시간 칸 위로 올라오도록 블록에 z-index */
   .evt.timed{position:absolute;margin:0;padding:2px 5px;overflow:hidden;box-shadow:var(--shadow);}
   .week-grid .cell.today-col{background:color-mix(in srgb, var(--work) 10%, var(--surface));}
   .week-grid .head.today{background:color-mix(in srgb, var(--work) 16%, var(--surface));}
@@ -671,9 +671,16 @@
   /* 드래그: 30분 단위 미리보기 + 30분 안내선 */
   .week-grid .cell::after{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px dashed color-mix(in srgb, var(--border) 75%, transparent);pointer-events:none;}
   .week-grid .cell > .evt{z-index:1;}
-  .week-grid .cell.drop-target{z-index:5;}
-  .drop-ghost{position:absolute;left:2px;right:2px;z-index:6;pointer-events:none;box-sizing:border-box;border:2px dashed var(--work);border-radius:6px;
+  .drop-ghost{position:absolute;left:2px;right:2px;z-index:4;pointer-events:none;box-sizing:border-box;border:2px dashed var(--work);border-radius:6px;
     background:color-mix(in srgb, var(--work) 16%, transparent);color:var(--work);font-size:10.5px;font-weight:800;padding:1px 5px;font-variant-numeric:tabular-nums;overflow:hidden;}
+  /* 일정 블록 크기 조절 (위/아래 가장자리) */
+  .evt.timed .rz{position:absolute;left:0;right:0;height:7px;z-index:3;cursor:ns-resize;touch-action:none;}
+  .evt.timed .rz-top{top:0;left:22px;}
+  .evt.timed .rz-bot{bottom:0;display:flex;justify-content:center;align-items:flex-end;}
+  .evt.timed .rz-bot::after{content:"";width:22px;height:3px;margin-bottom:1px;border-radius:2px;background:currentColor;opacity:0;transition:opacity .12s;}
+  .evt.timed:hover .rz-bot::after, .evt.timed.resizing .rz-bot::after{opacity:.45;}
+  .evt.timed.resizing{z-index:4;outline:2px solid var(--work);outline-offset:-1px;box-shadow:var(--shadow-lg);cursor:ns-resize;opacity:.95;}
+  .evt.timed.resizing .t{color:var(--work);}
 </style>
 </head>
 <body>
@@ -751,7 +758,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-28 · 새 프로젝트 단계 한번에·종일/할일 3개+접기·드래그 30분 단위";
+const APP_VERSION = "2026-09-28 · 캘린더 일정 가장자리 끌어 시간 늘리기/줄이기(30분 단위)";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1143,7 +1150,7 @@ function renderCalendar() {
         const top = ((sM - h * 60) / 60) * CELL_H;
         const height = (dur / 60) * CELL_H - 2;
         const w = 100 / n, left = i * w;
-        return `<div class="evt timed pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}" style="top:${top.toFixed(1)}px;left:calc(${left}% + 1px);width:calc(${w}% - 3px);height:${height.toFixed(1)}px;" draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span><span class="t">${esc(evTimeText(e))}</span><span class="ci">${catIcon(e.cat)}</span>${e.rolledFrom ? `<span class="evt-d">D+${daysBetween(e.rolledFrom, e.date)}</span>` : ""}${projDot(e.projectId)}${esc(e.title)}${e.repeat !== "none" ? " ↻" : ""}</div>`;
+        return `<div class="evt timed pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}" style="top:${top.toFixed(1)}px;left:calc(${left}% + 1px);width:calc(${w}% - 3px);height:${height.toFixed(1)}px;" draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="rz rz-top" data-rz="top" title="위로 끌어 시작 시간 변경"></span><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span><span class="t">${esc(evTimeText(e))}</span><span class="ci">${catIcon(e.cat)}</span>${e.rolledFrom ? `<span class="evt-d">D+${daysBetween(e.rolledFrom, e.date)}</span>` : ""}${projDot(e.projectId)}${esc(e.title)}${e.repeat !== "none" ? " ↻" : ""}<span class="rz rz-bot" data-rz="bot" title="아래로 끌어 종료 시간 변경"></span></div>`;
       }).join("");
       grid += `<div class="cell ${starts.length ? "has-evt" : ""} ${isToday ? "today-col" : ""}" data-date="${ds}" data-hour="${pad(h)}:00">${inner}</div>`;
     });
@@ -2137,10 +2144,52 @@ function clearDropUI(grid) {
   grid.querySelectorAll(".drop-ghost").forEach((g) => g.remove());
   grid.querySelectorAll(".drop-target, .drop-hover").forEach((c) => c.classList.remove("drop-target", "drop-hover"));
 }
+// 일정 블록 위/아래 가장자리를 끌어 시간 늘이기·줄이기 (30분 단위, 최소 30분)
+let rzState = null, suppressClickUntil = 0;
+function fmtDur(m) { const h = Math.floor(m / 60), r = m % 60; return (h ? h + "시간" : "") + (h && r ? " " : "") + (r ? r + "분" : ""); }
+function wireCalendarResize(grid) {
+  grid.querySelectorAll(".evt.timed .rz").forEach((h) => {
+    h.addEventListener("pointerdown", (e) => {
+      if (e.button !== 0) return;
+      e.preventDefault(); e.stopPropagation();
+      const el = h.closest(".evt"), cell = el.closest(".cell");
+      const ev = Store.state.events.find((x) => x.id === el.dataset.id);
+      if (!ev || !ev.time || !cell) return;
+      const sM = hmToMin(ev.time), eM = ev.endTime && hmToMin(ev.endTime) > sM ? hmToMin(ev.endTime) : sM + 30;
+      rzState = { el, cell, id: ev.id, edge: h.dataset.rz, sM, eM, ns: sM, ne: eM, y0: e.clientY,
+        rectH: cell.getBoundingClientRect().height, cssH: parseFloat(getComputedStyle(cell).height) || 46, hour: parseInt(cell.dataset.hour, 10) };
+      el.classList.add("resizing"); cell.classList.add("rz-active");
+      try { h.setPointerCapture(e.pointerId); } catch (_) {}
+    });
+    h.addEventListener("pointermove", (e) => {
+      const st = rzState; if (!st || st.el !== h.closest(".evt")) return;
+      const d = ((e.clientY - st.y0) / st.rectH) * 60;
+      const snap = (m) => Math.round(m / 30) * 30;
+      if (st.edge === "bot") st.ne = Math.max(st.sM + 30, Math.min(Math.max(st.eM, 21 * 60), snap(st.eM + d)));
+      else st.ns = Math.min(st.eM - 30, Math.max(Math.min(st.sM, DAY_MIN), snap(st.sM + d)));
+      st.el.style.top = ((st.ns - st.hour * 60) / 60) * st.cssH + "px";
+      st.el.style.height = ((st.ne - st.ns) / 60) * st.cssH - 2 + "px";
+      const t = st.el.querySelector(".t"); if (t) t.textContent = `${minToHM(st.ns)}–${minToHM(st.ne)} · ${fmtDur(st.ne - st.ns)}`;
+    });
+    const finish = () => {
+      const st = rzState; if (!st) return;
+      rzState = null; suppressClickUntil = Date.now() + 400;   // 끌기 직후 클릭(편집창 열림) 방지
+      st.el.classList.remove("resizing"); st.cell.classList.remove("rz-active");
+      if (st.ns !== st.sM || st.ne !== st.eM) {
+        Store.updateEvent(st.id, { time: minToHM(st.ns), endTime: minToHM(st.ne) });
+        toast(`${minToHM(st.ns)}–${minToHM(st.ne)} (${fmtDur(st.ne - st.ns)})로 변경했습니다`);
+      } else { const t = st.el.querySelector(".t"); if (t) t.textContent = `${minToHM(st.sM)}–${minToHM(st.eM)}`; }
+    };
+    h.addEventListener("pointerup", finish);
+    h.addEventListener("pointercancel", finish);
+  });
+}
 function wireCalendarDnD() {
   const grid = document.querySelector(".week-grid"); if (!grid) return;
+  wireCalendarResize(grid);
   grid.querySelectorAll("[data-drag]").forEach((el) => {
     el.addEventListener("dragstart", (e) => {
+      if (rzState || (e.target.closest && e.target.closest(".rz"))) { e.preventDefault(); return; }   // 크기 조절 중엔 이동 드래그 안 함
       dragData = { type: el.dataset.drag, id: el.dataset.id, grabMin: 0, dur: 30 };
       if (dragData.type === "event") {
         dragData.dur = evDurMin(Store.state.events.find((x) => x.id === el.dataset.id));
@@ -2193,6 +2242,7 @@ function wireCalendarDnD() {
 /* ---------- 전역 이벤트 ---------- */
 function setView(v) { if (v === "settings" && ui.view !== "settings") ui.prevView = ui.view; ui.view = v; saveUI(); render(); window.scrollTo(0, 0); }
 function wireGlobal() {
+  document.addEventListener("click", (e) => { if (Date.now() < suppressClickUntil) { e.stopPropagation(); e.preventDefault(); suppressClickUntil = 0; } }, true);
   document.querySelectorAll(".tab[data-view], .bottom-nav button[data-view]").forEach((b) => b.addEventListener("click", () => setView(b.dataset.view)));
   document.getElementById("add-btn").addEventListener("click", () => {
     if (ui.view === "projects") { openProject(null); return; }
