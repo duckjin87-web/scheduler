@@ -694,22 +694,20 @@
   .np-cnt{font-size:11px;font-weight:800;color:var(--work);}
   #p-colors{padding-top:4px;gap:5px;flex-wrap:nowrap;}
   #p-colors .pj-sw{width:20px;height:20px;}
-  /* 프로젝트 타임라인 아래 단계 칩 */
-  .pj-cellsteps{grid-row:2;display:flex;flex-direction:column;gap:3px;margin:10px 3px 0;min-width:0;}
-  .pj-chip{display:flex;align-items:center;gap:4px;min-width:0;padding:3px 5px;border-radius:5px;cursor:pointer;
-    font-size:10.5px;font-weight:700;line-height:1.3;border-left:3px solid var(--pc);
-    background:color-mix(in srgb, var(--pc) 11%, var(--surface));color:color-mix(in srgb, var(--pc) 60%, var(--text));}
-  .pj-chip .cal-check{flex:none;}
-  .pj-ct{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .pj-ct b{font-weight:800;opacity:.75;font-variant-numeric:tabular-nums;}
-  .pj-chip.done{opacity:.55;} .pj-chip.done .pj-ct{text-decoration:line-through;}
-  .pj-chip.late{border-left-color:var(--urgent);}
-  .pj-cd{flex:none;font-size:9px;font-weight:800;color:#fff;background:var(--urgent);border-radius:4px;padding:0 4px;}
-  .pj-chip.dragging{opacity:.4;}
   .pin-todo .m .ptag{margin-left:6px;font-size:9.5px;}
   /* 캘린더 시간 칸 일정: 시간 글자는 숨김(시간 축으로 표시) — 길이 조절 중에만 바뀔 시간 표시 */
   .week-grid .evt.timed .t{display:none;}
   .week-grid .evt.timed.resizing .t{display:inline;margin-right:4px;}
+  /* 캘린더의 프로젝트 단계: 프로젝트 색 음영 (우선순위 음영보다 우선) */
+  .week-grid .cal-chip.proj-item, .week-grid .evt.proj-item{
+    background:color-mix(in srgb, var(--pc) 20%, var(--surface));
+    border-left:3px solid var(--pc);
+    color:color-mix(in srgb, var(--pc) 45%, var(--text));}
+  .week-grid .evt.proj-item{box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--pc) 30%, transparent), var(--shadow);}
+  /* 프로젝트 행: 이름 · 진도율 · 완료/전체 */
+  .pj-lab .pj-pct{margin-left:8px;font-weight:800;}
+  .pj-lab .pj-cnt{margin-left:6px;font-size:10px;font-weight:800;padding:0 6px;border-radius:999px;
+    background:color-mix(in srgb, var(--pc) 22%, var(--surface));color:color-mix(in srgb, var(--pc) 70%, var(--text));font-variant-numeric:tabular-nums;}
 </style>
 </head>
 <body>
@@ -787,7 +785,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-28 · 캘린더 일정 블록 시간 글자 숨김";
+const APP_VERSION = "2026-09-28 · 이동 시 스크롤 유지·프로젝트 단계 캘린더 복귀(프로젝트 색)·진도 2/5";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -811,7 +809,9 @@ const PRIO = { urgent: { label: "긴급", rank: 0 }, high: { label: "높음", ra
 const REPEAT_LABEL = { none: "반복 안 함", daily: "매일", weekly: "매주", monthly: "매월" };
 const REMIND_LABEL = { none: "없음", "0": "정시", "5": "5분 전", "10": "10분 전", "30": "30분 전", "60": "1시간 전", "1440": "1일 전" };
 
-const PROJECT_COLORS = ["#7C6FB0", "#2F8F6B", "#C77F3A", "#3E77B5", "#C25B7E", "#5E7D2F", "#8A6D3B"];
+// 우선순위 음영(보통=초록·높음=주황·긴급=빨강)과 겹치지 않는 색만 사용: 보라·파랑·하늘·남색·자주·청회
+const PROJECT_COLORS = ["#7C6FB0", "#3E77B5", "#2A95C5", "#4B4FA6", "#A0509A", "#5D7186"];
+const PROJECT_COLOR_MIGRATE = { "#2F8F6B": "#2A95C5", "#C77F3A": "#A0509A", "#C25B7E": "#4B4FA6", "#5E7D2F": "#5D7186", "#8A6D3B": "#3E77B5" };
 
 /* ---------- Store (데이터 계층) ---------- */
 const Store = (() => {
@@ -845,7 +845,7 @@ const Store = (() => {
   }
   function normalizeProject(p) {
     return { id: p.id || uid(), name: (p.name || "").trim() || "새 프로젝트",
-      color: p.color || PROJECT_COLORS[0], note: p.note || "", createdAt: p.createdAt || Date.now() };
+      color: PROJECT_COLOR_MIGRATE[p.color] || p.color || PROJECT_COLORS[0], note: p.note || "", createdAt: p.createdAt || Date.now() };
   }
 
   function seed() {
@@ -1109,24 +1109,10 @@ function calControlsHtml() {
     </div>`;
 }
 
-// 프로젝트 타임라인 아래에 그 주의 단계(세부 일정)를 날짜 칸별로 표시 — 체크·클릭 수정·드래그 이동 가능
-function laneStepChips(st, wStart, wEnd) {
-  const byCol = {};
-  st.items.filter((x) => x.date && x.date >= wStart && x.date <= wEnd)
-    .forEach((x) => { const c = daysBetween(wStart, x.date) + 1; (byCol[c] = byCol[c] || []).push(x); });
-  return Object.entries(byCol).map(([c, xs]) => `<div class="pj-cellsteps" style="grid-column:${c}">${xs.map((x) => {
-    const late = !x.done && x.rolledFrom;
-    const act = x.kind === "todo"
-      ? `data-drag="todo" data-id="${x.id}" data-edit-todo="${x.id}"`
-      : `data-drag="event" data-id="${x.id}" data-edit-event="${x.id}"`;
-    const ck = x.kind === "todo" ? `data-toggle="${x.id}"` : `data-ev-toggle="${x.id}"`;
-    return `<div class="pj-chip ${x.done ? "done" : ""} ${late ? "late" : ""}" draggable="true" ${act} title="${esc(x.title)}${x.time ? " · " + x.time : ""}">`
-      + `<span class="cal-check ${x.done ? "done" : ""}" ${ck}>${x.done ? IC.check : ""}</span>`
-      + `<span class="pj-ct">${x.time ? `<b>${x.time}</b> ` : ""}${esc(x.title)}</span>`
-      + `${late ? `<span class="pj-cd">D+${daysBetween(x.rolledFrom, todayStr())}</span>` : ""}</div>`;
-  }).join("")}</div>`).join("");
-}
 const inProject = (x) => !!(x.projectId && projectById(x.projectId));
+// 프로젝트 단계는 캘린더에서 프로젝트 색으로 음영 (우선순위 음영 대신)
+const projCls = (x) => (inProject(x) ? " proj-item" : "");
+const projStyle = (x) => (inProject(x) ? ` style="--pc:${projectById(x.projectId).color}"` : "");
 
 /* ---------- 렌더: 캘린더 (주간 그리드) ---------- */
 function renderCalendar() {
@@ -1160,22 +1146,21 @@ function renderCalendar() {
       grid += `<div class="proj-lane" style="grid-template-columns:${dayCols};--pc:${p.color}">
         <div class="pj-bar ${contL ? "cont-l" : ""} ${contR ? "cont-r" : ""}" style="grid-column:${si + 1} / ${ei + 2}" data-proj="${p.id}" title="${esc(p.name)} · ${st.done}/${st.total} 완료 — 클릭해서 단계 보기">
           <span class="pj-fill" style="width:${st.pct}%"></span>
-          <span class="pj-lab">${contL ? "◀ " : ""}${esc(p.name)} · ${st.pct}%${st.delay ? ` <b class="pj-late">D+${st.delay}</b>` : ""}${contR ? " ▶" : ""}</span>
-        </div>${marks}${laneStepChips(st, wStart, wEnd)}</div>`;
+          <span class="pj-lab">${contL ? "◀ " : ""}${esc(p.name)}<b class="pj-pct">${st.pct}%</b><span class="pj-cnt">${st.done}/${st.total}</span>${st.delay ? ` <b class="pj-late">D+${st.delay}</b>` : ""}${contR ? " ▶" : ""}</span>
+        </div>${marks}</div>`;
     });
   // 종일/할일 밴드
   grid += `<div class="band-label">종일<br>·할일</div>`;
   week.forEach((d) => {
     const ds = ymd(d);
     const isToday = ds === today;
-    // 프로젝트 단계는 위 타임라인에 표시되므로 종일·할일 칸에서는 제외
-    const allday = eventsOn(ds).filter((e) => e.allDay && !inProject(e));
-    const todos = visibleTodos().filter((t) => t.due === ds && !inProject(t));
+    const allday = eventsOn(ds).filter((e) => e.allDay);
+    const todos = visibleTodos().filter((t) => t.due === ds);
     let cell = `<div class="band-cell ${isToday ? "today-col" : ""}" data-date="${ds}" data-band="1">`;
     // 종일·할일은 최대 3개만 보이고 나머지는 ----+N---- 구분선 뒤로 접음 (완료 항목이 뒤로)
     const chips = [];
-    allday.forEach((e) => chips.push({ done: e.done, html: `<div class="cal-chip allday pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}" draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span><span class="ci">${catIcon(e.cat)}</span>${projDot(e.projectId)}${esc(e.title)}</div>` }));
-    todos.forEach((t) => chips.push({ done: t.done, html: `<div class="cal-chip todo ${t.done ? "done" : ""}" draggable="true" data-drag="todo" data-id="${t.id}" data-edit-todo="${t.id}"><span class="cal-check ${t.done ? "done" : ""}" data-toggle="${t.id}">${t.done ? IC.check : ""}</span>${projDot(t.projectId)}${esc(t.title)}</div>` }));
+    allday.forEach((e) => chips.push({ done: e.done, html: `<div class="cal-chip allday pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}${projCls(e)}"${projStyle(e)} draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span><span class="ci">${catIcon(e.cat)}</span>${projDot(e.projectId)}${esc(e.title)}</div>` }));
+    todos.forEach((t) => chips.push({ done: t.done, html: `<div class="cal-chip todo ${t.done ? "done" : ""}${projCls(t)}"${projStyle(t)} draggable="true" data-drag="todo" data-id="${t.id}" data-edit-todo="${t.id}"><span class="cal-check ${t.done ? "done" : ""}" data-toggle="${t.id}">${t.done ? IC.check : ""}</span>${projDot(t.projectId)}${esc(t.title)}</div>` }));
     chips.sort((a, b) => a.done - b.done);
     const LIMIT = 3, open = !!ui.bandOpen[ds], extra = chips.length - LIMIT;
     cell += (open || extra <= 0 ? chips : chips.slice(0, LIMIT)).map((c) => c.html).join("");
@@ -1229,7 +1214,7 @@ function renderCalendar() {
         const height = (dur / 60) * CELL_H - 2;
         const L = dayLayout[ds][e._base] || { col: 0, n: 1, span: 1 };
         const left = (L.col / L.n) * 100, w = (L.span / L.n) * 100;
-        return `<div class="evt timed pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}" style="top:${top.toFixed(1)}px;left:calc(${left}% + 1px);width:calc(${w}% - 3px);height:${height.toFixed(1)}px;" title="${esc(evTimeText(e))} ${esc(e.title)}" draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="rz rz-top" data-rz="top" title="위로 끌어 시작 시간 변경"></span><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span><span class="t">${esc(evTimeText(e))}</span><span class="ci">${catIcon(e.cat)}</span>${e.rolledFrom ? `<span class="evt-d">D+${daysBetween(e.rolledFrom, e.date)}</span>` : ""}${projDot(e.projectId)}${esc(e.title)}${e.repeat !== "none" ? " ↻" : ""}<span class="rz rz-bot" data-rz="bot" title="아래로 끌어 종료 시간 변경"></span></div>`;
+        return `<div class="evt timed pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}${projCls(e)}" style="${inProject(e) ? `--pc:${projectById(e.projectId).color};` : ""}top:${top.toFixed(1)}px;left:calc(${left}% + 1px);width:calc(${w}% - 3px);height:${height.toFixed(1)}px;" title="${esc(evTimeText(e))} ${esc(e.title)}" draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="rz rz-top" data-rz="top" title="위로 끌어 시작 시간 변경"></span><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span><span class="t">${esc(evTimeText(e))}</span><span class="ci">${catIcon(e.cat)}</span>${e.rolledFrom ? `<span class="evt-d">D+${daysBetween(e.rolledFrom, e.date)}</span>` : ""}${projDot(e.projectId)}${esc(e.title)}${e.repeat !== "none" ? " ↻" : ""}<span class="rz rz-bot" data-rz="bot" title="아래로 끌어 종료 시간 변경"></span></div>`;
       }).join("");
       grid += `<div class="cell ${starts.length ? "has-evt" : ""} ${isToday ? "today-col" : ""}" data-date="${ds}" data-hour="${pad(h)}:00">${inner}</div>`;
     });
@@ -1402,17 +1387,26 @@ function chipHtml() {
 }
 
 /* ---------- 메인 렌더 ---------- */
+let lastRenderedView = null;
 function render() {
   document.getElementById("c-today").textContent = eventsOn(todayStr()).length || "";
   document.querySelectorAll(".tab[data-view], .bottom-nav button[data-view]").forEach((b) => b.classList.toggle("active", b.dataset.view === ui.view));
   document.querySelectorAll("[data-chips]").forEach((el) => (el.innerHTML = chipHtml()));
 
   const content = document.getElementById("content");
+  // 캘린더를 다시 그려도(일정 이동·체크 등) 보던 스크롤 위치 유지
+  const oldScroll = content.querySelector(".week-scroll");
+  const keepScroll = ui.view === "calendar" && lastRenderedView === "calendar" && oldScroll ? { top: oldScroll.scrollTop, left: oldScroll.scrollLeft } : null;
   if (ui.view === "today") content.innerHTML = renderToday();
-  else if (ui.view === "calendar") content.innerHTML = renderCalendar();
+  else if (ui.view === "calendar") {
+    content.innerHTML = renderCalendar();
+    const ns = content.querySelector(".week-scroll");
+    if (keepScroll && ns) { ns.scrollTop = keepScroll.top; ns.scrollLeft = keepScroll.left; }
+  }
   else if (ui.view === "todo") content.innerHTML = renderTodo();
   else if (ui.view === "settings") content.innerHTML = renderSettings();
   else if (ui.view === "projects") content.innerHTML = renderProjects();
+  lastRenderedView = ui.view;
   // 캘린더 컨트롤을 상단 탭바로 (한 행에 통합 → 캘린더 영역 확대)
   document.getElementById("tabbar-cal").innerHTML = ui.view === "calendar" ? calControlsHtml() : "";
 
