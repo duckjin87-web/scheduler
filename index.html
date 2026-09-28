@@ -707,6 +707,9 @@
   .pj-cd{flex:none;font-size:9px;font-weight:800;color:#fff;background:var(--urgent);border-radius:4px;padding:0 4px;}
   .pj-chip.dragging{opacity:.4;}
   .pin-todo .m .ptag{margin-left:6px;font-size:9.5px;}
+  /* 캘린더 시간 칸 일정: 시간 글자는 숨김(시간 축으로 표시) — 길이 조절 중에만 바뀔 시간 표시 */
+  .week-grid .evt.timed .t{display:none;}
+  .week-grid .evt.timed.resizing .t{display:inline;margin-right:4px;}
 </style>
 </head>
 <body>
@@ -784,7 +787,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-28 · 겹치지 않는 일정 전체 폭·할 일 마감일 기본 오늘·입력창 닫힘 수정";
+const APP_VERSION = "2026-09-28 · 캘린더 일정 블록 시간 글자 숨김";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1226,7 +1229,7 @@ function renderCalendar() {
         const height = (dur / 60) * CELL_H - 2;
         const L = dayLayout[ds][e._base] || { col: 0, n: 1, span: 1 };
         const left = (L.col / L.n) * 100, w = (L.span / L.n) * 100;
-        return `<div class="evt timed pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}" style="top:${top.toFixed(1)}px;left:calc(${left}% + 1px);width:calc(${w}% - 3px);height:${height.toFixed(1)}px;" draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="rz rz-top" data-rz="top" title="위로 끌어 시작 시간 변경"></span><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span><span class="t">${esc(evTimeText(e))}</span><span class="ci">${catIcon(e.cat)}</span>${e.rolledFrom ? `<span class="evt-d">D+${daysBetween(e.rolledFrom, e.date)}</span>` : ""}${projDot(e.projectId)}${esc(e.title)}${e.repeat !== "none" ? " ↻" : ""}<span class="rz rz-bot" data-rz="bot" title="아래로 끌어 종료 시간 변경"></span></div>`;
+        return `<div class="evt timed pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}" style="top:${top.toFixed(1)}px;left:calc(${left}% + 1px);width:calc(${w}% - 3px);height:${height.toFixed(1)}px;" title="${esc(evTimeText(e))} ${esc(e.title)}" draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="rz rz-top" data-rz="top" title="위로 끌어 시작 시간 변경"></span><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span><span class="t">${esc(evTimeText(e))}</span><span class="ci">${catIcon(e.cat)}</span>${e.rolledFrom ? `<span class="evt-d">D+${daysBetween(e.rolledFrom, e.date)}</span>` : ""}${projDot(e.projectId)}${esc(e.title)}${e.repeat !== "none" ? " ↻" : ""}<span class="rz rz-bot" data-rz="bot" title="아래로 끌어 종료 시간 변경"></span></div>`;
       }).join("");
       grid += `<div class="cell ${starts.length ? "has-evt" : ""} ${isToday ? "today-col" : ""}" data-date="${ds}" data-hour="${pad(h)}:00">${inner}</div>`;
     });
