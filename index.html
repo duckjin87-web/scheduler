@@ -708,6 +708,13 @@
   .pj-lab .pj-pct{margin-left:8px;font-weight:800;}
   .pj-lab .pj-cnt{margin-left:6px;font-size:10px;font-weight:800;padding:0 6px;border-radius:999px;
     background:color-mix(in srgb, var(--pc) 22%, var(--surface));color:color-mix(in srgb, var(--pc) 70%, var(--text));font-variant-numeric:tabular-nums;}
+  /* 종일·할일 칩: 30분 일정 블록과 같은 높이(시간 칸 46px ÷ 2 − 2px = 21px)로 통일,
+     할 일 목록(.todo) 줄 스타일이 캘린더 칩에 섞여 들던 것 차단 */
+  .week-grid .band-cell .cal-chip{height:21px;min-height:21px;padding:0 6px;margin:0;gap:4px;flex:none;
+    align-items:center;box-sizing:border-box;border-radius:5px;font-size:10.5px;line-height:1.25;}
+  .week-grid .band-cell .cal-chip.todo{border:0;}
+  .week-grid .band-cell .cal-chip.proj-item{border-left:3px solid var(--pc);}
+  .week-grid .band-cell .cal-chip .cal-check{width:12px;height:12px;}
 </style>
 </head>
 <body>
@@ -785,7 +792,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-28 · 이동 시 스크롤 유지·프로젝트 단계 캘린더 복귀(프로젝트 색)·진도 2/5";
+const APP_VERSION = "2026-09-28 · 종일/할일 칩 높이 30분 블록과 통일";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
