@@ -692,8 +692,7 @@
   .field-row > .field{min-width:0;}
   .np-steps{border:1px dashed var(--border-strong);border-radius:10px;padding:10px;margin-bottom:12px;background:color-mix(in srgb, var(--surface-2) 45%, transparent);}
   .np-cnt{font-size:11px;font-weight:800;color:var(--work);}
-  #p-colors{padding-top:4px;gap:5px;flex-wrap:nowrap;}
-  #p-colors .pj-sw{width:20px;height:20px;}
+  #p-colors{padding-top:4px;}
   .pin-todo .m .ptag{margin-left:6px;font-size:9.5px;}
   /* 캘린더 시간 칸 일정: 시간 글자는 숨김(시간 축으로 표시) — 길이 조절 중에만 바뀔 시간 표시 */
   .week-grid .evt.timed .t{display:none;}
@@ -715,6 +714,34 @@
   .week-grid .band-cell .cal-chip.todo{border:0;}
   .week-grid .band-cell .cal-chip.proj-item{border-left:3px solid var(--pc);}
   .week-grid .band-cell .cal-chip .cal-check{width:12px;height:12px;}
+  /* 프로젝트 색 선택: 추천 10색 + 직접 선택(무지개) */
+  .pj-colors{align-items:center;gap:6px;}
+  .pj-colors .pj-sw{width:22px;height:22px;}
+  .pj-custom{position:relative;display:inline-block;cursor:pointer;overflow:hidden;
+    background:conic-gradient(#e5484d,#f5a524,#f2d024,#30a46c,#12a594,#0090ff,#6e56cf,#d6409f,#e5484d);}
+  .pj-custom input{position:absolute;inset:-4px;width:calc(100% + 8px);height:calc(100% + 8px);opacity:0;cursor:pointer;border:0;padding:0;}
+  .lab-hint{font-weight:600;color:var(--text-faint);margin-left:4px;font-size:10.5px;}
+  .pj-name-row{grid-template-columns:minmax(0,1fr) 170px;}
+  /* 입력한 단계 바로 수정 */
+  #np-list .np-item{display:grid;grid-template-columns:18px minmax(0,1fr) 122px 74px 20px;gap:4px;align-items:center;padding:3px 5px;}
+  #np-list .np-item input{width:100%;min-width:0;border:1px solid transparent;background:transparent;border-radius:6px;
+    padding:3px 5px;font-size:12px;color:var(--text);font-family:inherit;margin:0;}
+  #np-list .np-item input:hover{border-color:var(--border);}
+  #np-list .np-item input:focus{border-color:var(--work);background:var(--surface);outline:none;}
+  #np-list .np-et{font-weight:600;}
+  #np-list .np-ed, #np-list .np-etm{font-size:11px;color:var(--text-soft);font-variant-numeric:tabular-nums;}
+  #np-list .np-etm{cursor:pointer;}
+  .np-tw{position:relative;display:flex;align-items:center;}
+  .np-tclr{position:absolute;right:0;border:none;background:transparent;color:var(--text-faint);font-size:13px;line-height:1;padding:0 3px;}
+  .np-tclr:hover{color:var(--urgent);}
+  @media (max-width:460px){
+    #np-list .np-item{grid-template-columns:18px minmax(0,1fr) minmax(0,1fr) 20px;grid-template-areas:"n t t x" ". d m .";}
+    #np-list .np-n{grid-area:n;} #np-list .np-et{grid-area:t;} #np-list .np-ed{grid-area:d;} #np-list .np-tw{grid-area:m;} #np-list .np-del{grid-area:x;}
+    .pj-name-row{grid-template-columns:1fr;}
+  }
+  /* 완료된 프로젝트 카드 */
+  .pj-card.is-done{opacity:.72;}
+  .pj-card.is-done:hover{opacity:1;}
 </style>
 </head>
 <body>
@@ -792,7 +819,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-28 · 종일/할일 칩 높이 30분 블록과 통일";
+const APP_VERSION = "2026-09-28 · 완료 프로젝트 캘린더 숨김·단계 바로 수정·색상 10색+직접 선택";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -816,8 +843,8 @@ const PRIO = { urgent: { label: "긴급", rank: 0 }, high: { label: "높음", ra
 const REPEAT_LABEL = { none: "반복 안 함", daily: "매일", weekly: "매주", monthly: "매월" };
 const REMIND_LABEL = { none: "없음", "0": "정시", "5": "5분 전", "10": "10분 전", "30": "30분 전", "60": "1시간 전", "1440": "1일 전" };
 
-// 우선순위 음영(보통=초록·높음=주황·긴급=빨강)과 겹치지 않는 색만 사용: 보라·파랑·하늘·남색·자주·청회
-const PROJECT_COLORS = ["#7C6FB0", "#3E77B5", "#2A95C5", "#4B4FA6", "#A0509A", "#5D7186"];
+// 추천 색: 우선순위 음영(보통=초록·높음=주황·긴급=빨강)과 겹치지 않는 10색 + '직접 선택'으로 어떤 색이든 가능
+const PROJECT_COLORS = ["#7C6FB0", "#9B5DE5", "#A0509A", "#D1478A", "#4B4FA6", "#3E77B5", "#2A95C5", "#1F8A9E", "#5D7186", "#454B55"];
 const PROJECT_COLOR_MIGRATE = { "#2F8F6B": "#2A95C5", "#C77F3A": "#A0509A", "#C25B7E": "#4B4FA6", "#5E7D2F": "#5D7186", "#8A6D3B": "#3E77B5" };
 
 /* ---------- Store (데이터 계층) ---------- */
@@ -1042,6 +1069,24 @@ const daysBetween = (a, b) => Math.round((parseYMD(b) - parseYMD(a)) / 86400000)
 const fmtMD = (s) => { if (!s) return ""; const d = parseYMD(s); return `${d.getMonth() + 1}/${d.getDate()}`; };
 
 /* ---------- 프로젝트 헬퍼 ---------- */
+// 프로젝트 색 선택: 추천 10색 + 무지개 칸(직접 선택)
+function projColorPicker(id, current) {
+  const custom = !PROJECT_COLORS.includes(current);
+  return `<div class="pj-colors" id="${id}">${PROJECT_COLORS.map((c) => `<button type="button" class="pj-sw ${c === current ? "active" : ""}" data-c="${c}" style="background:${c}" aria-label="색상"></button>`).join("")}`
+    + `<label class="pj-sw pj-custom ${custom ? "active" : ""}" title="색상 직접 선택" style="${custom ? `background:${current}` : ""}"><input type="color" value="${custom ? current : "#7c6fb0"}" aria-label="색상 직접 선택" /></label></div>`;
+}
+// onPick(color, final): 추천색 클릭·직접 선택 확정 시 final=true, 고르는 중(미리보기)엔 false
+function wireColorPicker(id, onPick) {
+  const box = document.getElementById(id); if (!box) return;
+  const cu = box.querySelector(".pj-custom"), inp = cu.querySelector("input");
+  const setActive = (el) => box.querySelectorAll(".pj-sw").forEach((x) => x.classList.toggle("active", x === el));
+  box.querySelectorAll("button.pj-sw").forEach((b) => b.addEventListener("click", () => { setActive(b); cu.style.background = ""; onPick(b.dataset.c, true); }));
+  inp.addEventListener("input", () => { cu.style.background = inp.value; setActive(cu); onPick(inp.value, false); });
+  inp.addEventListener("change", () => { cu.style.background = inp.value; setActive(cu); onPick(inp.value, true); });
+}
+function completedProjectIds() {
+  return new Set(Store.state.projects.filter((p) => { const st = projectStats(p.id); return st.total && st.done === st.total; }).map((p) => p.id));
+}
 function projectById(id) { return id ? Store.state.projects.find((p) => p.id === id) || null : null; }
 // 프로젝트 단계 = 소속 일정·할 일 (날짜 → 시간 → 생성순 = 진행 순서)
 function projectItems(pid) {
@@ -1137,9 +1182,12 @@ function renderCalendar() {
   // 프로젝트 타임라인 바 — 이번 주와 겹치는 프로젝트마다 한 줄 (진행률 채움 + 단계 표식)
   const dayCols = week.map((d) => ymd(d) === today ? "minmax(96px,1.5fr)" : "minmax(60px,1fr)").join(" ");
   const wStart = ymd(week[0]), wEnd = ymd(week[week.length - 1]);
+  // 모든 단계가 끝난 프로젝트는 캘린더에서 숨김(막대·단계 모두) → 프로젝트 탭에서 확인
+  const doneProj = completedProjectIds();
+  const hiddenDone = (x) => !!(x.projectId && doneProj.has(x.projectId));
   const clampIdx = (ds) => Math.max(0, Math.min(nDays - 1, daysBetween(wStart, ds)));
   Store.state.projects.map((p) => ({ p, st: projectStats(p.id) }))
-    .filter(({ st }) => st.start && st.start <= wEnd && st.end >= wStart)
+    .filter(({ p, st }) => st.start && st.start <= wEnd && st.end >= wStart && !doneProj.has(p.id))
     .forEach(({ p, st }, i) => {
       const si = clampIdx(st.start), ei = clampIdx(st.end);
       const contL = st.start < wStart, contR = st.end > wEnd;
@@ -1161,8 +1209,8 @@ function renderCalendar() {
   week.forEach((d) => {
     const ds = ymd(d);
     const isToday = ds === today;
-    const allday = eventsOn(ds).filter((e) => e.allDay);
-    const todos = visibleTodos().filter((t) => t.due === ds);
+    const allday = eventsOn(ds).filter((e) => e.allDay && !hiddenDone(e));
+    const todos = visibleTodos().filter((t) => t.due === ds && !hiddenDone(t));
     let cell = `<div class="band-cell ${isToday ? "today-col" : ""}" data-date="${ds}" data-band="1">`;
     // 종일·할일은 최대 3개만 보이고 나머지는 ----+N---- 구분선 뒤로 접음 (완료 항목이 뒤로)
     const chips = [];
@@ -1182,7 +1230,7 @@ function renderCalendar() {
   const dayLayout = {};
   week.forEach((d) => {
     const ds = ymd(d), lay = {};
-    const items = eventsOn(ds).filter((e) => !e.allDay && e.time).map((e) => {
+    const items = eventsOn(ds).filter((e) => !e.allDay && e.time && !hiddenDone(e)).map((e) => {
       const s0 = toMin(e.time), e0 = e.endTime ? toMin(e.endTime) : s0 + 30;
       return { id: e._base, s: s0, e: s0 + Math.max(30, e0 - s0) };
     }).sort((a, b) => a.s - b.s || (b.e - b.s) - (a.e - a.s));
@@ -1213,7 +1261,7 @@ function renderCalendar() {
     week.forEach((d) => {
       const ds = ymd(d);
       const isToday = ds === today;
-      const starts = eventsOn(ds).filter((e) => !e.allDay && parseInt((e.time || "0").slice(0, 2), 10) === h);
+      const starts = eventsOn(ds).filter((e) => !e.allDay && !hiddenDone(e) && parseInt((e.time || "0").slice(0, 2), 10) === h);
       const inner = starts.map((e) => {
         const sM = toMin(e.time), eM = e.endTime ? toMin(e.endTime) : sM + 30;
         const dur = Math.max(30, eM - sM);
@@ -1395,7 +1443,16 @@ function chipHtml() {
 
 /* ---------- 메인 렌더 ---------- */
 let lastRenderedView = null;
+let knownDoneProjects = null;   // 방금 완료된 프로젝트 알림용
+function notifyProjectCompletion() {
+  const now = completedProjectIds();
+  if (knownDoneProjects) now.forEach((id) => {
+    if (!knownDoneProjects.has(id)) { const pr = projectById(id); if (pr) toast(`'${pr.name}' 프로젝트 완료 — 캘린더에서 숨기고 프로젝트 탭에 보관합니다`); }
+  });
+  knownDoneProjects = now;
+}
 function render() {
+  notifyProjectCompletion();
   document.getElementById("c-today").textContent = eventsOn(todayStr()).length || "";
   document.querySelectorAll(".tab[data-view], .bottom-nav button[data-view]").forEach((b) => b.classList.toggle("active", b.dataset.view === ui.view));
   document.querySelectorAll("[data-chips]").forEach((el) => (el.innerHTML = chipHtml()));
@@ -1522,11 +1579,11 @@ function renderModal(kind, data, cat, isEdit) {
     const np = data._np || {};
     const color = np.color || PROJECT_COLORS[Store.state.projects.length % PROJECT_COLORS.length];
     fields = `
-      <div class="field"><label for="p-name">프로젝트 이름</label><input id="p-name" value="${esc(np.name || "")}" placeholder="예: 신규업체 온보딩" autocomplete="off" /></div>
-      <div class="field-row">
-        <div class="field"><label>색상</label><div class="pj-colors" id="p-colors">${PROJECT_COLORS.map((c) => `<button type="button" class="pj-sw ${c === color ? "active" : ""}" data-c="${c}" style="background:${c}" aria-label="색상"></button>`).join("")}</div></div>
+      <div class="field-row pj-name-row">
+        <div class="field"><label for="p-name">프로젝트 이름</label><input id="p-name" value="${esc(np.name || "")}" placeholder="예: 신규업체 온보딩" autocomplete="off" /></div>
         <div class="field"><label>분류</label>${catSeg}</div>
       </div>
+      <div class="field"><label>색상 <small class="lab-hint">무지개 칸 = 직접 선택</small></label>${projColorPicker("p-colors", color)}</div>
       <div class="field np-steps">
         <div class="field-head"><label for="np-title">단계 (상세 일정)</label><span class="np-cnt" id="np-cnt"></span></div>
         <div class="np-list" id="np-list"></div>
@@ -1624,13 +1681,29 @@ function renderModal(kind, data, cat, isEdit) {
       const last = [data.date, ...steps.map((x) => x.date)].filter(Boolean).sort().slice(-1)[0];
       return last ? (steps.length ? ymd(addDays(parseYMD(last), 1)) : last) : todayStr();
     };
-    const renderSteps = () => {
+    // 입력한 단계는 목록에서 바로 수정 (이름·날짜·시간, 시간 지우면 할 일)
+    const renderSteps = (resetNext = true) => {
       const list = steps.map((x, i) => ({ ...x, i })).sort((a, b) => a.date.localeCompare(b.date) || (a.time || "").localeCompare(b.time || ""));
       const box = document.getElementById("np-list");
-      box.innerHTML = list.map((x, n) => `<div class="np-item"><span class="np-n">${n + 1}</span><span class="np-t">${x.time ? '<i class="pj-kind">일정</i>' : ""}${esc(x.title)}</span><span class="np-d">${fmtMD(x.date)}${x.time ? " " + x.time : ""}</span><button type="button" class="np-del" data-np-del="${x.i}" aria-label="삭제">×</button></div>`).join("");
-      box.querySelectorAll("[data-np-del]").forEach((bt) => bt.addEventListener("click", () => { steps.splice(+bt.dataset.npDel, 1); renderSteps(); }));
-      document.getElementById("np-cnt").textContent = steps.length ? `${steps.length}개` : "";
-      document.getElementById("np-date").value = nextDate();
+      box.innerHTML = list.map((x, n) => `<div class="np-item" data-i="${x.i}">
+          <span class="np-n">${n + 1}</span>
+          <input class="np-et" value="${esc(x.title)}" aria-label="단계 이름" title="눌러서 수정" />
+          <input class="np-ed" type="date" value="${x.date}" aria-label="날짜" />
+          <span class="np-tw"><input class="np-etm tp-input" readonly data-tp value="${x.time || ""}" placeholder="시간" aria-label="시간" />${x.time ? `<button type="button" class="np-tclr" title="시간 지우기 (할 일로)">×</button>` : ""}</span>
+          <button type="button" class="np-del" aria-label="단계 삭제" title="단계 삭제">×</button></div>`).join("");
+      box.querySelectorAll(".np-item").forEach((row) => {
+        const i = +row.dataset.i, t = row.querySelector(".np-et");
+        t.addEventListener("input", () => { if (t.value.trim()) steps[i].title = t.value.trim(); });
+        t.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); t.blur(); } });
+        t.addEventListener("blur", () => { if (!t.value.trim()) t.value = steps[i].title; });
+        row.querySelector(".np-ed").addEventListener("change", (ev) => { if (ev.target.value) { steps[i].date = ev.target.value; renderSteps(false); } });
+        const tm = row.querySelector(".np-etm");
+        tm.addEventListener("click", () => openTimePicker(tm, (v) => { steps[i].time = v; renderSteps(false); }));
+        const clr = row.querySelector(".np-tclr"); if (clr) clr.addEventListener("click", () => { steps[i].time = ""; renderSteps(false); });
+        row.querySelector(".np-del").addEventListener("click", () => { steps.splice(i, 1); renderSteps(); });
+      });
+      document.getElementById("np-cnt").textContent = steps.length ? `${steps.length}개 · 눌러서 수정` : "";
+      if (resetNext) document.getElementById("np-date").value = nextDate();
     };
     const addStep = () => {
       const tEl = document.getElementById("np-title"), title = tEl.value.trim();
@@ -1640,9 +1713,7 @@ function renderModal(kind, data, cat, isEdit) {
       tEl.value = ""; tm.value = ""; renderSteps(); tEl.focus(); return true;
     };
     renderSteps();
-    document.querySelectorAll("#p-colors .pj-sw").forEach((bt) => bt.addEventListener("click", () => {
-      color = bt.dataset.c; document.querySelectorAll("#p-colors .pj-sw").forEach((x) => x.classList.toggle("active", x === bt));
-    }));
+    wireColorPicker("p-colors", (c) => { color = c; });
     document.getElementById("np-add").addEventListener("click", addStep);
     document.getElementById("np-title").addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); addStep(); } });
     document.getElementById("p-name").addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); document.getElementById("np-title").focus(); } });
@@ -1738,7 +1809,7 @@ function renderProjectModal(pid) {
   const color = p ? p.color : PROJECT_COLORS[Store.state.projects.length % PROJECT_COLORS.length];
   const m = document.getElementById("modal");
   m.className = "modal proj-modal";
-  const sw = PROJECT_COLORS.map((c) => `<button type="button" class="pj-sw ${c === color ? "active" : ""}" data-c="${c}" style="background:${c}" aria-label="색상"></button>`).join("");
+
   const clock = `<svg class="tp-ic" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-linecap="round"/></svg>`;
   let body = "";
   if (!isNew) {
@@ -1778,7 +1849,7 @@ function renderProjectModal(pid) {
   m.innerHTML = `
     <h3>${isNew ? "새 프로젝트" : "프로젝트"}</h3>
     <div class="field"><label>이름</label><input id="pj-name" value="${esc(p ? p.name : "")}" placeholder="예: 신규업체 온보딩" autocomplete="off" /></div>
-    <div class="field"><label>색상</label><div class="pj-colors" id="pj-colors">${sw}</div></div>
+    <div class="field"><label>색상 <small class="lab-hint">무지개 칸 = 직접 선택</small></label>${projColorPicker("pj-colors", color)}</div>
     ${isNew ? `<p class="pj-hint" style="margin:-2px 0 12px">만든 뒤 바로 단계(상세 일정)를 추가할 수 있어요. 기존 일정·할 일은 입력창의 <b>프로젝트</b> 칸에서 연결할 수 있습니다.</p>` : ""}
     ${body}
     <div class="modal-actions">
@@ -1790,10 +1861,11 @@ function renderProjectModal(pid) {
   let curColor = color;
   const nameEl = document.getElementById("pj-name");
   const saveMeta = () => { if (p) Store.updateProject(p.id, { name: nameEl.value.trim() || p.name, color: curColor }); };
-  document.querySelectorAll("#pj-colors .pj-sw").forEach((b) => b.addEventListener("click", () => {
-    curColor = b.dataset.c; document.querySelectorAll("#pj-colors .pj-sw").forEach((x) => x.classList.toggle("active", x === b));
-    if (p) { saveMeta(); const sum = m.querySelector(".pj-sum"); if (sum) sum.style.setProperty("--pc", curColor); }
-  }));
+  wireColorPicker("pj-colors", (c, final) => {
+    curColor = c;
+    const sum = m.querySelector(".pj-sum"); if (sum) sum.style.setProperty("--pc", curColor);
+    if (p && final) saveMeta();
+  });
   nameEl.addEventListener("change", saveMeta);
   document.getElementById("pj-close").addEventListener("click", () => { saveMeta(); closeModal(); });
   document.getElementById("pj-save").addEventListener("click", () => {
@@ -1848,14 +1920,19 @@ function renderProjects() {
   let html = `<div class="view-head"><div><h2>프로젝트</h2><div class="sub">단계가 이어지는 일정·할 일 묶음 · 앞 단계가 밀리면 뒤 단계도 자동으로 밀립니다</div></div>
     <button class="btn-primary" id="pj-new">＋ 새 프로젝트</button></div>`;
   if (!list.length) return html + `<div class="empty">아직 프로젝트가 없습니다.<br>＋ 새 프로젝트로 시작하거나, 일정·할 일 입력창의 <b>프로젝트</b> 칸에서 바로 만들 수 있어요.</div>`;
-  return html + `<div class="pj-cards">` + list.map(({ p, st }) => `
-    <div class="pj-card" data-proj="${p.id}" style="--pc:${p.color}">
+  const isDone = (st) => st.total && st.done === st.total;
+  const active = list.filter(({ st }) => !isDone(st)), done = list.filter(({ st }) => isDone(st));
+  const cards = (arr) => `<div class="pj-cards">` + arr.map(({ p, st }) => `
+    <div class="pj-card ${isDone(st) ? "is-done" : ""}" data-proj="${p.id}" style="--pc:${p.color}">
       <div class="pj-card-h"><span class="pj-name">${esc(p.name)}</span>${st.delay ? `<span class="pj-d">지연 D+${st.delay}</span>` : ""}${st.total && st.pct === 100 ? `<span class="pj-doneb">완료</span>` : ""}</div>
       <div class="pj-prog"><i style="width:${st.pct}%"></i></div>
       <div class="pj-meta"><b>${st.done}/${st.total} · ${st.pct}%</b><span>${st.start ? `${fmtMD(st.start)} → ${fmtMD(st.end)}` : "단계 없음"}</span></div>
       <div class="pj-mini">${st.items.map((x) => `<span class="${x.done ? "on" : ""} ${!x.done && x.rolledFrom ? "late" : ""}" title="${esc(x.title)}"></span>`).join("")}</div>
       ${st.next ? `<div class="pj-next">다음 · <b>${esc(st.next.title)}</b>${st.next.date ? ` · ${fmtMD(st.next.date)}` : ""}</div>` : ""}
     </div>`).join("") + `</div>`;
+  html += `<p class="panel-title">진행 중 · ${active.length}</p>` + (active.length ? cards(active) : `<div class="empty">진행 중인 프로젝트가 없습니다.</div>`);
+  if (done.length) html += `<p class="panel-title" style="margin-top:22px">완료된 프로젝트 · ${done.length} <small class="lab-hint">캘린더에서는 숨겨집니다</small></p>` + cards(done);
+  return html;
 }
 
 /* ---------- 토스트 ---------- */
