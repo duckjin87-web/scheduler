@@ -645,6 +645,35 @@
   .pj-mini span.late{background:var(--urgent);}
   .pj-next{font-size:12px;color:var(--text-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .pj-next b{color:var(--text);}
+  /* 입력창 → 새 프로젝트 단계 한 번에 추가 */
+  .np-steps{display:flex;flex-direction:column;gap:6px;border-top:1px dashed var(--border);padding-top:8px;margin-top:2px;}
+  .np-h{font-size:11.5px;font-weight:800;color:var(--work);}
+  .np-h small{font-weight:600;color:var(--text-faint);margin-left:4px;}
+  .np-list{display:flex;flex-direction:column;gap:4px;}
+  .np-list:empty{display:none;}
+  .np-item{display:flex;align-items:center;gap:7px;background:var(--surface-2);border-radius:7px;padding:5px 7px;font-size:12px;}
+  .np-n{width:17px;height:17px;flex:none;border-radius:50%;background:var(--surface);color:var(--text-soft);font-size:9.5px;font-weight:800;display:flex;align-items:center;justify-content:center;}
+  .np-t{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .np-d{font-size:11px;color:var(--text-soft);white-space:nowrap;font-variant-numeric:tabular-nums;}
+  .np-del{border:none;background:transparent;color:var(--text-faint);font-size:16px;line-height:1;padding:0 2px;}
+  .np-del:hover{color:var(--urgent);}
+  .np-row{display:grid;grid-template-columns:minmax(0,1fr) 84px 32px;gap:5px;align-items:center;}
+  .np-row #np-title{grid-column:1 / -1;}
+  .np-row input{min-width:0;}
+  .np-add{height:30px;border:none;border-radius:7px;background:var(--work);color:#fff;font-size:17px;font-weight:800;line-height:1;}
+  /* 종일·할일: 3개 초과분 접기 구분선 (----+N----) */
+  .band-more{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:16px;flex:none;
+    border:none;background:transparent;padding:0;cursor:pointer;}
+  .band-more::before{content:"";position:absolute;left:2px;right:2px;top:50%;border-top:1.5px dashed var(--border-strong);}
+  .band-more span{position:relative;background:var(--surface);border:1px solid var(--border-strong);border-radius:999px;
+    font-size:10px;font-weight:800;color:var(--text-soft);padding:0 8px;line-height:14px;font-variant-numeric:tabular-nums;}
+  .band-more:hover span, .band-more.open span{color:var(--work);border-color:var(--work);}
+  /* 드래그: 30분 단위 미리보기 + 30분 안내선 */
+  .week-grid .cell::after{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px dashed color-mix(in srgb, var(--border) 75%, transparent);pointer-events:none;}
+  .week-grid .cell > .evt{z-index:1;}
+  .week-grid .cell.drop-target{z-index:5;}
+  .drop-ghost{position:absolute;left:2px;right:2px;z-index:6;pointer-events:none;box-sizing:border-box;border:2px dashed var(--work);border-radius:6px;
+    background:color-mix(in srgb, var(--work) 16%, transparent);color:var(--work);font-size:10.5px;font-weight:800;padding:1px 5px;font-variant-numeric:tabular-nums;overflow:hidden;}
 </style>
 </head>
 <body>
@@ -722,7 +751,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-28 · 프로젝트(연결 일정): 타임라인 바·순서+지연 이월·프로젝트 태그";
+const APP_VERSION = "2026-09-28 · 새 프로젝트 단계 한번에·종일/할일 3개+접기·드래그 30분 단위";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -915,7 +944,7 @@ const Store = (() => {
 })();
 
 /* ---------- UI 상태 (일부 저장) ---------- */
-const ui = { view: "today", cat: "all", search: "", todoFilter: "active", weekRef: startOfWeek(new Date()), workweek: false,
+const ui = { view: "today", cat: "all", search: "", todoFilter: "active", weekRef: startOfWeek(new Date()), workweek: false, bandOpen: {},
   splitW: 300, dashCollapsed: false, dashExp: { summary: false, important: false } };
 function loadUI() {
   try {
@@ -1087,8 +1116,14 @@ function renderCalendar() {
     const allday = eventsOn(ds).filter((e) => e.allDay);
     const todos = visibleTodos().filter((t) => t.due === ds);
     let cell = `<div class="band-cell ${isToday ? "today-col" : ""}" data-date="${ds}" data-band="1">`;
-    cell += allday.map((e) => `<div class="cal-chip allday pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}" draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span><span class="ci">${catIcon(e.cat)}</span>${projDot(e.projectId)}${esc(e.title)}</div>`).join("");
-    cell += todos.map((t) => `<div class="cal-chip todo ${t.done ? "done" : ""}" draggable="true" data-drag="todo" data-id="${t.id}" data-edit-todo="${t.id}"><span class="cal-check ${t.done ? "done" : ""}" data-toggle="${t.id}">${t.done ? IC.check : ""}</span>${projDot(t.projectId)}${esc(t.title)}</div>`).join("");
+    // 종일·할일은 최대 3개만 보이고 나머지는 ----+N---- 구분선 뒤로 접음 (완료 항목이 뒤로)
+    const chips = [];
+    allday.forEach((e) => chips.push({ done: e.done, html: `<div class="cal-chip allday pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}" draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span><span class="ci">${catIcon(e.cat)}</span>${projDot(e.projectId)}${esc(e.title)}</div>` }));
+    todos.forEach((t) => chips.push({ done: t.done, html: `<div class="cal-chip todo ${t.done ? "done" : ""}" draggable="true" data-drag="todo" data-id="${t.id}" data-edit-todo="${t.id}"><span class="cal-check ${t.done ? "done" : ""}" data-toggle="${t.id}">${t.done ? IC.check : ""}</span>${projDot(t.projectId)}${esc(t.title)}</div>` }));
+    chips.sort((a, b) => a.done - b.done);
+    const LIMIT = 3, open = !!ui.bandOpen[ds], extra = chips.length - LIMIT;
+    cell += (open || extra <= 0 ? chips : chips.slice(0, LIMIT)).map((c) => c.html).join("");
+    if (extra > 0) cell += `<button type="button" class="band-more ${open ? "open" : ""}" data-band-more="${ds}" title="${open ? "접기" : `${extra}개 더 보기`}"><span>${open ? "접기 −" : `+${extra}`}</span></button>`;
     cell += `</div>`;
     grid += cell;
   });
@@ -1387,12 +1422,25 @@ function renderModal(kind, data, cat, isEdit) {
       <button type="button" data-k="todo" class="${kind === "todo" ? "active" : ""}">할 일</button>
     </div>`;
   const clockIc = `<svg class="tp-ic" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-linecap="round"/></svg>`;
-  const newColor = PROJECT_COLORS[Store.state.projects.length % PROJECT_COLORS.length];
+  const np = data._np || null;   // 일정↔할 일 탭 전환 시 작성 중이던 새 프로젝트 유지
+  const newColor = (np && np.color) || PROJECT_COLORS[Store.state.projects.length % PROJECT_COLORS.length];
+  const isNewProj = data.projectId === "__new";
   const projField = `<div class="field"><label>프로젝트</label>
-      <select id="f-proj"><option value="">없음 (단독 일정)</option>${Store.state.projects.map((pr) => `<option value="${pr.id}" ${data.projectId === pr.id ? "selected" : ""}>${esc(pr.name)}</option>`).join("")}<option value="__new">＋ 새 프로젝트 만들기…</option></select>
-      <div id="f-proj-new" class="proj-new" hidden>
-        <input id="f-proj-name" placeholder="새 프로젝트 이름 (예: 신규업체 온보딩)" />
+      <select id="f-proj"><option value="">없음 (단독 일정)</option>${Store.state.projects.map((pr) => `<option value="${pr.id}" ${data.projectId === pr.id ? "selected" : ""}>${esc(pr.name)}</option>`).join("")}<option value="__new" ${isNewProj ? "selected" : ""}>＋ 새 프로젝트 만들기…</option></select>
+      <div id="f-proj-new" class="proj-new" ${isNewProj ? "" : "hidden"}>
+        <input id="f-proj-name" placeholder="새 프로젝트 이름 (예: 신규업체 온보딩)" value="${esc(np ? np.name : "")}" autocomplete="off" />
         <div class="pj-colors" id="f-proj-colors">${PROJECT_COLORS.map((c) => `<button type="button" class="pj-sw ${c === newColor ? "active" : ""}" data-c="${c}" style="background:${c}" aria-label="색상"></button>`).join("")}</div>
+        <div class="np-steps">
+          <div class="np-h">＋ 단계 추가 <small>지금 입력 중인 항목도 이 프로젝트에 포함돼요</small></div>
+          <div class="np-list" id="np-list"></div>
+          <div class="np-row">
+            <input id="np-title" placeholder="단계 이름 (Enter로 추가)" autocomplete="off" />
+            <input id="np-date" type="date" />
+            <div class="tp-wrap"><input id="np-time" class="tp-input" readonly placeholder="시간" data-tp />${clockIc}</div>
+            <button type="button" class="np-add" id="np-add" aria-label="단계 추가">＋</button>
+          </div>
+          <div class="pj-hint">시간을 넣으면 일정, 비우면 할 일 · 저장하면 프로젝트와 단계가 한 번에 만들어져요</div>
+        </div>
       </div></div>`;
   const timeInput = (id, val) => `<div class="tp-wrap"><input id="${id}" class="tp-input" readonly value="${esc(val)}" placeholder="--:--" data-tp/>${clockIc}</div>`;
   let fields;
@@ -1456,22 +1504,51 @@ function renderModal(kind, data, cat, isEdit) {
   // 프로젝트 선택 / 새 프로젝트 즉석 생성
   const projSel = document.getElementById("f-proj");
   let newProjColor = newColor;
+  const pendingSteps = np && Array.isArray(np.steps) ? np.steps.slice() : [];   // 새 프로젝트와 함께 만들 단계
+  const itemDate = () => (document.getElementById(kind === "event" ? "f-date" : "f-due") || {}).value || todayStr();
+  const nextStepDate = () => {
+    const last = [itemDate(), ...pendingSteps.map((x) => x.date)].filter(Boolean).sort().slice(-1)[0] || todayStr();
+    return ymd(addDays(parseYMD(last), 1));
+  };
+  const renderPending = () => {
+    const box = document.getElementById("np-list");
+    const list = pendingSteps.map((x, i) => ({ ...x, i })).sort((a, b) => a.date.localeCompare(b.date) || (a.time || "").localeCompare(b.time || ""));
+    box.innerHTML = list.map((x, n) => `<div class="np-item"><span class="np-n">${n + 1}</span><span class="np-t">${x.time ? '<i class="pj-kind">일정</i>' : ""}${esc(x.title)}</span><span class="np-d">${fmtMD(x.date)}${x.time ? " " + x.time : ""}</span><button type="button" class="np-del" data-np-del="${x.i}" aria-label="삭제">×</button></div>`).join("");
+    box.querySelectorAll("[data-np-del]").forEach((b) => b.addEventListener("click", () => { pendingSteps.splice(+b.dataset.npDel, 1); renderPending(); }));
+    document.getElementById("np-date").value = nextStepDate();
+  };
+  const addPending = () => {
+    const tEl = document.getElementById("np-title"), title = tEl.value.trim();
+    if (!title) { tEl.focus(); return false; }
+    const tm = document.getElementById("np-time");
+    pendingSteps.push({ title, date: document.getElementById("np-date").value || nextStepDate(), time: tm.value || "" });
+    tEl.value = ""; tm.value = ""; renderPending(); tEl.focus(); return true;
+  };
+  renderPending();
+  document.getElementById("np-add").addEventListener("click", addPending);
+  document.getElementById("np-title").addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); addPending(); } });
+  document.getElementById("f-proj-name").addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); document.getElementById("np-title").focus(); } });
   projSel.addEventListener("change", () => {
     const nw = document.getElementById("f-proj-new"); nw.hidden = projSel.value !== "__new";
-    if (!nw.hidden) setTimeout(() => document.getElementById("f-proj-name").focus(), 10);
+    if (!nw.hidden) { renderPending(); setTimeout(() => document.getElementById("f-proj-name").focus(), 10); }
   });
   document.querySelectorAll("#f-proj-colors .pj-sw").forEach((b) => b.addEventListener("click", () => {
     newProjColor = b.dataset.c; document.querySelectorAll("#f-proj-colors .pj-sw").forEach((x) => x.classList.toggle("active", x === b));
   }));
+  let createdPid = null;
   const resolveProject = () => {
     if (projSel.value !== "__new") return projSel.value || null;
     const nm = document.getElementById("f-proj-name").value.trim();
-    return nm ? Store.addProject({ name: nm, color: newProjColor }) : null;
+    if (!nm) return null;
+    if (document.getElementById("np-title").value.trim()) addPending();   // 입력만 하고 ＋를 안 누른 단계도 포함
+    createdPid = Store.addProject({ name: nm, color: newProjColor });
+    return createdPid;
   };
   document.querySelectorAll("#m-cat button").forEach((b) => b.addEventListener("click", () => {
     curCat = b.dataset.v; document.querySelectorAll("#m-cat button").forEach((x) => x.classList.toggle("active", x === b));
   }));
-  if (!isEdit) document.querySelectorAll(".type-tabs button").forEach((b) => b.addEventListener("click", () => openModal(b.dataset.k, { date: data.date, time: data.time, cat: curCat, projectId: projSel.value !== "__new" ? projSel.value : data.projectId, _returnProject: data._returnProject })));
+  if (!isEdit) document.querySelectorAll(".type-tabs button").forEach((b) => b.addEventListener("click", () => openModal(b.dataset.k, { date: data.date, time: data.time, cat: curCat, projectId: projSel.value, _returnProject: data._returnProject,
+    _np: projSel.value === "__new" ? { name: document.getElementById("f-proj-name").value, color: newProjColor, steps: pendingSteps } : null })));
   const allDayEl = document.getElementById("f-allday");
   if (allDayEl) allDayEl.addEventListener("change", () => { document.getElementById("time-row").style.display = allDayEl.checked ? "none" : ""; });
   // [추가 옵션] 접기/펼치기 (편집 시 값이 있으면 자동 펼침)
@@ -1505,6 +1582,9 @@ function renderModal(kind, data, cat, isEdit) {
     if (!title) { document.getElementById("f-title").focus(); return; }
     const prevObj = modalState.id ? (kind === "event" ? Store.state.events : Store.state.todos).find((x) => x.id === modalState.id) : null;
     const prevDate = prevObj ? (kind === "event" ? prevObj.date : prevObj.due) : null, prevPid = prevObj ? prevObj.projectId : null;
+    if (projSel.value === "__new" && !document.getElementById("f-proj-name").value.trim()) {
+      document.getElementById("f-proj-name").focus(); toast("새 프로젝트 이름을 입력하세요"); return;
+    }
     const projectId = resolveProject();
     if (kind === "event") {
       const allDay = document.getElementById("f-allday").checked;
@@ -1527,6 +1607,17 @@ function renderModal(kind, data, cat, isEdit) {
       toast(modalState.id ? "할 일을 수정했습니다" : "할 일을 추가했습니다");
     }
     const editedId = modalState.id, newDate = kind === "event" ? document.getElementById("f-date").value : document.getElementById("f-due").value;
+    if (createdPid) {
+      const c = curCat;
+      pendingSteps.forEach((x) => {
+        if (x.time) Store.addEvent({ title: x.title, date: x.date, time: x.time, endTime: addMin(x.time, 30), cat: c, priority: "normal", reminder: "0", projectId: createdPid });
+        else Store.addTodo({ title: x.title, due: x.date, cat: c, priority: "normal", projectId: createdPid });
+      });
+      closeModal();
+      openProject(createdPid);   // 만든 프로젝트 창을 바로 열어 단계 확인·추가
+      toast(`프로젝트를 만들었습니다 — 단계 ${pendingSteps.length + 1}개`);
+      return;
+    }
     closeModal();
     // 프로젝트 단계를 뒤로 미뤘으면 뒤 단계도 같이 밀지 확인
     if (editedId && projectId && projectId === prevPid) offerCascade(projectId, editedId, prevDate, newDate);
@@ -2018,39 +2109,82 @@ function wirePin() {
 
 /* ---------- 캘린더 드래그 앤 드롭 ---------- */
 let dragData = null;
+// 드래그앤드롭: 시간 칸에서는 30분 단위로 스냅 (잡은 위치 기준) + 이동 미리보기
+const hmToMin = (t) => { const [a, b] = (t || "0:0").split(":").map(Number); return a * 60 + (b || 0); };
+const minToHM = (m) => pad(Math.floor(m / 60)) + ":" + pad(m % 60);
+const DAY_MIN = 8 * 60, DAY_MAX = 20 * 60 + 30;   // 캘린더에 보이는 8:00 ~ 20:30 시작 범위
+function evDurMin(ev) { if (ev && ev.time && ev.endTime) { const d = hmToMin(ev.endTime) - hmToMin(ev.time); if (d > 0) return d; } return 30; }
+function dropStartMin(cell, clientY) {
+  const r = cell.getBoundingClientRect();
+  const raw = parseInt(cell.dataset.hour, 10) * 60 + ((clientY - r.top) / r.height) * 60 - (dragData.grabMin || 0);
+  const snapped = dragData.grabMin ? Math.round(raw / 30) * 30 : Math.floor(raw / 30) * 30; // 잡은 블록은 가장 가까운 30분, 칩은 커서가 있는 30분 칸
+  return Math.max(DAY_MIN, Math.min(DAY_MAX, snapped));
+}
+function showDropGhost(grid, date, startMin) {
+  const cell = grid.querySelector(`.cell[data-date="${date}"][data-hour="${pad(Math.floor(startMin / 60))}:00"]`);
+  let g = grid.querySelector(".drop-ghost");
+  if (!cell) { if (g) g.remove(); return; }
+  if (!g) { g = document.createElement("div"); g.className = "drop-ghost"; }
+  if (g.parentNode !== cell) {
+    grid.querySelectorAll(".drop-target").forEach((c) => c.classList.remove("drop-target"));
+    cell.appendChild(g); cell.classList.add("drop-target");
+  }
+  g.style.top = ((startMin % 60) / 60) * 100 + "%";
+  g.style.height = (dragData.dur / 60) * 100 + "%";
+  g.textContent = minToHM(startMin) + "–" + minToHM(Math.min(startMin + dragData.dur, 23 * 60 + 59));
+}
+function clearDropUI(grid) {
+  grid.querySelectorAll(".drop-ghost").forEach((g) => g.remove());
+  grid.querySelectorAll(".drop-target, .drop-hover").forEach((c) => c.classList.remove("drop-target", "drop-hover"));
+}
 function wireCalendarDnD() {
   const grid = document.querySelector(".week-grid"); if (!grid) return;
   grid.querySelectorAll("[data-drag]").forEach((el) => {
-    el.addEventListener("dragstart", (e) => { dragData = { type: el.dataset.drag, id: el.dataset.id }; el.classList.add("dragging"); try { e.dataTransfer.setData("text/plain", el.dataset.id); e.dataTransfer.effectAllowed = "move"; } catch (_) {} });
-    el.addEventListener("dragend", () => { el.classList.remove("dragging"); dragData = null; grid.querySelectorAll(".drop-hover").forEach((c) => c.classList.remove("drop-hover")); });
+    el.addEventListener("dragstart", (e) => {
+      dragData = { type: el.dataset.drag, id: el.dataset.id, grabMin: 0, dur: 30 };
+      if (dragData.type === "event") {
+        dragData.dur = evDurMin(Store.state.events.find((x) => x.id === el.dataset.id));
+        const c = el.classList.contains("timed") && el.closest(".cell");
+        if (c) { const er = el.getBoundingClientRect(), cr = c.getBoundingClientRect(); dragData.grabMin = Math.max(0.5, ((e.clientY - er.top) / cr.height) * 60); }
+      }
+      el.classList.add("dragging");
+      try { e.dataTransfer.setData("text/plain", el.dataset.id); e.dataTransfer.effectAllowed = "move"; } catch (_) {}
+    });
+    el.addEventListener("dragend", () => { el.classList.remove("dragging"); dragData = null; clearDropUI(grid); });
   });
   grid.querySelectorAll(".cell, .band-cell").forEach((cell) => {
-    cell.addEventListener("dragover", (e) => { if (!dragData) return; e.preventDefault(); cell.classList.add("drop-hover"); });
+    const isBand = cell.dataset.band === "1";
+    cell.addEventListener("dragover", (e) => {
+      if (!dragData) return; e.preventDefault();
+      if (dragData.type === "event" && !isBand) {
+        grid.querySelectorAll(".drop-hover").forEach((c) => c.classList.remove("drop-hover"));
+        showDropGhost(grid, cell.dataset.date, dropStartMin(cell, e.clientY));
+      } else {
+        grid.querySelectorAll(".drop-ghost").forEach((g) => g.remove());
+        cell.classList.add("drop-hover");
+      }
+    });
     cell.addEventListener("dragleave", () => cell.classList.remove("drop-hover"));
     cell.addEventListener("drop", (e) => {
-      e.preventDefault(); cell.classList.remove("drop-hover"); if (!dragData) return;
-      const date = cell.dataset.date; const isBand = cell.dataset.band === "1";
+      e.preventDefault(); if (!dragData) return;
+      const date = cell.dataset.date;
+      const startMin = !isBand && dragData.type === "event" ? dropStartMin(cell, e.clientY) : 0;
+      clearDropUI(grid);
       if (dragData.type === "todo") {
         const td = Store.state.todos.find((x) => x.id === dragData.id);
         const oldDue = td && td.due, pid = td && td.projectId;
         Store.updateTodo(dragData.id, { due: date }); toast("할 일을 옮겼습니다");
         offerCascade(pid, dragData.id, oldDue, date);
-      }
-      else if (dragData.type === "event") {
+      } else if (dragData.type === "event") {
         const ev = Store.state.events.find((x) => x.id === dragData.id); if (!ev) return;
         const oldDate = ev.date, pid = ev.projectId, evId = dragData.id;
         setTimeout(() => offerCascade(pid, evId, oldDate, date), 0);
-        if (isBand) Store.updateEvent(dragData.id, { date, allDay: true, time: "", endTime: "" });
+        if (isBand) { Store.updateEvent(evId, { date, allDay: true, time: "", endTime: "" }); toast("종일 일정으로 옮겼습니다"); }
         else {
-          const newHour = cell.dataset.hour; let endTime = ev.endTime;
-          if (ev.time && ev.endTime) { // 지속시간 유지
-            const dur = (parseInt(ev.endTime.slice(0,2))*60+parseInt(ev.endTime.slice(3))) - (parseInt(ev.time.slice(0,2))*60+parseInt(ev.time.slice(3)));
-            const startM = parseInt(newHour.slice(0,2))*60; const endM = Math.min(startM + Math.max(dur,0), 23*60+59);
-            endTime = pad(Math.floor(endM/60))+":"+pad(endM%60);
-          }
-          Store.updateEvent(dragData.id, { date, allDay: false, time: newHour, endTime });
+          const time = minToHM(startMin), endTime = minToHM(Math.min(startMin + dragData.dur, 23 * 60 + 59));
+          Store.updateEvent(evId, { date, allDay: false, time, endTime });
+          toast(`${fmtMD(date)} ${time}–${endTime}로 옮겼습니다`);
         }
-        toast("일정을 옮겼습니다");
       }
     });
   });
@@ -2084,7 +2218,7 @@ function wireGlobal() {
 
   document.addEventListener("click", (e) => {
     if (e.target.closest("#timepop") || e.target.closest(".pin-widget")) return; // 별도 핸들러 처리
-    const t = e.target.closest("[data-cat],[data-todo-filter],[data-toggle],[data-ev-toggle],[data-edit-event],[data-del-event],[data-edit-todo],[data-del-todo],[data-ww],[data-dash-toggle],#dash-collapse,#wk-prev,#wk-next,#wk-today,#roll-desktop,#roll-mobile,#set-theme,#set-pin,#set-export,#set-import,#set-clear,#set-alert-demo,#set-close,[data-paper],[data-theme-key],[data-contrast],[data-step],[data-proj],#pj-new");
+    const t = e.target.closest("[data-cat],[data-todo-filter],[data-toggle],[data-ev-toggle],[data-edit-event],[data-del-event],[data-edit-todo],[data-del-todo],[data-ww],[data-dash-toggle],#dash-collapse,#wk-prev,#wk-next,#wk-today,#roll-desktop,#roll-mobile,#set-theme,#set-pin,#set-export,#set-import,#set-clear,#set-alert-demo,#set-close,[data-paper],[data-theme-key],[data-contrast],[data-step],[data-proj],#pj-new,[data-band-more]");
     if (!t) return;
     if (t.dataset.evToggle) { Store.toggleEvent(t.dataset.evToggle); return; }
     if (t.dataset.dashToggle) { ui.dashExp[t.dataset.dashToggle] = !ui.dashExp[t.dataset.dashToggle]; saveUI(); render(); return; }
@@ -2105,6 +2239,7 @@ function wireGlobal() {
     if (t.id === "roll-desktop" || t.id === "roll-mobile") { const n = Store.rollover(); toast(n ? `${n}건을 오늘로 이월했습니다` : "이월할 업무가 없습니다"); return; }
     if (t.dataset.themeKey) { setPref("theme", t.dataset.themeKey); render(); return; }
     if (t.dataset.contrast) { setPref("contrast", t.dataset.contrast); render(); return; }
+    if (t.dataset.bandMore) { ui.bandOpen[t.dataset.bandMore] = !ui.bandOpen[t.dataset.bandMore]; render(); return; }
     if (t.id === "pj-new") { openProject(null); return; }
     if (t.dataset.proj) { openProject(t.dataset.proj); return; }
     if (t.dataset.step) {
@@ -2147,9 +2282,11 @@ function wireGlobal() {
   // 캘린더 빈 셀 클릭 → 추가
   document.getElementById("content").addEventListener("click", (e) => {
     const cell = e.target.closest(".cell, .band-cell");
-    if (cell && !e.target.closest(".evt, .cal-chip")) {
+    if (cell && !e.target.closest(".evt, .cal-chip, .band-more")) {
       const band = cell.dataset.band === "1";
-      openModal("event", { date: cell.dataset.date, time: band ? "" : cell.dataset.hour, allDay: band, cat: ui.cat === "personal" ? "personal" : "work" });
+      let time = band ? "" : cell.dataset.hour;
+      if (!band) { const r = cell.getBoundingClientRect(); if (e.clientY - r.top > r.height / 2) time = time.slice(0, 3) + "30"; } // 아래 절반 = :30
+      openModal("event", { date: cell.dataset.date, time, allDay: band, cat: ui.cat === "personal" ? "personal" : "work" });
     }
   });
 }
