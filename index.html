@@ -571,21 +571,36 @@
   #m-extra[hidden]{display:none;}
   /* ================= 프로젝트 (연결된 일정) ================= */
   /* 캘린더 타임라인 바 */
-  .week-grid .proj-label{background:var(--surface-2);border-bottom:1px solid var(--border);font-size:10px;color:var(--text-faint);font-weight:700;display:flex;align-items:center;justify-content:center;padding:2px;text-align:center;}
-  .week-grid .proj-lane{grid-column:2 / -1;display:grid;align-items:center;border-bottom:1px solid var(--border);border-left:1px solid var(--border);min-height:36px;padding:4px 0 7px;background:color-mix(in srgb, var(--pc) 5%, var(--surface));}
-  .pj-bar{grid-row:1;position:relative;height:22px;margin:0 4px;border-radius:7px;min-width:0;cursor:pointer;overflow:hidden;display:flex;align-items:center;
+  .week-grid.has-proj{--gut:78px;}
+  @media (max-width:640px){ .week-grid.has-proj{--gut:58px;} }
+  .week-grid .proj-label{background:var(--surface-2);border-bottom:1px solid var(--border);display:flex;flex-direction:column;align-items:stretch;justify-content:center;gap:1px;padding:3px 4px;min-width:0;cursor:pointer;}
+  .week-grid .proj-label .pl-nm{padding:1px 5px;border-radius:5px;font-size:10px;font-weight:800;color:#fff;background:var(--pc);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;line-height:1.45;}
+  .week-grid .proj-label .pl-pc{font-size:9.5px;font-weight:800;color:color-mix(in srgb, var(--pc) 70%, var(--text));text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums;}
+  .week-grid .proj-label .pj-late{font-size:8.5px;padding:0 3px;margin-left:0;}
+  .week-grid .proj-lane{grid-column:2 / -1;display:grid;align-items:center;border-bottom:1px solid var(--border);border-left:1px solid var(--border);min-height:32px;padding:4px 0;background:color-mix(in srgb, var(--pc) 5%, var(--surface));}
+  .pj-bar{grid-row:1;position:relative;height:24px;margin:0 3px;border-radius:7px;min-width:0;cursor:pointer;overflow:hidden;
     background:color-mix(in srgb, var(--pc) 14%, var(--surface));border:1px solid color-mix(in srgb, var(--pc) 50%, transparent);transition:filter .12s;}
   .pj-bar:hover{filter:brightness(.96);}
   .pj-bar.cont-l{border-top-left-radius:0;border-bottom-left-radius:0;margin-left:0;border-left-style:dashed;}
   .pj-bar.cont-r{border-top-right-radius:0;border-bottom-right-radius:0;margin-right:0;border-right-style:dashed;}
   .pj-fill{position:absolute;left:0;top:0;bottom:0;background:color-mix(in srgb, var(--pc) 34%, transparent);}
-  .pj-lab{position:relative;z-index:1;font-size:11px;font-weight:800;color:color-mix(in srgb, var(--pc) 70%, var(--text));padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .pj-late{color:#fff;background:var(--urgent);border-radius:4px;padding:0 4px;font-size:9.5px;margin-left:2px;}
-  .pj-step{grid-row:1;align-self:end;justify-self:center;width:9px;height:9px;margin-bottom:-6px;border-radius:50%;
-    background:var(--surface);border:2px solid var(--pc);position:relative;z-index:2;pointer-events:none;}
-  .pj-step.done{background:var(--pc);}
-  .pj-step.late{background:var(--urgent);border-color:var(--urgent);}
-  .pj-step.ms{border-radius:2px;transform:rotate(45deg);}
+  /* 막대 위 단계 칩 (체크·클릭 수정·끌어서 날짜 이동) */
+  .pj-chip{grid-row:1;position:relative;z-index:2;min-width:0;height:18px;margin:0 6px;display:flex;align-items:center;gap:3px;padding:0 5px 0 3px;box-sizing:border-box;
+    border-radius:5px;font-size:10px;font-weight:700;line-height:1;cursor:pointer;background:var(--surface);color:color-mix(in srgb, var(--pc) 45%, var(--text));
+    border:1px solid color-mix(in srgb, var(--pc) 55%, transparent);border-left:3px solid var(--pc);box-shadow:0 1px 2px rgba(0,0,0,.06);}
+  .pj-chip:hover{background:color-mix(in srgb, var(--pc) 8%, var(--surface));}
+  .pj-chip.dragging{opacity:.45;}
+  .pj-chip .cal-check{width:11px;height:11px;flex:none;}
+  .pj-chip .pj-ct{min-width:0;flex:1 1 auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pj-chip .pj-ct b{font-weight:800;font-variant-numeric:tabular-nums;}
+  .pj-chip .pj-ms{font-style:normal;color:var(--pc);margin-right:2px;font-size:9px;}
+  .pj-chip.done{opacity:.6;}
+  .pj-chip.done .pj-ct{text-decoration:line-through;}
+  .pj-chip.late{border-color:var(--urgent);border-left-color:var(--urgent);}
+  .pj-chip .pj-more{flex:none;font-size:9px;font-weight:800;color:#fff;background:var(--pc);border-radius:999px;padding:1px 4px;margin-left:1px;}
+  .proj-lane.drop-hover{box-shadow:inset 0 0 0 2px var(--work);}
+  @media (max-width:640px){ .pj-chip{margin:0 3px;padding:0 3px 0 2px;} .pj-chip .pj-ct b{display:none;} }
   /* 단계 칩의 프로젝트 색 점 / 목록의 프로젝트 태그 */
   .pj-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:3px;vertical-align:middle;flex:none;box-shadow:0 0 0 1.5px var(--surface);}
   .ptag{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;line-height:1.55;white-space:nowrap;vertical-align:middle;cursor:pointer;margin-left:4px;
@@ -703,10 +718,6 @@
     border-left:3px solid var(--pc);
     color:color-mix(in srgb, var(--pc) 45%, var(--text));}
   .week-grid .evt.proj-item{box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--pc) 30%, transparent), var(--shadow);}
-  /* 프로젝트 행: 이름 · 진도율 · 완료/전체 */
-  .pj-lab .pj-pct{margin-left:8px;font-weight:800;}
-  .pj-lab .pj-cnt{margin-left:6px;font-size:10px;font-weight:800;padding:0 6px;border-radius:999px;
-    background:color-mix(in srgb, var(--pc) 22%, var(--surface));color:color-mix(in srgb, var(--pc) 70%, var(--text));font-variant-numeric:tabular-nums;}
   /* 종일·할일 칩: 30분 일정 블록과 같은 높이(시간 칸 46px ÷ 2 − 2px = 21px)로 통일,
      할 일 목록(.todo) 줄 스타일이 캘린더 칩에 섞여 들던 것 차단 */
   .week-grid .band-cell .cal-chip{height:21px;min-height:21px;padding:0 6px;margin:0;gap:4px;flex:none;
@@ -819,7 +830,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-28 · 프로젝트 추가 창에서 바로 완료";
+const APP_VERSION = "2026-09-29 · 프로젝트 한 줄 표시";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1173,44 +1184,50 @@ function renderCalendar() {
   const today = todayStr();
   const head = "";
   // 오늘 열은 다른 날보다 좌우 폭 1.5배
-  const cols = `grid-template-columns:46px ` + week.map((d) => ymd(d) === today ? "minmax(96px,1.5fr)" : "minmax(60px,1fr)").join(" ") + ";";
-  let grid = `<div class="week-scroll"><div class="week-grid" style="${cols}"><div class="corner"></div>`;
-  week.forEach((d) => {
-    const isToday = ymd(d) === today;
-    grid += `<div class="head ${isToday ? "today" : ""}"><span class="dow">${DOW[d.getDay()]}</span><span class="num">${d.getDate()}</span></div>`;
-  });
-  // 프로젝트 타임라인 바 — 이번 주와 겹치는 프로젝트마다 한 줄 (진행률 채움 + 단계 표식)
+  const cols = `grid-template-columns:var(--gut,46px) ` + week.map((d) => ymd(d) === today ? "minmax(96px,1.5fr)" : "minmax(60px,1fr)").join(" ") + ";";
   const dayCols = week.map((d) => ymd(d) === today ? "minmax(96px,1.5fr)" : "minmax(60px,1fr)").join(" ");
   const wStart = ymd(week[0]), wEnd = ymd(week[week.length - 1]);
   // 모든 단계가 끝난 프로젝트는 캘린더에서 숨김(막대·단계 모두) → 프로젝트 탭에서 확인
   const doneProj = completedProjectIds();
   const hiddenDone = (x) => !!(x.projectId && doneProj.has(x.projectId));
   const clampIdx = (ds) => Math.max(0, Math.min(nDays - 1, daysBetween(wStart, ds)));
-  Store.state.projects.map((p) => ({ p, st: projectStats(p.id) }))
-    .filter(({ p, st }) => st.start && st.start <= wEnd && st.end >= wStart && !doneProj.has(p.id))
-    .forEach(({ p, st }, i) => {
-      const si = clampIdx(st.start), ei = clampIdx(st.end);
-      const contL = st.start < wStart, contR = st.end > wEnd;
-      const last = st.items.filter((x) => x.date).slice(-1)[0];
-      const marks = st.items.filter((x) => x.date && x.date >= wStart && x.date <= wEnd).map((x) => {
-        const late = !x.done && x.rolledFrom;
-        const ms = x === last && st.items.length > 1;
-        return `<span class="pj-step ${x.done ? "done" : ""} ${late ? "late" : ""} ${ms ? "ms" : ""}" style="grid-column:${daysBetween(wStart, x.date) + 1}" title="${esc(x.title)}${x.done ? " (완료)" : ""}"></span>`;
-      }).join("");
-      grid += `<div class="proj-label">${i === 0 ? "프로젝트" : ""}</div>`;
-      grid += `<div class="proj-lane" style="grid-template-columns:${dayCols};--pc:${p.color}">
-        <div class="pj-bar ${contL ? "cont-l" : ""} ${contR ? "cont-r" : ""}" style="grid-column:${si + 1} / ${ei + 2}" data-proj="${p.id}" title="${esc(p.name)} · ${st.done}/${st.total} 완료 — 클릭해서 단계 보기">
-          <span class="pj-fill" style="width:${st.pct}%"></span>
-          <span class="pj-lab">${contL ? "◀ " : ""}${esc(p.name)}<b class="pj-pct">${st.pct}%</b><span class="pj-cnt">${st.done}/${st.total}</span>${st.delay ? ` <b class="pj-late">D+${st.delay}</b>` : ""}${contR ? " ▶" : ""}</span>
-        </div>${marks}</div>`;
-    });
+  const lanes = Store.state.projects.map((p) => ({ p, st: projectStats(p.id) }))
+    .filter(({ p, st }) => st.start && st.start <= wEnd && st.end >= wStart && !doneProj.has(p.id));
+  let grid = `<div class="week-scroll"><div class="week-grid ${lanes.length ? "has-proj" : ""}" style="${cols}"><div class="corner"></div>`;
+  week.forEach((d) => {
+    const isToday = ymd(d) === today;
+    grid += `<div class="head ${isToday ? "today" : ""}" data-date="${ymd(d)}"><span class="dow">${DOW[d.getDay()]}</span><span class="num">${d.getDate()}</span></div>`;
+  });
+  // 프로젝트 한 줄 — 왼쪽 칸에 이름·진도율, 막대(기간+진행률) 위에 단계 칩을 날짜 칸마다 표시
+  lanes.forEach(({ p, st }) => {
+    const si = clampIdx(st.start), ei = clampIdx(st.end);
+    const contL = st.start < wStart, contR = st.end > wEnd;
+    const last = st.items.filter((x) => x.date).slice(-1)[0];
+    const byDay = {};
+    st.items.filter((x) => x.date && x.date >= wStart && x.date <= wEnd).forEach((x) => (byDay[x.date] = byDay[x.date] || []).push(x));
+    const chips = Object.keys(byDay).map((ds) => {
+      const list = byDay[ds];
+      const x = list.find((y) => !y.done) || list[0];   // 같은 날 여러 단계 → 남은 단계 먼저 + "+N"
+      const late = !x.done && x.rolledFrom;
+      const ms = x === last && st.items.length > 1;
+      const act = x.kind === "todo" ? `data-drag="todo" data-id="${x.id}" data-edit-todo="${x.id}"` : `data-drag="event" data-id="${x.id}" data-edit-event="${x.id}"`;
+      const ck = x.kind === "todo" ? `data-toggle="${x.id}"` : `data-ev-toggle="${x.id}"`;
+      const more = list.length > 1 ? `<span class="pj-more" data-proj="${p.id}" title="${esc(list.filter((y) => y !== x).map((y) => y.title).join(", "))} — 프로젝트 열기">+${list.length - 1}</span>` : "";
+      return `<div class="pj-chip ${x.done ? "done" : ""} ${late ? "late" : ""} ${ms ? "ms" : ""}" style="grid-column:${daysBetween(wStart, ds) + 1}" draggable="true" ${act} title="${esc(x.title)}${x.time ? ` · ${x.time}` : ""}${x.done ? " (완료)" : ""}${ms ? " · 마지막 단계" : ""}"><span class="cal-check ${x.done ? "done" : ""}" ${ck}>${x.done ? IC.check : ""}</span><span class="pj-ct">${ms ? `<i class="pj-ms">◆</i>` : ""}${x.time ? `<b>${x.time}</b> ` : ""}${esc(x.title)}</span>${more}</div>`;
+    }).join("");
+    grid += `<div class="proj-label" style="--pc:${p.color}" data-proj="${p.id}" title="${esc(p.name)} · ${st.done}/${st.total} 완료 — 클릭해서 단계 보기">
+      <span class="pl-nm">${esc(p.name)}</span><span class="pl-pc">${st.pct}% · ${st.done}/${st.total}${st.delay ? ` <b class="pj-late">D+${st.delay}</b>` : ""}</span></div>`;
+    grid += `<div class="proj-lane" style="grid-template-columns:${dayCols};--pc:${p.color}">
+      <div class="pj-bar ${contL ? "cont-l" : ""} ${contR ? "cont-r" : ""}" style="grid-column:${si + 1} / ${ei + 2}" data-proj="${p.id}" title="${esc(p.name)} · ${st.pct}% (${st.done}/${st.total}) — 클릭해서 단계 보기"><span class="pj-fill" style="width:${st.pct}%"></span></div>${chips}</div>`;
+  });
   // 종일/할일 밴드
   grid += `<div class="band-label">종일<br>·할일</div>`;
   week.forEach((d) => {
     const ds = ymd(d);
     const isToday = ds === today;
-    const allday = eventsOn(ds).filter((e) => e.allDay && !hiddenDone(e));
-    const todos = visibleTodos().filter((t) => t.due === ds && !hiddenDone(t));
+    // 프로젝트 단계는 프로젝트 줄에 표시 → 종일·할일 칸에는 일반 항목만
+    const allday = eventsOn(ds).filter((e) => e.allDay && !hiddenDone(e) && !inProject(e));
+    const todos = visibleTodos().filter((t) => t.due === ds && !hiddenDone(t) && !inProject(t));
     let cell = `<div class="band-cell ${isToday ? "today-col" : ""}" data-date="${ds}" data-band="1">`;
     // 종일·할일은 최대 3개만 보이고 나머지는 ----+N---- 구분선 뒤로 접음 (완료 항목이 뒤로)
     const chips = [];
@@ -2406,6 +2423,33 @@ function wireCalendarDnD() {
           Store.updateEvent(evId, { date, allDay: false, time, endTime });
           toast(`${fmtMD(date)} ${time}–${endTime}로 옮겼습니다`);
         }
+      }
+    });
+  });
+  // 프로젝트 줄 위에 놓기 → 커서가 있는 날짜 칸으로 날짜만 변경 (시간·종일 여부는 유지)
+  const heads = [...grid.querySelectorAll(".head[data-date]")];
+  const dateAt = (x) => { const h = heads.find((el) => { const r = el.getBoundingClientRect(); return x >= r.left && x < r.right; }); return h && h.dataset.date; };
+  grid.querySelectorAll(".proj-lane").forEach((lane) => {
+    lane.addEventListener("dragover", (e) => {
+      if (!dragData) return; e.preventDefault();
+      grid.querySelectorAll(".drop-ghost").forEach((g) => g.remove());
+      lane.classList.add("drop-hover");
+    });
+    lane.addEventListener("dragleave", (e) => { if (!lane.contains(e.relatedTarget)) lane.classList.remove("drop-hover"); });
+    lane.addEventListener("drop", (e) => {
+      e.preventDefault(); if (!dragData) return;
+      const date = dateAt(e.clientX); clearDropUI(grid);
+      if (!date) return;
+      if (dragData.type === "todo") {
+        const td = Store.state.todos.find((x) => x.id === dragData.id); if (!td || td.due === date) return;
+        const oldDue = td.due, pid = td.projectId, id = td.id;
+        Store.updateTodo(id, { due: date }); toast(`${fmtMD(date)}로 옮겼습니다`);
+        offerCascade(pid, id, oldDue, date);
+      } else if (dragData.type === "event") {
+        const ev = Store.state.events.find((x) => x.id === dragData.id); if (!ev || ev.date === date) return;
+        const oldDate = ev.date, pid = ev.projectId, evId = ev.id;
+        setTimeout(() => offerCascade(pid, evId, oldDate, date), 0);
+        Store.updateEvent(evId, { date }); toast(`${fmtMD(date)}로 옮겼습니다`);
       }
     });
   });
