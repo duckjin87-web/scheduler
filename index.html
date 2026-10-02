@@ -105,6 +105,7 @@
   body.paper-excel .topbar{border-bottom:2px solid var(--xl-head-line);}
   body.paper-excel .week-grid .cell, body.paper-excel .week-grid .band-cell,
   body.paper-excel .week-grid .head, body.paper-excel .week-grid .corner,
+  body.paper-excel .week-grid .m-cell,
   body.paper-excel .week-grid .hourlabel{border-color:var(--xl-line);}
   body.paper-excel .cal-chip, body.paper-excel .evt.timed{border-radius:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   /* 엑셀 테마에서 캘린더 내부 세로 스크롤바 자리 확보용 셀 정렬 */
@@ -113,10 +114,11 @@
   /* ========== 배경 테마를 캘린더/목록에 자연스럽게 통합 ========== */
   /* 캘린더는 자기 격자를 테마 색으로 칠해 '그 종이 위에 그린' 느낌 (이중격자 방지 위해 불투명) */
   body:is(.paper-grid,.paper-ruled,.paper-dot,.paper-excel) .week-grid{background-color:var(--surface);}
-  body.paper-grid .week-grid :is(.cell,.head,.band-cell,.corner,.hourlabel,.band-label),
-  body.paper-dot  .week-grid :is(.cell,.head,.band-cell,.corner,.hourlabel,.band-label){border-color:var(--pp-line);}
+  body.paper-grid .week-grid :is(.cell,.head,.band-cell,.m-cell,.corner,.hourlabel,.band-label),
+  body.paper-dot  .week-grid :is(.cell,.head,.band-cell,.m-cell,.corner,.hourlabel,.band-label){border-color:var(--pp-line);}
   body.paper-ruled .week-grid :is(.cell,.hourlabel){border-top-color:var(--pp-rule);}
   body.paper-ruled .week-grid :is(.cell,.band-cell,.head){border-left-color:transparent;}
+  body.paper-ruled .month-grid .m-cell{border-top-color:var(--pp-rule);}
   /* 목록(오늘/할일): 배경 종이가 자연스럽게 비치도록 카드 살짝 투명 (엑셀 제외) */
   body:is(.paper-grid,.paper-ruled,.paper-dot) .agenda .row-item{background-color:color-mix(in srgb, var(--surface) 55%, transparent);}
   body:is(.paper-grid,.paper-ruled,.paper-dot) .agenda .row-item.pri-urgent{background-color:color-mix(in srgb, var(--pri-urgent) 62%, transparent);}
@@ -269,6 +271,10 @@
   .week-nav button{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;}
   .week-nav button svg{width:13px;height:13px;stroke:var(--text-soft);}
   .week-nav .today-btn{width:auto;padding:0 10px;font-size:12px;font-weight:700;color:var(--text-soft);}
+  .week-nav .cal-title{font-size:12.5px;font-weight:800;color:var(--text);white-space:nowrap;padding:0 2px;font-variant-numeric:tabular-nums;}
+  .week-nav .cal-seg{display:flex;gap:2px;background:var(--surface-2);border:1px solid var(--border);border-radius:7px;padding:2px;}
+  .week-nav .cal-seg button{width:26px;height:22px;border:0;background:transparent;border-radius:5px;font-size:11.5px;font-weight:800;color:var(--text-faint);cursor:pointer;padding:0;}
+  .week-nav .cal-seg button.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow);}
   .week-scroll{overflow:auto;-webkit-overflow-scrolling:touch;flex:1 1 auto;min-height:0;border:1px solid var(--border);border-radius:10px;}
   .week-grid{display:grid;background:var(--surface);}
   /* 요일/날짜 헤더 행 고정 (세로 스크롤 시 상단 유지) */
@@ -286,10 +292,54 @@
   .week-grid .head.today .num{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:28px;border-radius:50%;background:var(--work);color:#fff;}
   /* 설정 화면: 설정 내용만 표시 (상단 검색/탭/칩 숨김) */
   body.settings-only .topbar{display:none;}
-  /* all-day / todo band */
-  .week-grid .band-label{background:var(--surface-2);border-bottom:1px solid var(--border);font-size:10px;color:var(--text-faint);font-weight:700;display:flex;align-items:center;justify-content:center;padding:4px 2px;}
-  .week-grid .band-cell{border-bottom:1px solid var(--border);border-left:1px solid var(--border);min-height:32px;padding:3px;display:flex;flex-direction:column;gap:3px;}
+  /* all-day / todo band — 아래 시간표와 구분되도록 위·아래 굵은 테두리로 묶음 */
+  .week-grid .band-label{background:var(--surface-2);border-top:2px solid var(--border-strong);border-bottom:2px solid var(--border-strong);
+    font-size:10px;color:var(--text-faint);font-weight:700;display:flex;align-items:center;justify-content:center;padding:4px 2px;}
+  .week-grid .band-cell{border-top:2px solid var(--border-strong);border-bottom:2px solid var(--border-strong);border-left:1px solid var(--border);
+    min-height:32px;padding:4px 3px;display:flex;flex-direction:column;gap:3px;background:color-mix(in srgb, var(--text) 3%, var(--surface));}
   .week-grid .band-cell.today-col{background:color-mix(in srgb, var(--work) 14%, var(--surface));}
+  /* 월간 그리드 */
+  /* 첫 줄(요일 머리)은 글자 높이만, 날짜 줄만 같은 높이로 채움 */
+  .month-grid{grid-template-rows:auto;grid-auto-rows:minmax(94px,1fr);min-height:100%;}
+  .month-grid .head.mh{min-height:28px;padding:5px 2px;font-size:13px;justify-content:center;}
+  .month-grid .head.mh .dow{position:static;transform:none;}
+  .month-grid .head.mh.sun{color:var(--urgent);}
+  .month-grid .head.mh.sat{color:var(--work);}
+  .m-cell{border-top:1px solid var(--border);border-left:1px solid var(--border);min-width:0;min-height:0;overflow:hidden;
+    padding:2px 3px 3px;display:flex;flex-direction:column;gap:2px;cursor:pointer;transition:background .1s;}
+  .m-cell:hover{background:var(--surface-2);}
+  .m-cell.other{background:color-mix(in srgb, var(--text) 4%, var(--surface));}
+  .m-cell.today{background:color-mix(in srgb, var(--work) 10%, var(--surface));}
+  .m-top{display:flex;align-items:center;justify-content:space-between;gap:4px;flex:none;}
+  .m-d{border:0;background:transparent;font-family:inherit;font-size:11.5px;font-weight:800;color:var(--text-soft);
+    padding:1px 6px;border-radius:999px;cursor:pointer;line-height:1.5;}
+  .m-d:hover{background:var(--surface-3);}
+  .m-cell.other .m-d{color:var(--text-faint);opacity:.75;}
+  .m-cell.today .m-d{background:var(--work);color:#fff;}
+  .m-items{display:flex;flex-direction:column;gap:2px;min-height:0;overflow:hidden;}
+  .m-item{height:17px;min-height:17px;flex:none;box-sizing:border-box;display:flex;align-items:center;gap:3px;padding:0 4px;
+    border-radius:4px;border:1px solid transparent;font-size:10px;font-weight:700;line-height:1;white-space:nowrap;overflow:hidden;cursor:pointer;}
+  .m-item .mt{min-width:0;overflow:hidden;text-overflow:ellipsis;}
+  .m-item b{font-weight:800;font-variant-numeric:tabular-nums;opacity:.75;flex:none;}
+  .m-item .cal-check{width:11px;height:11px;flex:none;}
+  .m-item .cal-check svg{width:8px;height:8px;}
+  .m-item.pri-urgent{background:var(--pri-urgent);} .m-item.pri-high{background:var(--pri-high);} .m-item.pri-normal{background:var(--pri-normal);}
+  .m-item.work{border-left:3px solid var(--work);} .m-item.personal{border-left:3px solid var(--personal);}
+  .m-item.todo{background:var(--high-soft);color:var(--high);}
+  .m-item.proj-item{background:color-mix(in srgb, var(--pc) 20%, var(--surface));border-left:3px solid var(--pc);color:color-mix(in srgb, var(--pc) 45%, var(--text));}
+  .m-item.done{opacity:.55;} .m-item.done .mt{text-decoration:line-through;}
+  .m-item.dragging{opacity:.4;}
+  .m-more{border:0;background:transparent;color:var(--text-faint);font-size:9.5px;font-weight:800;text-align:left;padding:0 4px;cursor:pointer;flex:none;}
+  .m-more:hover{color:var(--text-soft);}
+  .m-cell.drop-hover{background:var(--work-soft) !important;outline:2px dashed var(--work);outline-offset:-2px;}
+  @media (max-width:640px){
+    .month-grid{grid-auto-rows:minmax(72px,1fr);}
+    .m-cell{padding:1px 2px 2px;}
+    .month-grid .head.mh{font-size:11.5px;}
+    .m-item{height:15px;min-height:15px;font-size:9px;padding:0 3px;gap:2px;}
+    .m-item b{display:none;}
+    .m-d{font-size:10.5px;padding:0 4px;}
+  }
   .week-grid .hourlabel{font-size:10.5px;color:var(--text-faint);text-align:right;padding:4px 6px 0 0;border-top:1px solid var(--border);height:46px;}
   .week-grid .cell{border-top:1px solid var(--border);border-left:1px solid var(--border);height:46px;padding:0;position:relative;cursor:pointer;transition:background .1s;}
   .week-grid .cell:hover{background:var(--surface-2);}
@@ -530,6 +580,7 @@
     .bottom-nav button svg{width:21px;height:21px;stroke:currentColor;}
     .bottom-nav button.active{color:var(--work);}
     .week-grid{min-width:560px;}
+    .week-grid.month-grid{min-width:0;}   /* 월간은 가로 스크롤 없이 화면에 맞춤 */
     #alert-stack{top:auto;bottom:calc(74px + var(--safe-b));right:12px;left:12px;width:auto;}
   }
   @media (min-width: 901px){ .mobile-only{display:none !important;} }
@@ -722,8 +773,10 @@
      할 일 목록(.todo) 줄 스타일이 캘린더 칩에 섞여 들던 것 차단 */
   .week-grid .band-cell .cal-chip{height:21px;min-height:21px;padding:0 6px;margin:0;gap:4px;flex:none;
     align-items:center;box-sizing:border-box;border-radius:5px;font-size:10.5px;line-height:1.25;}
-  .week-grid .band-cell .cal-chip.todo{border:0;}
-  .week-grid .band-cell .cal-chip.proj-item{border-left:3px solid var(--pc);}
+  /* 밴드 칩: 테두리를 둘러 아래 시간표의 일정 블록과 한눈에 구분 */
+  .week-grid .band-cell .cal-chip{border:1px solid color-mix(in srgb, var(--text) 20%, transparent);}
+  .week-grid .band-cell .cal-chip.todo{border:1px solid color-mix(in srgb, var(--high) 45%, transparent);}
+  .week-grid .band-cell .cal-chip.proj-item{border:1px solid color-mix(in srgb, var(--pc) 45%, transparent);border-left:3px solid var(--pc);}
   .week-grid .band-cell .cal-chip .cal-check{width:12px;height:12px;}
   /* 프로젝트 색 선택: 추천 10색 + 직접 선택(무지개) */
   .pj-colors{align-items:center;gap:6px;}
@@ -830,7 +883,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-09-29 · 프로젝트 한 줄 표시";
+const APP_VERSION = "2026-10-02 · 주간·월간 보기 전환";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -842,6 +895,8 @@ const todayStr = () => ymd(new Date());
 const DOW = ["일", "월", "화", "수", "목", "금", "토"];
 function startOfWeek(date) { const d = new Date(date); const day = (d.getDay() + 6) % 7; d.setDate(d.getDate() - day); d.setHours(0,0,0,0); return d; }
 function addDays(date, n) { const d = new Date(date); d.setDate(d.getDate() + n); return d; }
+function startOfMonth(date) { const d = new Date(date); d.setDate(1); d.setHours(0,0,0,0); return d; }
+function addMonths(date, n) { const d = startOfMonth(date); d.setMonth(d.getMonth() + n); return d; }
 function fmtKDate(s) { const d = parseYMD(s); return `${d.getMonth() + 1}월 ${d.getDate()}일 (${DOW[d.getDay()]})`; }
 function fmtDueMeta(s) {
   if (!s) return "";
@@ -1025,19 +1080,21 @@ const Store = (() => {
 })();
 
 /* ---------- UI 상태 (일부 저장) ---------- */
-const ui = { view: "today", cat: "all", search: "", todoFilter: "active", weekRef: startOfWeek(new Date()), workweek: false, bandOpen: {},
+const ui = { view: "today", cat: "all", search: "", todoFilter: "active", weekRef: startOfWeek(new Date()),
+  calMode: "week", monthRef: startOfMonth(new Date()), workweek: false, bandOpen: {},
   splitW: 300, dashCollapsed: false, dashExp: { summary: false, important: false } };
 function loadUI() {
   try {
     const p = JSON.parse(localStorage.getItem("scheduler:ui") || "{}");
     if (typeof p.workweek === "boolean") ui.workweek = p.workweek;
+    if (p.calMode === "week" || p.calMode === "month") ui.calMode = p.calMode;
     if (p.view && p.view !== "todo") ui.view = p.view; // 할일 탭 제거됨
     if (typeof p.splitW === "number") ui.splitW = Math.max(180, Math.min(560, p.splitW));
     if (typeof p.dashCollapsed === "boolean") ui.dashCollapsed = p.dashCollapsed;
     if (p.dashExp) ui.dashExp = { summary: !!p.dashExp.summary, important: !!p.dashExp.important };
   } catch (e) {}
 }
-function saveUI() { try { localStorage.setItem("scheduler:ui", JSON.stringify({ workweek: ui.workweek, view: ui.view, splitW: ui.splitW, dashCollapsed: ui.dashCollapsed, dashExp: ui.dashExp })); } catch (e) {} }
+function saveUI() { try { localStorage.setItem("scheduler:ui", JSON.stringify({ workweek: ui.workweek, calMode: ui.calMode, view: ui.view, splitW: ui.splitW, dashCollapsed: ui.dashCollapsed, dashExp: ui.dashExp })); } catch (e) {} }
 
 /* ---------- 필터 & 반복 전개 ---------- */
 function matchCat(x) { return ui.cat === "all" || x.cat === ui.cat; }
@@ -1163,12 +1220,26 @@ function renderToday() {
   return html;
 }
 
-// 캘린더 컨트롤(주 이동) — 상단 탭바 우측에 표시. 월~일/월~금은 설정에서 변경
+// 캘린더 컨트롤(주/월 이동 + 보기 전환) — 상단 탭바 우측에 표시. 월~일/월~금은 설정에서 변경
 function calControlsHtml() {
+  const m = ui.calMode === "month";
+  let title;
+  if (m) title = `${ui.monthRef.getFullYear()}. ${ui.monthRef.getMonth() + 1}월`;
+  else {
+    const a = ui.weekRef, b = addDays(ui.weekRef, (ui.workweek ? 5 : 7) - 1);
+    title = a.getMonth() === b.getMonth()
+      ? `${a.getFullYear()}. ${a.getMonth() + 1}월`
+      : `${a.getFullYear()}. ${a.getMonth() + 1}–${b.getMonth() + 1}월`;
+  }
   return `<div class="week-nav">
-      <button id="wk-prev">${IC.left}</button>
+      <button id="wk-prev" title="${m ? "이전 달" : "이전 주"}">${IC.left}</button>
       <button class="today-btn" id="wk-today">오늘</button>
-      <button id="wk-next">${IC.right}</button>
+      <button id="wk-next" title="${m ? "다음 달" : "다음 주"}">${IC.right}</button>
+      <span class="cal-title">${title}</span>
+      <div class="seg cal-seg">
+        <button class="${m ? "" : "active"}" data-calmode="week" title="주간 보기">주</button>
+        <button class="${m ? "active" : ""}" data-calmode="month" title="월간 보기">월</button>
+      </div>
     </div>`;
 }
 
@@ -1177,8 +1248,11 @@ const inProject = (x) => !!(x.projectId && projectById(x.projectId));
 const projCls = (x) => (inProject(x) ? " proj-item" : "");
 const projStyle = (x) => (inProject(x) ? ` style="--pc:${projectById(x.projectId).color}"` : "");
 
-/* ---------- 렌더: 캘린더 (주간 그리드) ---------- */
-function renderCalendar() {
+/* ---------- 렌더: 캘린더 (주간 / 월간) ---------- */
+function renderCalendar() { return ui.calMode === "month" ? renderMonth() : renderWeek(); }
+
+/* ---------- 렌더: 주간 그리드 ---------- */
+function renderWeek() {
   const nDays = ui.workweek ? 5 : 7;
   const week = [...Array(nDays)].map((_, i) => addDays(ui.weekRef, i));
   const today = todayStr();
@@ -1293,6 +1367,46 @@ function renderCalendar() {
   }
   grid += `</div></div>`;
   return head + grid;
+}
+
+/* ---------- 렌더: 월간 그리드 ---------- */
+function renderMonth() {
+  const nDays = ui.workweek ? 5 : 7;
+  const first = startOfMonth(ui.monthRef);
+  const mNum = first.getMonth();
+  const gridStart = startOfWeek(first);
+  const lastDay = new Date(first.getFullYear(), mNum + 1, 0);
+  const rows = Math.round(daysBetween(ymd(gridStart), ymd(startOfWeek(lastDay))) / 7) + 1;
+  const today = todayStr();
+  const doneProj = completedProjectIds();
+  const hiddenDone = (x) => !!(x.projectId && doneProj.has(x.projectId));
+  const LIMIT = 3;
+  let g = `<div class="week-scroll"><div class="week-grid month-grid" style="grid-template-columns:repeat(${nDays},minmax(0,1fr));">`;
+  for (let i = 0; i < nDays; i++) {
+    const d = addDays(gridStart, i), w = d.getDay();
+    g += `<div class="head mh ${w === 0 ? "sun" : ""} ${w === 6 ? "sat" : ""}">${DOW[w]}</div>`;
+  }
+  for (let r = 0; r < rows; r++) {
+    for (let i = 0; i < nDays; i++) {
+      const d = addDays(gridStart, r * 7 + i), ds = ymd(d);
+      const other = d.getMonth() !== mNum, isToday = ds === today;
+      const allday = eventsOn(ds).filter((e) => e.allDay && !hiddenDone(e));
+      const timed = eventsOn(ds).filter((e) => !e.allDay && e.time && !hiddenDone(e)).sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+      const todos = visibleTodos().filter((t) => t.due === ds && !hiddenDone(t));
+      const items = [];
+      allday.forEach((e) => items.push(`<div class="m-item allday pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}${projCls(e)}"${projStyle(e)} draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}" title="종일 · ${esc(e.title)}"><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span>${projDot(e.projectId)}<span class="mt">${esc(e.title)}</span></div>`));
+      timed.forEach((e) => items.push(`<div class="m-item ev pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}${projCls(e)}"${projStyle(e)} draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}" title="${esc(evTimeText(e))} ${esc(e.title)}"><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span><b>${esc(e.time)}</b>${projDot(e.projectId)}<span class="mt">${esc(e.title)}</span></div>`));
+      todos.forEach((t) => items.push(`<div class="m-item todo ${t.done ? "done" : ""}${projCls(t)}"${projStyle(t)} draggable="true" data-drag="todo" data-id="${t.id}" data-edit-todo="${t.id}" title="할 일 · ${esc(t.title)}"><span class="cal-check ${t.done ? "done" : ""}" data-toggle="${t.id}">${t.done ? IC.check : ""}</span>${projDot(t.projectId)}<span class="mt">${esc(t.title)}</span></div>`));
+      const open = !!ui.bandOpen[ds], extra = items.length - LIMIT;
+      const shown = open || extra <= 0 ? items : items.slice(0, LIMIT);
+      g += `<div class="m-cell ${other ? "other" : ""} ${isToday ? "today" : ""}" data-date="${ds}" data-month="1">
+        <div class="m-top"><button type="button" class="m-d" data-goweek="${ds}" title="${fmtMD(ds)} 주간 보기">${d.getDate() === 1 ? `${d.getMonth() + 1}/1` : d.getDate()}</button></div>
+        <div class="m-items">${shown.join("")}</div>
+        ${extra > 0 ? `<button type="button" class="m-more" data-band-more="${ds}">${open ? "접기 −" : `+${extra} 더`}</button>` : ""}
+      </div>`;
+    }
+  }
+  return g + `</div></div>`;
 }
 
 /* ---------- 렌더: 할 일 ---------- */
@@ -2390,11 +2504,12 @@ function wireCalendarDnD() {
     });
     el.addEventListener("dragend", () => { el.classList.remove("dragging"); dragData = null; clearDropUI(grid); });
   });
-  grid.querySelectorAll(".cell, .band-cell").forEach((cell) => {
+  grid.querySelectorAll(".cell, .band-cell, .m-cell").forEach((cell) => {
     const isBand = cell.dataset.band === "1";
+    const isMonth = cell.dataset.month === "1";
     cell.addEventListener("dragover", (e) => {
       if (!dragData) return; e.preventDefault();
-      if (dragData.type === "event" && !isBand) {
+      if (dragData.type === "event" && !isBand && !isMonth) {
         grid.querySelectorAll(".drop-hover").forEach((c) => c.classList.remove("drop-hover"));
         showDropGhost(grid, cell.dataset.date, dropStartMin(cell, e.clientY));
       } else {
@@ -2406,7 +2521,7 @@ function wireCalendarDnD() {
     cell.addEventListener("drop", (e) => {
       e.preventDefault(); if (!dragData) return;
       const date = cell.dataset.date;
-      const startMin = !isBand && dragData.type === "event" ? dropStartMin(cell, e.clientY) : 0;
+      const startMin = !isBand && !isMonth && dragData.type === "event" ? dropStartMin(cell, e.clientY) : 0;
       clearDropUI(grid);
       if (dragData.type === "todo") {
         const td = Store.state.todos.find((x) => x.id === dragData.id);
@@ -2417,7 +2532,8 @@ function wireCalendarDnD() {
         const ev = Store.state.events.find((x) => x.id === dragData.id); if (!ev) return;
         const oldDate = ev.date, pid = ev.projectId, evId = dragData.id;
         setTimeout(() => offerCascade(pid, evId, oldDate, date), 0);
-        if (isBand) { Store.updateEvent(evId, { date, allDay: true, time: "", endTime: "" }); toast("종일 일정으로 옮겼습니다"); }
+        if (isMonth) { if (ev.date === date) return; Store.updateEvent(evId, { date }); toast(`${fmtMD(date)}로 옮겼습니다`); }
+        else if (isBand) { Store.updateEvent(evId, { date, allDay: true, time: "", endTime: "" }); toast("종일 일정으로 옮겼습니다"); }
         else {
           const time = minToHM(startMin), endTime = minToHM(Math.min(startMin + dragData.dur, 23 * 60 + 59));
           Store.updateEvent(evId, { date, allDay: false, time, endTime });
@@ -2456,6 +2572,17 @@ function wireCalendarDnD() {
 }
 
 /* ---------- 전역 이벤트 ---------- */
+// 주간 ↔ 월간 전환 (보던 기간을 유지한 채 전환)
+function setCalMode(mode) {
+  if (mode === ui.calMode) return;
+  if (mode === "month") ui.monthRef = startOfMonth(addDays(ui.weekRef, 3));   // 주의 한가운데 날짜가 속한 달
+  else {
+    const today = new Date();
+    const inMonth = today.getFullYear() === ui.monthRef.getFullYear() && today.getMonth() === ui.monthRef.getMonth();
+    ui.weekRef = startOfWeek(inMonth ? today : ui.monthRef);                   // 이번 달이면 오늘 주, 아니면 그 달 첫 주
+  }
+  ui.calMode = mode; saveUI(); render();
+}
 function setView(v) { if (v === "settings" && ui.view !== "settings") ui.prevView = ui.view; ui.view = v; saveUI(); render(); window.scrollTo(0, 0); }
 function wireGlobal() {
   document.addEventListener("click", (e) => { if (Date.now() < suppressClickUntil) { e.stopPropagation(); e.preventDefault(); suppressClickUntil = 0; } }, true);
@@ -2489,7 +2616,7 @@ function wireGlobal() {
 
   document.addEventListener("click", (e) => {
     if (e.target.closest("#timepop") || e.target.closest(".pin-widget")) return; // 별도 핸들러 처리
-    const t = e.target.closest("[data-cat],[data-todo-filter],[data-toggle],[data-ev-toggle],[data-edit-event],[data-del-event],[data-edit-todo],[data-del-todo],[data-ww],[data-dash-toggle],#dash-collapse,#wk-prev,#wk-next,#wk-today,#roll-desktop,#roll-mobile,#set-theme,#set-pin,#set-export,#set-import,#set-clear,#set-alert-demo,#set-close,[data-paper],[data-theme-key],[data-contrast],[data-step],[data-proj],#pj-new,[data-band-more]");
+    const t = e.target.closest("[data-cat],[data-todo-filter],[data-toggle],[data-ev-toggle],[data-edit-event],[data-del-event],[data-edit-todo],[data-del-todo],[data-ww],[data-dash-toggle],#dash-collapse,#wk-prev,#wk-next,#wk-today,#roll-desktop,#roll-mobile,#set-theme,#set-pin,#set-export,#set-import,#set-clear,#set-alert-demo,#set-close,[data-paper],[data-theme-key],[data-contrast],[data-step],[data-proj],#pj-new,[data-band-more],[data-calmode],[data-goweek]");
     if (!t) return;
     if (t.dataset.evToggle) { Store.toggleEvent(t.dataset.evToggle); return; }
     if (t.dataset.dashToggle) { ui.dashExp[t.dataset.dashToggle] = !ui.dashExp[t.dataset.dashToggle]; saveUI(); render(); return; }
@@ -2504,9 +2631,11 @@ function wireGlobal() {
     if (t.dataset.delEvent) { Store.deleteEvent(t.dataset.delEvent); toast("일정을 삭제했습니다"); return; }
     if (t.dataset.editTodo) { const td = Store.state.todos.find((x) => x.id === t.dataset.editTodo); if (td) openModal("todo", td); return; }
     if (t.dataset.delTodo) { Store.deleteTodo(t.dataset.delTodo); toast("할 일을 삭제했습니다"); return; }
-    if (t.id === "wk-prev") { ui.weekRef = addDays(ui.weekRef, ui.workweek ? -7 : -7); render(); return; }
-    if (t.id === "wk-next") { ui.weekRef = addDays(ui.weekRef, 7); render(); return; }
-    if (t.id === "wk-today") { ui.weekRef = startOfWeek(new Date()); render(); return; }
+    if (t.dataset.calmode) { setCalMode(t.dataset.calmode); return; }
+    if (t.dataset.goweek) { ui.calMode = "week"; ui.weekRef = startOfWeek(parseYMD(t.dataset.goweek)); saveUI(); render(); return; }
+    if (t.id === "wk-prev") { if (ui.calMode === "month") ui.monthRef = addMonths(ui.monthRef, -1); else ui.weekRef = addDays(ui.weekRef, -7); render(); return; }
+    if (t.id === "wk-next") { if (ui.calMode === "month") ui.monthRef = addMonths(ui.monthRef, 1); else ui.weekRef = addDays(ui.weekRef, 7); render(); return; }
+    if (t.id === "wk-today") { ui.weekRef = startOfWeek(new Date()); ui.monthRef = startOfMonth(new Date()); render(); return; }
     if (t.id === "roll-desktop" || t.id === "roll-mobile") { const n = Store.rollover(); toast(n ? `${n}건을 오늘로 이월했습니다` : "이월할 업무가 없습니다"); return; }
     if (t.dataset.themeKey) { setPref("theme", t.dataset.themeKey); render(); return; }
     if (t.dataset.contrast) { setPref("contrast", t.dataset.contrast); render(); return; }
@@ -2552,11 +2681,11 @@ function wireGlobal() {
 
   // 캘린더 빈 셀 클릭 → 추가
   document.getElementById("content").addEventListener("click", (e) => {
-    const cell = e.target.closest(".cell, .band-cell");
-    if (cell && !e.target.closest(".evt, .cal-chip, .band-more")) {
-      const band = cell.dataset.band === "1";
-      let time = band ? "" : cell.dataset.hour;
-      if (!band) { const r = cell.getBoundingClientRect(); if (e.clientY - r.top > r.height / 2) time = time.slice(0, 3) + "30"; } // 아래 절반 = :30
+    const cell = e.target.closest(".cell, .band-cell, .m-cell");
+    if (cell && !e.target.closest(".evt, .cal-chip, .band-more, .m-item, .m-more, .m-d")) {
+      const band = cell.dataset.band === "1", month = cell.dataset.month === "1";
+      let time = band || month ? "" : cell.dataset.hour;   // 월간 칸은 시간 칸이 없으므로 기본 시간으로 열림
+      if (!band && !month) { const r = cell.getBoundingClientRect(); if (e.clientY - r.top > r.height / 2) time = time.slice(0, 3) + "30"; } // 아래 절반 = :30
       openModal("event", { date: cell.dataset.date, time, allDay: band, cat: ui.cat === "personal" ? "personal" : "work" });
     }
   });
