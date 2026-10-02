@@ -24,6 +24,7 @@
     --urgent:#C0392B; --urgent-soft:#FBE9E7;
     --high:#B8792A; --high-soft:#FBF1E3;
     --done:#5E9A6E; --done-soft:#E9F3EB;
+    --hol:#D64545; --hol-tint:9%;          /* 공휴일: 빨간 날짜 + 파스텔 음영 */
     --shadow: 0 1px 2px rgba(20,20,15,0.04), 0 4px 14px rgba(20,20,15,0.05);
     --shadow-lg: 0 10px 40px rgba(20,20,15,0.18);
     --radius: 10px;
@@ -43,6 +44,7 @@
       --urgent:#E28B7F; --urgent-soft:#3A2320;
       --high:#E0AD6E; --high-soft:#382C1B;
       --done:#8FCB9E; --done-soft:#20301F;
+      --hol:#FF9A8F; --hol-tint:13%;
       --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.35);
       --shadow-lg: 0 10px 40px rgba(0,0,0,0.55);
     }
@@ -56,6 +58,7 @@
     --urgent:#E28B7F; --urgent-soft:#3A2320;
     --high:#E0AD6E; --high-soft:#382C1B;
     --done:#8FCB9E; --done-soft:#20301F;
+    --hol:#FF9A8F; --hol-tint:13%;
     --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.35);
     --shadow-lg: 0 10px 40px rgba(0,0,0,0.55);
   }
@@ -290,6 +293,29 @@
   .week-grid .head .num{font-size:17px;line-height:1;}
   .week-grid .head.today{color:var(--work);}
   .week-grid .head.today .num{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:28px;border-radius:50%;background:var(--work);color:#fff;}
+  /* ---------- 공휴일: 빨간 날짜 + 파스텔 음영 ---------- */
+  .week-grid .head.red{color:var(--hol);}
+  .week-grid .head.red .num{color:var(--hol);}
+  .week-grid .head.red .dow{color:color-mix(in srgb, var(--hol) 72%, var(--text-faint));}
+  .week-grid .head.holiday{background:color-mix(in srgb, var(--hol) calc(var(--hol-tint) * 1.6), var(--surface-2));}
+  .week-grid .head.today.red .num{background:var(--hol);color:#fff;}
+  .week-grid .head.today.holiday{background:color-mix(in srgb, var(--hol) calc(var(--hol-tint) * 2), var(--surface-2));}
+  .week-grid .band-cell.holiday-col, .week-grid .cell.holiday-col{background:color-mix(in srgb, var(--hol) var(--hol-tint), var(--surface));}
+  .week-grid .band-cell.holiday-col.today-col, .week-grid .cell.holiday-col.today-col{
+    background:color-mix(in srgb, var(--hol) var(--hol-tint), color-mix(in srgb, var(--work) 10%, var(--surface)));}
+  .week-grid .cell.holiday-col:hover{background:color-mix(in srgb, var(--hol) calc(var(--hol-tint) * 1.8), var(--surface));}
+  /* 종일·할일 칸 맨 위에 보이는 공휴일 이름 칩 */
+  .week-grid .band-cell .cal-chip.holiday{background:color-mix(in srgb, var(--hol) 16%, var(--surface));
+    border:1px solid color-mix(in srgb, var(--hol) 45%, transparent);color:var(--hol);font-weight:800;cursor:default;justify-content:center;}
+  /* 월간 */
+  .m-cell.holiday-col{background:color-mix(in srgb, var(--hol) var(--hol-tint), var(--surface));}
+  .m-cell.holiday-col.today{background:color-mix(in srgb, var(--hol) var(--hol-tint), color-mix(in srgb, var(--work) 10%, var(--surface)));}
+  .m-cell.holiday-col:hover{background:color-mix(in srgb, var(--hol) calc(var(--hol-tint) * 1.8), var(--surface));}
+  .m-d.red{color:var(--hol);}
+  .m-d.sat{color:var(--work);}
+  .m-cell.today .m-d.red{background:var(--hol);color:#fff;}
+  .m-hol{min-width:0;font-size:9px;font-weight:800;color:var(--hol);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:2px;}
+  @media (max-width:640px){ .m-hol{display:none;} }
   /* 설정 화면: 설정 내용만 표시 (상단 검색/탭/칩 숨김) */
   body.settings-only .topbar{display:none;}
   /* all-day / todo band — 아래 시간표와 구분되도록 위·아래 굵은 테두리로 묶음 */
@@ -883,13 +909,49 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-10-02 · 주간·월간 보기 전환";
+const APP_VERSION = "2026-10-02 · 한국 공휴일 표시";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const pad = (n) => String(n).padStart(2, "0");
 const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const parseYMD = (s) => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+
+/* ---------- 한국 공휴일 ---------- */
+// 한국 공휴일 (관공서의 공휴일에 관한 규정). 설날·추석·부처님오신날은 한국천문연구원 기준 음력으로 환산했고,
+// 대체공휴일은 규정대로 계산했습니다. 임시공휴일·선거일은 확정 발표된 날짜만 넣었습니다. (2023~2041)
+const HOLIDAY_DATA = {
+  2023: "0101신정|0121설날 연휴|0122설날|0123설날 연휴|0124대체공휴일|0301삼일절|0505어린이날|0527부처님오신날|0529대체공휴일|0606현충일|0815광복절|0928추석 연휴|0929추석|0930추석 연휴|1003개천절|1009한글날|1225성탄절",
+  2024: "0101신정|0209설날 연휴|0210설날|0211설날 연휴|0212대체공휴일|0301삼일절|0410국회의원선거|0505어린이날|0506대체공휴일|0515부처님오신날|0606현충일|0815광복절|0916추석 연휴|0917추석|0918추석 연휴|1001임시공휴일(국군의 날)|1003개천절|1009한글날|1225성탄절",
+  2025: "0101신정|0127임시공휴일|0128설날 연휴|0129설날|0130설날 연휴|0301삼일절|0303대체공휴일|0505부처님오신날 · 어린이날|0506대체공휴일|0603대통령선거|0606현충일|0815광복절|1003개천절|1005추석 연휴|1006추석|1007추석 연휴|1008대체공휴일|1009한글날|1225성탄절",
+  2026: "0101신정|0216설날 연휴|0217설날|0218설날 연휴|0301삼일절|0302대체공휴일|0505어린이날|0524부처님오신날|0525대체공휴일|0603지방선거|0606현충일|0815광복절|0817대체공휴일|0924추석 연휴|0925추석|0926추석 연휴|1003개천절|1005대체공휴일|1009한글날|1225성탄절",
+  2027: "0101신정|0206설날 연휴|0207설날|0208설날 연휴|0209대체공휴일|0301삼일절|0505어린이날|0513부처님오신날|0606현충일|0815광복절|0816대체공휴일|0914추석 연휴|0915추석|0916추석 연휴|1003개천절|1004대체공휴일|1009한글날|1011대체공휴일|1225성탄절|1227대체공휴일",
+  2028: "0101신정|0126설날 연휴|0127설날|0128설날 연휴|0301삼일절|0502부처님오신날|0505어린이날|0606현충일|0815광복절|1002추석 연휴|1003추석 · 개천절|1004추석 연휴|1005대체공휴일|1009한글날|1225성탄절",
+  2029: "0101신정|0212설날 연휴|0213설날|0214설날 연휴|0301삼일절|0505어린이날|0507대체공휴일|0520부처님오신날|0521대체공휴일|0606현충일|0815광복절|0921추석 연휴|0922추석|0923추석 연휴|0924대체공휴일|1003개천절|1009한글날|1225성탄절",
+  2030: "0101신정|0202설날 연휴|0203설날|0204설날 연휴|0205대체공휴일|0301삼일절|0505어린이날|0506대체공휴일|0509부처님오신날|0606현충일|0815광복절|0911추석 연휴|0912추석|0913추석 연휴|1003개천절|1009한글날|1225성탄절",
+  2031: "0101신정|0122설날 연휴|0123설날|0124설날 연휴|0301삼일절|0303대체공휴일|0505어린이날|0528부처님오신날|0606현충일|0815광복절|0930추석 연휴|1001추석|1002추석 연휴|1003개천절|1009한글날|1225성탄절",
+  2032: "0101신정|0210설날 연휴|0211설날|0212설날 연휴|0301삼일절|0505어린이날|0516부처님오신날|0517대체공휴일|0606현충일|0815광복절|0816대체공휴일|0918추석 연휴|0919추석|0920추석 연휴|0921대체공휴일|1003개천절|1004대체공휴일|1009한글날|1011대체공휴일|1225성탄절|1227대체공휴일",
+  2033: "0101신정|0130설날 연휴|0131설날|0201설날 연휴|0202대체공휴일|0301삼일절|0505어린이날|0506부처님오신날|0606현충일|0815광복절|0907추석 연휴|0908추석|0909추석 연휴|1003개천절|1009한글날|1010대체공휴일|1225성탄절|1226대체공휴일",
+  2034: "0101신정|0218설날 연휴|0219설날|0220설날 연휴|0221대체공휴일|0301삼일절|0505어린이날|0525부처님오신날|0606현충일|0815광복절|0926추석 연휴|0927추석|0928추석 연휴|1003개천절|1009한글날|1225성탄절",
+  2035: "0101신정|0207설날 연휴|0208설날|0209설날 연휴|0301삼일절|0505어린이날|0507대체공휴일|0515부처님오신날|0606현충일|0815광복절|0915추석 연휴|0916추석|0917추석 연휴|0918대체공휴일|1003개천절|1009한글날|1225성탄절",
+  2036: "0101신정|0127설날 연휴|0128설날|0129설날 연휴|0130대체공휴일|0301삼일절|0303대체공휴일|0503부처님오신날|0505어린이날|0506대체공휴일|0606현충일|0815광복절|1003추석 연휴 · 개천절|1004추석|1005추석 연휴|1006대체공휴일|1007대체공휴일|1009한글날|1225성탄절",
+  2037: "0101신정|0214설날 연휴|0215설날|0216설날 연휴|0217대체공휴일|0301삼일절|0302대체공휴일|0505어린이날|0522부처님오신날|0606현충일|0815광복절|0817대체공휴일|0923추석 연휴|0924추석|0925추석 연휴|1003개천절|1005대체공휴일|1009한글날|1225성탄절",
+  2038: "0101신정|0203설날 연휴|0204설날|0205설날 연휴|0301삼일절|0505어린이날|0511부처님오신날|0606현충일|0815광복절|0816대체공휴일|0912추석 연휴|0913추석|0914추석 연휴|0915대체공휴일|1003개천절|1004대체공휴일|1009한글날|1011대체공휴일|1225성탄절|1227대체공휴일",
+  2039: "0101신정|0123설날 연휴|0124설날|0125설날 연휴|0126대체공휴일|0301삼일절|0430부처님오신날|0502대체공휴일|0505어린이날|0606현충일|0815광복절|1001추석 연휴|1002추석|1003추석 연휴 · 개천절|1004대체공휴일|1005대체공휴일|1009한글날|1010대체공휴일|1225성탄절|1226대체공휴일",
+  2040: "0101신정|0211설날 연휴|0212설날|0213설날 연휴|0214대체공휴일|0301삼일절|0505어린이날|0507대체공휴일|0518부처님오신날|0606현충일|0815광복절|0920추석 연휴|0921추석|0922추석 연휴|1003개천절|1009한글날|1225성탄절",
+  2041: "0101신정|0131설날 연휴|0201설날|0202설날 연휴|0301삼일절|0505어린이날|0506대체공휴일|0507부처님오신날|0606현충일|0815광복절|0909추석 연휴|0910추석|0911추석 연휴|1003개천절|1009한글날|1225성탄절",
+};
+let holidayMap = null;
+function holidayName(ds) {
+  if (!holidayMap) {
+    holidayMap = {};
+    Object.keys(HOLIDAY_DATA).forEach((y) => HOLIDAY_DATA[y].split("|").forEach((s) => { holidayMap[`${y}-${s.slice(0, 2)}-${s.slice(2, 4)}`] = s.slice(4); }));
+  }
+  return (ds && holidayMap[ds]) || "";
+}
+const isHoliday = (ds) => !!holidayName(ds);
+// 빨간 날짜: 공휴일 + 일요일 (음영은 공휴일에만)
+const isRedDay = (ds) => isHoliday(ds) || parseYMD(ds).getDay() === 0;
 function addMin(hhmm, mins) { if (!hhmm) return ""; const [h, m] = hhmm.split(":").map(Number); let t = h * 60 + m + mins; t = ((t % 1440) + 1440) % 1440; return pad(Math.floor(t / 60)) + ":" + pad(t % 60); }
 const todayStr = () => ymd(new Date());
 const DOW = ["일", "월", "화", "수", "목", "금", "토"];
@@ -1270,7 +1332,8 @@ function renderWeek() {
   let grid = `<div class="week-scroll"><div class="week-grid ${lanes.length ? "has-proj" : ""}" style="${cols}"><div class="corner"></div>`;
   week.forEach((d) => {
     const isToday = ymd(d) === today;
-    grid += `<div class="head ${isToday ? "today" : ""}" data-date="${ymd(d)}"><span class="dow">${DOW[d.getDay()]}</span><span class="num">${d.getDate()}</span></div>`;
+    const hds = ymd(d), hol = holidayName(hds);
+    grid += `<div class="head ${isToday ? "today" : ""} ${hol ? "holiday" : ""} ${isRedDay(hds) ? "red" : ""}" data-date="${hds}"${hol ? ` title="${esc(hol)}"` : ""}><span class="dow">${DOW[d.getDay()]}</span><span class="num">${d.getDate()}</span></div>`;
   });
   // 프로젝트 한 줄 — 왼쪽 칸에 이름·진도율, 막대(기간+진행률) 위에 단계 칩을 날짜 칸마다 표시
   lanes.forEach(({ p, st }) => {
@@ -1302,7 +1365,10 @@ function renderWeek() {
     // 프로젝트 단계는 프로젝트 줄에 표시 → 종일·할일 칸에는 일반 항목만
     const allday = eventsOn(ds).filter((e) => e.allDay && !hiddenDone(e) && !inProject(e));
     const todos = visibleTodos().filter((t) => t.due === ds && !hiddenDone(t) && !inProject(t));
-    let cell = `<div class="band-cell ${isToday ? "today-col" : ""}" data-date="${ds}" data-band="1">`;
+    const holN = holidayName(ds);
+    let cell = `<div class="band-cell ${isToday ? "today-col" : ""} ${holN ? "holiday-col" : ""}" data-date="${ds}" data-band="1">`;
+    // 공휴일 이름은 항상 맨 위에 (접기 개수에 포함하지 않음)
+    if (holN) cell += `<div class="cal-chip holiday" title="${esc(holN)}">${esc(holN)}</div>`;
     // 종일·할일은 최대 3개만 보이고 나머지는 ----+N---- 구분선 뒤로 접음 (완료 항목이 뒤로)
     const chips = [];
     allday.forEach((e) => chips.push({ done: e.done, html: `<div class="cal-chip allday pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}${projCls(e)}"${projStyle(e)} draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span><span class="ci">${catIcon(e.cat)}</span>${projDot(e.projectId)}${esc(e.title)}</div>` }));
@@ -1362,7 +1428,7 @@ function renderWeek() {
         const left = (L.col / L.n) * 100, w = (L.span / L.n) * 100;
         return `<div class="evt timed pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}${projCls(e)}" style="${inProject(e) ? `--pc:${projectById(e.projectId).color};` : ""}top:${top.toFixed(1)}px;left:calc(${left}% + 1px);width:calc(${w}% - 3px);height:${height.toFixed(1)}px;" title="${esc(evTimeText(e))} ${esc(e.title)}" draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="rz rz-top" data-rz="top" title="위로 끌어 시작 시간 변경"></span><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span><span class="t">${esc(evTimeText(e))}</span><span class="ci">${catIcon(e.cat)}</span>${e.rolledFrom ? `<span class="evt-d">D+${daysBetween(e.rolledFrom, e.date)}</span>` : ""}${projDot(e.projectId)}${esc(e.title)}${e.repeat !== "none" ? " ↻" : ""}<span class="rz rz-bot" data-rz="bot" title="아래로 끌어 종료 시간 변경"></span></div>`;
       }).join("");
-      grid += `<div class="cell ${starts.length ? "has-evt" : ""} ${isToday ? "today-col" : ""}" data-date="${ds}" data-hour="${pad(h)}:00">${inner}</div>`;
+      grid += `<div class="cell ${starts.length ? "has-evt" : ""} ${isToday ? "today-col" : ""} ${isHoliday(ds) ? "holiday-col" : ""}" data-date="${ds}" data-hour="${pad(h)}:00">${inner}</div>`;
     });
   }
   grid += `</div></div>`;
@@ -1390,6 +1456,7 @@ function renderMonth() {
     for (let i = 0; i < nDays; i++) {
       const d = addDays(gridStart, r * 7 + i), ds = ymd(d);
       const other = d.getMonth() !== mNum, isToday = ds === today;
+      const hol = holidayName(ds), wd = d.getDay();
       const allday = eventsOn(ds).filter((e) => e.allDay && !hiddenDone(e));
       const timed = eventsOn(ds).filter((e) => !e.allDay && e.time && !hiddenDone(e)).sort((a, b) => (a.time || "").localeCompare(b.time || ""));
       const todos = visibleTodos().filter((t) => t.due === ds && !hiddenDone(t));
@@ -1399,8 +1466,8 @@ function renderMonth() {
       todos.forEach((t) => items.push(`<div class="m-item todo ${t.done ? "done" : ""}${projCls(t)}"${projStyle(t)} draggable="true" data-drag="todo" data-id="${t.id}" data-edit-todo="${t.id}" title="할 일 · ${esc(t.title)}"><span class="cal-check ${t.done ? "done" : ""}" data-toggle="${t.id}">${t.done ? IC.check : ""}</span>${projDot(t.projectId)}<span class="mt">${esc(t.title)}</span></div>`));
       const open = !!ui.bandOpen[ds], extra = items.length - LIMIT;
       const shown = open || extra <= 0 ? items : items.slice(0, LIMIT);
-      g += `<div class="m-cell ${other ? "other" : ""} ${isToday ? "today" : ""}" data-date="${ds}" data-month="1">
-        <div class="m-top"><button type="button" class="m-d" data-goweek="${ds}" title="${fmtMD(ds)} 주간 보기">${d.getDate() === 1 ? `${d.getMonth() + 1}/1` : d.getDate()}</button></div>
+      g += `<div class="m-cell ${other ? "other" : ""} ${isToday ? "today" : ""} ${hol ? "holiday-col" : ""}" data-date="${ds}" data-month="1">
+        <div class="m-top"><button type="button" class="m-d ${isRedDay(ds) ? "red" : ""} ${wd === 6 ? "sat" : ""}" data-goweek="${ds}" title="${hol ? esc(hol) + " · " : ""}${fmtMD(ds)} 주간 보기">${d.getDate() === 1 ? `${d.getMonth() + 1}/1` : d.getDate()}</button>${hol ? `<span class="m-hol" title="${esc(hol)}">${esc(hol)}</span>` : ""}</div>
         <div class="m-items">${shown.join("")}</div>
         ${extra > 0 ? `<button type="button" class="m-more" data-band-more="${ds}">${open ? "접기 −" : `+${extra} 더`}</button>` : ""}
       </div>`;
