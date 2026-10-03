@@ -320,7 +320,13 @@
   body.settings-only .topbar{display:none;}
   /* all-day / todo band — 아래 시간표와 구분되도록 위·아래 굵은 테두리로 묶음 */
   .week-grid .band-label{background:var(--surface-2);border-top:2px solid var(--border-strong);border-bottom:2px solid var(--border-strong);
-    font-size:10px;color:var(--text-faint);font-weight:700;display:flex;align-items:center;justify-content:center;padding:4px 2px;}
+    font-size:10px;color:var(--text-faint);font-weight:700;display:flex;align-items:center;justify-content:center;padding:4px 2px;text-align:center;}
+  /* 종일 줄 / 할 일 줄 분리: 두 줄은 한 덩어리로 묶이고 사이는 점선으로 나눔 */
+  .week-grid .band-label.todo-lab{color:var(--high);}
+  .week-grid .allday-row + .band-label.todo-lab, .week-grid .band-label.todo-lab{border-top:1px dashed var(--border-strong);}
+  .week-grid .band-cell.todo-row{border-top:1px dashed var(--border-strong);background:color-mix(in srgb, var(--high) 4%, var(--surface));}
+  .week-grid .band-cell.todo-row.today-col{background:color-mix(in srgb, var(--high) 4%, color-mix(in srgb, var(--work) 14%, var(--surface)));}
+  .week-grid .band-cell.todo-row.holiday-col{background:color-mix(in srgb, var(--high) 4%, color-mix(in srgb, var(--hol) var(--hol-tint), var(--surface)));}
   .week-grid .band-cell{border-top:2px solid var(--border-strong);border-bottom:2px solid var(--border-strong);border-left:1px solid var(--border);
     min-height:32px;padding:4px 3px;display:flex;flex-direction:column;gap:3px;background:color-mix(in srgb, var(--text) 3%, var(--surface));}
   .week-grid .band-cell.today-col{background:color-mix(in srgb, var(--work) 14%, var(--surface));}
@@ -351,8 +357,13 @@
   .m-item .cal-check svg{width:8px;height:8px;}
   .m-item.pri-urgent{background:var(--pri-urgent);} .m-item.pri-high{background:var(--pri-high);} .m-item.pri-normal{background:var(--pri-normal);}
   .m-item.work{border-left:3px solid var(--work);} .m-item.personal{border-left:3px solid var(--personal);}
-  .m-item.todo{background:var(--high-soft);color:var(--high);}
-  .m-item.proj-item{background:color-mix(in srgb, var(--pc) 20%, var(--surface));border-left:3px solid var(--pc);color:color-mix(in srgb, var(--pc) 45%, var(--text));}
+  .m-item.ev, .m-item.allday{border-radius:3px;}                                   /* 일정 = 꽉 찬 블록 */
+  .m-item.todo{background:var(--surface);color:var(--high);                         /* 할 일 = 테두리만 있는 알약 */
+    border:1.3px dashed color-mix(in srgb, var(--high) 62%, transparent);border-radius:999px;padding:0 6px;}
+  .m-item.todo .cal-check{border-color:color-mix(in srgb, var(--high) 65%, var(--border-strong));}
+  .m-item.todo.done{background:color-mix(in srgb, var(--high) 8%, var(--surface));border-style:solid;}
+  .m-item.proj-item{background:color-mix(in srgb, var(--pc) 16%, var(--surface));color:color-mix(in srgb, var(--pc) 45%, var(--text));
+    border:1px solid color-mix(in srgb, var(--pc) 35%, transparent);border-left:5px solid var(--pc);border-radius:3px;}  /* 프로젝트 단계 = 굵은 띠 + ◆ */
   .m-item.done{opacity:.55;} .m-item.done .mt{text-decoration:line-through;}
   .m-item.dragging{opacity:.4;}
   .m-more{border:0;background:transparent;color:var(--text-faint);font-size:9.5px;font-weight:800;text-align:left;padding:0 4px;cursor:pointer;flex:none;}
@@ -402,6 +413,10 @@
   .cal-chip.allday.personal{border-left:3px solid var(--personal);}
   .cal-chip.todo{background:var(--high-soft);color:var(--high);}
   .cal-chip.todo.done{opacity:.5;text-decoration:line-through;}
+  /* ===== 종류 구분(캘린더): 일정=채운 블록 · 할 일=테두리만 있는 알약 · 프로젝트 단계=굵은 띠+◆ =====
+     (각 종류의 세부 규칙은 아래 해당 블록에서 정의) */
+  .pj-dia{flex:none;font-size:8px;line-height:1;opacity:.85;}
+  .week-grid .evt.timed{border-radius:4px;}
   .cal-check{width:13px;height:13px;flex:none;border-radius:3px;border:1.5px solid var(--border-strong);background:var(--surface);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;vertical-align:middle;}
   .cal-check.done{background:var(--done);border-color:var(--done);}
   .cal-check svg{width:9px;height:9px;stroke:#fff;}
@@ -665,13 +680,14 @@
   /* 막대 위 단계 칩 (체크·클릭 수정·끌어서 날짜 이동) */
   .pj-chip{grid-row:1;position:relative;z-index:2;min-width:0;height:18px;margin:0 6px;display:flex;align-items:center;gap:3px;padding:0 5px 0 3px;box-sizing:border-box;
     border-radius:5px;font-size:10px;font-weight:700;line-height:1;cursor:pointer;background:var(--surface);color:color-mix(in srgb, var(--pc) 45%, var(--text));
-    border:1px solid color-mix(in srgb, var(--pc) 55%, transparent);border-left:3px solid var(--pc);box-shadow:0 1px 2px rgba(0,0,0,.06);}
+    border:1px solid color-mix(in srgb, var(--pc) 55%, transparent);border-left:5px solid var(--pc);box-shadow:0 1px 2px rgba(0,0,0,.06);}
   .pj-chip:hover{background:color-mix(in srgb, var(--pc) 8%, var(--surface));}
   .pj-chip.dragging{opacity:.45;}
   .pj-chip .cal-check{width:11px;height:11px;flex:none;}
   .pj-chip .pj-ct{min-width:0;flex:1 1 auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .pj-chip .pj-ct b{font-weight:800;font-variant-numeric:tabular-nums;}
-  .pj-chip .pj-ms{font-style:normal;color:var(--pc);margin-right:2px;font-size:9px;}
+  .pj-chip .pj-dia{font-style:normal;color:var(--pc);margin-right:2px;font-size:7.5px;opacity:.8;}
+  .pj-chip .pj-dia.ms{font-size:9.5px;opacity:1;}
   .pj-chip.done{opacity:.6;}
   .pj-chip.done .pj-ct{text-decoration:line-through;}
   .pj-chip.late{border-color:var(--urgent);border-left-color:var(--urgent);}
@@ -679,7 +695,6 @@
   .proj-lane.drop-hover{box-shadow:inset 0 0 0 2px var(--work);}
   @media (max-width:640px){ .pj-chip{margin:0 3px;padding:0 3px 0 2px;} .pj-chip .pj-ct b{display:none;} }
   /* 단계 칩의 프로젝트 색 점 / 목록의 프로젝트 태그 */
-  .pj-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:3px;vertical-align:middle;flex:none;box-shadow:0 0 0 1.5px var(--surface);}
   .ptag{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;line-height:1.55;white-space:nowrap;vertical-align:middle;cursor:pointer;margin-left:4px;
     color:color-mix(in srgb, var(--pc) 72%, var(--text));background:color-mix(in srgb, var(--pc) 13%, transparent);border-radius:999px;padding:0 8px 0 6px;}
   .ptag::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--pc);}
@@ -792,7 +807,7 @@
   /* 캘린더의 프로젝트 단계: 프로젝트 색 음영 (우선순위 음영보다 우선) */
   .week-grid .cal-chip.proj-item, .week-grid .evt.proj-item{
     background:color-mix(in srgb, var(--pc) 20%, var(--surface));
-    border-left:3px solid var(--pc);
+    border-left:5px solid var(--pc);
     color:color-mix(in srgb, var(--pc) 45%, var(--text));}
   .week-grid .evt.proj-item{box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--pc) 30%, transparent), var(--shadow);}
   /* 종일·할일 칩: 30분 일정 블록과 같은 높이(시간 칸 46px ÷ 2 − 2px = 21px)로 통일,
@@ -800,9 +815,13 @@
   .week-grid .band-cell .cal-chip{height:21px;min-height:21px;padding:0 6px;margin:0;gap:4px;flex:none;
     align-items:center;box-sizing:border-box;border-radius:5px;font-size:10.5px;line-height:1.25;}
   /* 밴드 칩: 테두리를 둘러 아래 시간표의 일정 블록과 한눈에 구분 */
-  .week-grid .band-cell .cal-chip{border:1px solid color-mix(in srgb, var(--text) 20%, transparent);}
-  .week-grid .band-cell .cal-chip.todo{border:1px solid color-mix(in srgb, var(--high) 45%, transparent);}
-  .week-grid .band-cell .cal-chip.proj-item{border:1px solid color-mix(in srgb, var(--pc) 45%, transparent);border-left:3px solid var(--pc);}
+  .week-grid .band-cell .cal-chip{border:1px solid color-mix(in srgb, var(--text) 20%, transparent);border-radius:3px;}
+  /* 할 일 = 테두리만 있는 알약 (속이 비어 "아직 안 끝난 것") */
+  .week-grid .band-cell .cal-chip.todo{background:var(--surface);color:var(--high);
+    border:1.5px dashed color-mix(in srgb, var(--high) 62%, transparent);border-radius:999px;padding:0 8px;}
+  .week-grid .band-cell .cal-chip.todo .cal-check{border-color:color-mix(in srgb, var(--high) 65%, var(--border-strong));border-width:1.6px;}
+  .week-grid .band-cell .cal-chip.todo.done{background:color-mix(in srgb, var(--high) 8%, var(--surface));border-style:solid;}
+  .week-grid .band-cell .cal-chip.proj-item{border:1px solid color-mix(in srgb, var(--pc) 45%, transparent);border-left:5px solid var(--pc);border-radius:3px;}
   .week-grid .band-cell .cal-chip .cal-check{width:12px;height:12px;}
   /* 프로젝트 색 선택: 추천 10색 + 직접 선택(무지개) */
   .pj-colors{align-items:center;gap:6px;}
@@ -909,7 +928,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-10-02 · 한국 공휴일 표시";
+const APP_VERSION = "2026-10-03 · 종류 구분(질감 + 줄 분리)";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1239,9 +1258,9 @@ function projTag(pid) {
   const p = projectById(pid); if (!p) return "";
   return `<span class="ptag" style="--pc:${p.color}" data-proj="${p.id}" title="프로젝트 열기">${esc(p.name)}</span>`;
 }
-function projDot(pid) {
+function projDot(pid) {   // 캘린더에서 프로젝트 단계임을 알리는 ◆ (일정=채운 블록, 할 일=테두리 알약과 구분)
   const p = projectById(pid); if (!p) return "";
-  return `<span class="pj-dot" style="background:${p.color}" title="${esc(p.name)}"></span>`;
+  return `<span class="pj-dia" style="color:${p.color}" title="${esc(p.name)} 단계">◆</span>`;
 }
 // 프로젝트 단계를 뒤로 미뤘을 때 뒤 단계도 같이 밀지 묻기 (순서 연결)
 function offerCascade(pid, id, oldDate, newDate) {
@@ -1350,36 +1369,48 @@ function renderWeek() {
       const act = x.kind === "todo" ? `data-drag="todo" data-id="${x.id}" data-edit-todo="${x.id}"` : `data-drag="event" data-id="${x.id}" data-edit-event="${x.id}"`;
       const ck = x.kind === "todo" ? `data-toggle="${x.id}"` : `data-ev-toggle="${x.id}"`;
       const more = list.length > 1 ? `<span class="pj-more" data-proj="${p.id}" title="${esc(list.filter((y) => y !== x).map((y) => y.title).join(", "))} — 프로젝트 열기">+${list.length - 1}</span>` : "";
-      return `<div class="pj-chip ${x.done ? "done" : ""} ${late ? "late" : ""} ${ms ? "ms" : ""}" style="grid-column:${daysBetween(wStart, ds) + 1}" draggable="true" ${act} title="${esc(x.title)}${x.time ? ` · ${x.time}` : ""}${x.done ? " (완료)" : ""}${ms ? " · 마지막 단계" : ""}"><span class="cal-check ${x.done ? "done" : ""}" ${ck}>${x.done ? IC.check : ""}</span><span class="pj-ct">${ms ? `<i class="pj-ms">◆</i>` : ""}${x.time ? `<b>${x.time}</b> ` : ""}${esc(x.title)}</span>${more}</div>`;
+      return `<div class="pj-chip ${x.done ? "done" : ""} ${late ? "late" : ""} ${ms ? "ms" : ""}" style="grid-column:${daysBetween(wStart, ds) + 1}" draggable="true" ${act} title="${esc(x.title)}${x.time ? ` · ${x.time}` : ""}${x.done ? " (완료)" : ""}${ms ? " · 마지막 단계" : ""}"><span class="cal-check ${x.done ? "done" : ""}" ${ck}>${x.done ? IC.check : ""}</span><span class="pj-ct"><i class="pj-dia ${ms ? "ms" : ""}">◆</i>${x.time ? `<b>${x.time}</b> ` : ""}${esc(x.title)}</span>${more}</div>`;
     }).join("");
     grid += `<div class="proj-label" style="--pc:${p.color}" data-proj="${p.id}" title="${esc(p.name)} · ${st.done}/${st.total} 완료 — 클릭해서 단계 보기">
       <span class="pl-nm">${esc(p.name)}</span><span class="pl-pc">${st.pct}% · ${st.done}/${st.total}${st.delay ? ` <b class="pj-late">D+${st.delay}</b>` : ""}</span></div>`;
     grid += `<div class="proj-lane" style="grid-template-columns:${dayCols};--pc:${p.color}">
       <div class="pj-bar ${contL ? "cont-l" : ""} ${contR ? "cont-r" : ""}" style="grid-column:${si + 1} / ${ei + 2}" data-proj="${p.id}" title="${esc(p.name)} · ${st.pct}% (${st.done}/${st.total}) — 클릭해서 단계 보기"><span class="pj-fill" style="width:${st.pct}%"></span></div>${chips}</div>`;
   });
-  // 종일/할일 밴드
-  grid += `<div class="band-label">종일<br>·할일</div>`;
-  week.forEach((d) => {
-    const ds = ymd(d);
-    const isToday = ds === today;
-    // 프로젝트 단계는 프로젝트 줄에 표시 → 종일·할일 칸에는 일반 항목만
-    const allday = eventsOn(ds).filter((e) => e.allDay && !hiddenDone(e) && !inProject(e));
-    const todos = visibleTodos().filter((t) => t.due === ds && !hiddenDone(t) && !inProject(t));
-    const holN = holidayName(ds);
-    let cell = `<div class="band-cell ${isToday ? "today-col" : ""} ${holN ? "holiday-col" : ""}" data-date="${ds}" data-band="1">`;
-    // 공휴일 이름은 항상 맨 위에 (접기 개수에 포함하지 않음)
-    if (holN) cell += `<div class="cal-chip holiday" title="${esc(holN)}">${esc(holN)}</div>`;
-    // 종일·할일은 최대 3개만 보이고 나머지는 ----+N---- 구분선 뒤로 접음 (완료 항목이 뒤로)
-    const chips = [];
-    allday.forEach((e) => chips.push({ done: e.done, html: `<div class="cal-chip allday pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}${projCls(e)}"${projStyle(e)} draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span><span class="ci">${catIcon(e.cat)}</span>${projDot(e.projectId)}${esc(e.title)}</div>` }));
-    todos.forEach((t) => chips.push({ done: t.done, html: `<div class="cal-chip todo ${t.done ? "done" : ""}${projCls(t)}"${projStyle(t)} draggable="true" data-drag="todo" data-id="${t.id}" data-edit-todo="${t.id}"><span class="cal-check ${t.done ? "done" : ""}" data-toggle="${t.id}">${t.done ? IC.check : ""}</span>${projDot(t.projectId)}${esc(t.title)}</div>` }));
-    chips.sort((a, b) => a.done - b.done);
-    const LIMIT = 3, open = !!ui.bandOpen[ds], extra = chips.length - LIMIT;
-    cell += (open || extra <= 0 ? chips : chips.slice(0, LIMIT)).map((c) => c.html).join("");
-    if (extra > 0) cell += `<button type="button" class="band-more ${open ? "open" : ""}" data-band-more="${ds}" title="${open ? "접기" : `${extra}개 더 보기`}"><span>${open ? "접기 −" : `+${extra}`}</span></button>`;
-    cell += `</div>`;
-    grid += cell;
+  // 종일 / 할 일 밴드 — 설정에 따라 한 줄로 합치거나(기본 분리) 종류별로 나눠서 표시
+  const bandOf = (ds) => ({
+    allday: eventsOn(ds).filter((e) => e.allDay && !hiddenDone(e) && !inProject(e)),      // 프로젝트 단계는 프로젝트 줄에 표시
+    todos: visibleTodos().filter((t) => t.due === ds && !hiddenDone(t) && !inProject(t)),
   });
+  const alldayChip = (e) => `<div class="cal-chip allday pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}${projCls(e)}"${projStyle(e)} draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span><span class="ci">${catIcon(e.cat)}</span>${projDot(e.projectId)}${esc(e.title)}</div>`;
+  const todoChip = (t) => `<div class="cal-chip todo ${t.done ? "done" : ""}${projCls(t)}"${projStyle(t)} draggable="true" data-drag="todo" data-id="${t.id}" data-edit-todo="${t.id}"><span class="cal-check ${t.done ? "done" : ""}" data-toggle="${t.id}">${t.done ? IC.check : ""}</span>${projDot(t.projectId)}${esc(t.title)}</div>`;
+  // kind: "all"(합침) | "allday" | "todo"
+  const bandRow = (label, kind) => {
+    let row = `<div class="band-label ${kind === "todo" ? "todo-lab" : ""}">${label}</div>`;
+    week.forEach((d) => {
+      const ds = ymd(d), isToday = ds === today, holN = holidayName(ds), b = bandOf(ds);
+      const key = kind === "all" ? ds : `${ds}:${kind}`;
+      let cell = `<div class="band-cell ${kind}-row ${isToday ? "today-col" : ""} ${holN ? "holiday-col" : ""}" data-date="${ds}" data-band="1" data-bandkind="${kind}">`;
+      // 공휴일 이름은 맨 윗줄에만, 항상 먼저 (접기 개수에 넣지 않음)
+      if (holN && kind !== "todo") cell += `<div class="cal-chip holiday" title="${esc(holN)}">${esc(holN)}</div>`;
+      const chips = [];
+      if (kind !== "todo") b.allday.forEach((e) => chips.push({ done: e.done, html: alldayChip(e) }));
+      if (kind !== "allday") b.todos.forEach((t) => chips.push({ done: t.done, html: todoChip(t) }));
+      chips.sort((a, b2) => a.done - b2.done);                       // 완료한 항목은 뒤로
+      const LIMIT = 3, open = !!ui.bandOpen[key], extra = chips.length - LIMIT;
+      cell += (open || extra <= 0 ? chips : chips.slice(0, LIMIT)).map((c) => c.html).join("");
+      if (extra > 0) cell += `<button type="button" class="band-more ${open ? "open" : ""}" data-band-more="${key}" title="${open ? "접기" : `${extra}개 더 보기`}"><span>${open ? "접기 −" : `+${extra}`}</span></button>`;
+      row += cell + `</div>`;
+    });
+    return row;
+  };
+  if (prefs.splitBand) {
+    const has = (k) => week.some((d) => bandOf(ymd(d))[k].length);
+    const showTodo = has("todos");
+    grid += bandRow("종일", "allday");                               // 종일 줄은 항상 (여기서 종일 일정을 추가·확인)
+    if (showTodo) grid += bandRow("할 일", "todo");                  // 할 일이 하나도 없는 주에는 줄을 숨겨 공간 절약
+  } else {
+    grid += bandRow("종일<br>·할일", "all");
+  }
   // 시간 행 — 시간 범위(시작~종료)만큼 세로로 채워지는 블록으로 표시
   const CELL_H = 46;
   const toMin = (t) => { const [a, b] = (t || "0:0").split(":").map(Number); return a * 60 + (b || 0); };
@@ -1550,6 +1581,8 @@ function renderSettings() {
     <div class="set-group">
       <div class="set-row"><div><div class="lab">오늘 할 일 고정 (항상 위)</div><div class="desc">${pipSupported() ? "별도 창으로 항상 화면 최상단에 띄웁니다" : "이 브라우저는 항상-위 창을 지원하지 않아 앱 내부 위젯으로 표시됩니다"}</div></div>
         <button class="switch ${pinState.open ? "on" : ""}" id="set-pin"></button></div>
+      <div class="set-row"><div><div class="lab">종일 · 할 일 줄 나누기</div><div class="desc">주간 캘린더에서 종일 일정과 할 일을 각각 다른 줄에 표시합니다 (비어 있는 줄은 숨김)</div></div>
+        <button class="switch ${prefs.splitBand ? "on" : ""}" id="set-splitband"></button></div>
       <div class="set-row"><div><div class="lab">캘린더 기본 보기</div><div class="desc">월~일(주간) / 월~금(작업주간)</div></div>
         <div class="seg"><button class="${!ui.workweek ? "active" : ""}" data-ww="0">월~일</button><button class="${ui.workweek ? "active" : ""}" data-ww="1">월~금</button></div></div>
     </div>
@@ -2169,7 +2202,7 @@ const THEMES = {
 };
 const PAPER_STYLES = ["none", "grid", "ruled", "excel", "dot"];
 const PAPER_LABEL = { none: "없음", grid: "모눈", ruled: "유선", excel: "엑셀", dot: "도트" };
-const prefs = { paperStyle: "grid", theme: "cream", panelOp: 92, contrast: "auto", calScale: 100, alertScale: 100, alertSec: 0 };
+const prefs = { paperStyle: "grid", theme: "cream", panelOp: 92, contrast: "auto", calScale: 100, alertScale: 100, alertSec: 0, splitBand: true };
 function loadPrefs() {
   try {
     const p = JSON.parse(localStorage.getItem("scheduler:prefs") || "{}");
@@ -2181,6 +2214,7 @@ function loadPrefs() {
     if (Number.isFinite(p.calScale)) prefs.calScale = Math.max(70, Math.min(150, p.calScale));
     if (Number.isFinite(p.alertScale)) prefs.alertScale = Math.max(70, Math.min(160, p.alertScale));
     if (Number.isFinite(p.alertSec)) prefs.alertSec = Math.max(0, Math.min(120, p.alertSec));
+    if (typeof p.splitBand === "boolean") prefs.splitBand = p.splitBand;
   } catch (e) {}
 }
 function savePrefs() { try { localStorage.setItem("scheduler:prefs", JSON.stringify(prefs)); } catch (e) {} }
@@ -2683,7 +2717,7 @@ function wireGlobal() {
 
   document.addEventListener("click", (e) => {
     if (e.target.closest("#timepop") || e.target.closest(".pin-widget")) return; // 별도 핸들러 처리
-    const t = e.target.closest("[data-cat],[data-todo-filter],[data-toggle],[data-ev-toggle],[data-edit-event],[data-del-event],[data-edit-todo],[data-del-todo],[data-ww],[data-dash-toggle],#dash-collapse,#wk-prev,#wk-next,#wk-today,#roll-desktop,#roll-mobile,#set-theme,#set-pin,#set-export,#set-import,#set-clear,#set-alert-demo,#set-close,[data-paper],[data-theme-key],[data-contrast],[data-step],[data-proj],#pj-new,[data-band-more],[data-calmode],[data-goweek]");
+    const t = e.target.closest("[data-cat],[data-todo-filter],[data-toggle],[data-ev-toggle],[data-edit-event],[data-del-event],[data-edit-todo],[data-del-todo],[data-ww],[data-dash-toggle],#dash-collapse,#wk-prev,#wk-next,#wk-today,#roll-desktop,#roll-mobile,#set-theme,#set-pin,#set-splitband,#set-export,#set-import,#set-clear,#set-alert-demo,#set-close,[data-paper],[data-theme-key],[data-contrast],[data-step],[data-proj],#pj-new,[data-band-more],[data-calmode],[data-goweek]");
     if (!t) return;
     if (t.dataset.evToggle) { Store.toggleEvent(t.dataset.evToggle); return; }
     if (t.dataset.dashToggle) { ui.dashExp[t.dataset.dashToggle] = !ui.dashExp[t.dataset.dashToggle]; saveUI(); render(); return; }
@@ -2724,6 +2758,7 @@ function wireGlobal() {
     if (t.dataset.paper) { setPref("paperStyle", t.dataset.paper); render(); return; }
     if (t.id === "set-theme") { setTheme(!currentDark()); render(); return; }
     if (t.id === "set-pin") { togglePin(); render(); return; }
+    if (t.id === "set-splitband") { setPref("splitBand", !prefs.splitBand); render(); return; }
     if (t.id === "set-export") { exportData(); return; }
     if (t.id === "set-import") { importData(); return; }
     if (t.id === "set-clear") { if (confirm("이 기기의 모든 일정·할 일을 삭제할까요? 되돌릴 수 없습니다.")) { Store.replaceAll({ events: [], todos: [] }); toast("모든 데이터를 삭제했습니다"); } return; }
@@ -2751,6 +2786,8 @@ function wireGlobal() {
     const cell = e.target.closest(".cell, .band-cell, .m-cell");
     if (cell && !e.target.closest(".evt, .cal-chip, .band-more, .m-item, .m-more, .m-d")) {
       const band = cell.dataset.band === "1", month = cell.dataset.month === "1";
+      // 할 일 줄의 빈 칸 → 그 날짜 마감의 할 일 추가
+      if (cell.dataset.bandkind === "todo") { openModal("todo", { due: cell.dataset.date, cat: ui.cat === "personal" ? "personal" : "work" }); return; }
       let time = band || month ? "" : cell.dataset.hour;   // 월간 칸은 시간 칸이 없으므로 기본 시간으로 열림
       if (!band && !month) { const r = cell.getBoundingClientRect(); if (e.clientY - r.top > r.height / 2) time = time.slice(0, 3) + "30"; } // 아래 절반 = :30
       openModal("event", { date: cell.dataset.date, time, allDay: band, cat: ui.cat === "personal" ? "personal" : "work" });
