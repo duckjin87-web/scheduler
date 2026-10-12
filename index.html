@@ -584,7 +584,19 @@
   .pin-todo.done .t{text-decoration:line-through;color:var(--text-faint);}
   .pin-todo.done{opacity:.7;}
   .pin-todo .m{font-size:10.5px;color:var(--text-faint);}
-  .pin-widget.collapsed .pin-opacity,.pin-widget.collapsed .pin-body{display:none;}
+  .pin-widget.collapsed .pin-opacity,.pin-widget.collapsed .pin-body,.pin-widget.collapsed .pin-qa{display:none;}
+  /* 고정 팝업(항상-위 창)의 제목줄 — 접기·고정 유지 버튼 */
+  .pip-hd{position:sticky;top:0;z-index:10;background:var(--work);color:#fff;padding:9px 12px;font-weight:800;font-size:13px;
+    display:flex;align-items:center;gap:6px;}
+  .pip-hd .pip-t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pip-hd .pip-cnt{flex:none;font-size:10.5px;font-weight:800;background:rgba(255,255,255,.22);border-radius:999px;padding:1px 7px;}
+  .pip-hd .pip-cnt:empty{display:none;}
+  .pip-hd .pip-b{border:none;background:rgba(255,255,255,.2);color:#fff;width:24px;height:22px;border-radius:6px;
+    font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;flex:none;}
+  .pip-hd .pip-b:hover{background:rgba(255,255,255,.32);}
+  .pip-hd .pip-b.on{background:rgba(255,255,255,.45);}
+  .pip-hd .pip-b svg{width:13px;height:13px;stroke:#fff;}
+  body.pip-collapsed #pip-body, body.pip-collapsed #pip-op-row, body.pip-collapsed #pip-qa{display:none;}
   .pin-empty{font-size:11px;color:var(--text-faint);text-align:center;padding:8px 0;}
   .pin-sec{font-size:10px;font-weight:800;color:var(--text-faint);margin:2px 0 4px;}
   .pin-divider{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:800;color:var(--work);margin:10px 0 5px;}
@@ -928,7 +940,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-10-03 · 종류 구분(질감 + 줄 분리)";
+const APP_VERSION = "2026-10-12 · 고정 창 내리기 · 고정 유지";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -2338,7 +2350,7 @@ function importData() {
 /* ---------- 핀: 오늘 할 일 고정 ----------
    지원 브라우저(크롬 등)에서는 Document Picture-in-Picture로 '항상 위'에 뜨는
    실제 창을 띄웁니다. 미지원 시 앱 내부 플로팅 위젯으로 대체합니다. */
-const pinState = { open: false, collapsed: false, opacity: 100, x: null, y: null, doneOpen: false };
+const pinState = { open: false, collapsed: false, opacity: 100, x: null, y: null, doneOpen: false, keepOnClose: true, pipH: 400 };
 let pipWin = null;
 function pipSupported() { return "documentPictureInPicture" in window; }
 function loadPin() { try { const p = JSON.parse(localStorage.getItem("scheduler:pin") || "{}"); Object.assign(pinState, p); pinState.open = false; pinState.doneOpen = false; } catch (e) {} }
@@ -2426,11 +2438,14 @@ async function openPip() {
     doc.documentElement.style.opacity = (pinState.opacity / 100).toFixed(2);
     const dk = document.documentElement.getAttribute("data-theme"); if (dk) doc.documentElement.setAttribute("data-theme", dk);
     doc.body.innerHTML = `
-      <div style="position:sticky;top:0;background:var(--work);color:#fff;padding:9px 12px;font-weight:800;font-size:13px;display:flex;align-items:center;gap:6px;">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px;stroke:#fff"><path d="M9 4h6l-1 6 3 3v2H7v-2l3-3-1-6z"/><path d="M12 15v5"/></svg>
-        <span style="flex:1">오늘 할 일</span>
-        <button id="pip-add" title="추가" style="border:none;background:rgba(255,255,255,.2);color:#fff;width:24px;height:22px;border-radius:6px;font-size:15px;line-height:1;">+</button>
-        <button id="pip-optoggle" title="투명도" style="border:none;background:rgba(255,255,255,.2);color:#fff;width:24px;height:22px;border-radius:6px;font-size:11px;">◐</button>
+      <div class="pip-hd" id="pip-head">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px;stroke:#fff;flex:none"><path d="M9 4h6l-1 6 3 3v2H7v-2l3-3-1-6z"/><path d="M12 15v5"/></svg>
+        <span class="pip-t">오늘 할 일</span>
+        <span class="pip-cnt" id="pip-cnt"></span>
+        <button class="pip-b" id="pip-add" title="추가">+</button>
+        <button class="pip-b" id="pip-optoggle" title="투명도">◐</button>
+        <button class="pip-b ${pinState.keepOnClose ? "on" : ""}" id="pip-keep" title="${pinState.keepOnClose ? "고정 유지 켜짐 — 이 창을 닫아도 앱 안 위젯으로 고정이 이어집니다" : "고정 유지 꺼짐 — 이 창을 닫으면 고정도 해제됩니다"}"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M9 4h6l-1 6 3 3v2H7v-2l3-3-1-6z"/><path d="M12 15v5"/></svg></button>
+        <button class="pip-b" id="pip-collapse" title="${pinState.collapsed ? "펼치기" : "창 내리기 (제목줄만 남김)"}">${pinState.collapsed ? "▾" : "–"}</button>
       </div>
       <div id="pip-op-row" style="display:none;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--border);font-size:10.5px;color:var(--text-faint);">
         투명도 <input type="range" id="pip-opacity" min="35" max="100" value="${pinState.opacity}" style="flex:1"/> <span id="pip-opacity-val">${pinState.opacity}%</span>
@@ -2443,6 +2458,16 @@ async function openPip() {
       <div id="pip-body" style="padding:8px 12px;"></div>
       <div id="alert-stack" style="position:fixed;left:8px;right:8px;bottom:8px;display:flex;flex-direction:column;gap:8px;z-index:150;"></div>`;
     doc.getElementById("pip-body").addEventListener("click", pinBodyClick);
+    // 창 내리기(접기) — 제목줄만 남기고 창 높이도 같이 줄임
+    doc.getElementById("pip-collapse").addEventListener("click", () => pipSetCollapsed(!pinState.collapsed));
+    // 고정 유지 — 켜 두면 이 창을 닫아도 고정이 꺼지지 않고 앱 안 위젯으로 이어짐
+    doc.getElementById("pip-keep").addEventListener("click", () => {
+      pinState.keepOnClose = !pinState.keepOnClose; savePin();
+      const b = doc.getElementById("pip-keep");
+      b.classList.toggle("on", pinState.keepOnClose);
+      b.title = pinState.keepOnClose ? "고정 유지 켜짐 — 이 창을 닫아도 앱 안 위젯으로 고정이 이어집니다" : "고정 유지 꺼짐 — 이 창을 닫으면 고정도 해제됩니다";
+      toast(pinState.keepOnClose ? "창을 닫아도 고정을 유지합니다" : "창을 닫으면 고정도 해제됩니다");
+    });
     doc.getElementById("pip-optoggle").addEventListener("click", () => { const r = doc.getElementById("pip-op-row"); r.style.display = (r.style.display === "none" || !r.style.display) ? "flex" : "none"; });
     doc.getElementById("pip-add").addEventListener("click", () => { const r = doc.getElementById("pip-qa"); const show = (r.style.display === "none" || !r.style.display); r.style.display = show ? "flex" : "none"; if (show) setTimeout(() => doc.getElementById("pip-qa-input").focus(), 20); });
     wireQuickAdd(doc, "pip-qa-kind", "pip-qa-input", "pip-qa-go");
@@ -2453,9 +2478,30 @@ async function openPip() {
       doc.documentElement.style.opacity = (pinState.opacity / 100).toFixed(2); // 창 전체에 적용
     });
     pop.addEventListener("change", savePin);
-    pipWin.addEventListener("pagehide", () => { pipWin = null; pinState.open = false; savePin(); renderPin(); });
+    // 창이 닫힐 때: 고정 유지가 켜져 있으면 앱 안 위젯으로 이어받고, 꺼져 있으면 고정 해제
+    pipWin.addEventListener("pagehide", () => { pipWin = null; if (!pinState.keepOnClose) pinState.open = false; savePin(); renderPin(); });
+    if (pinState.collapsed) setTimeout(() => pipSetCollapsed(true), 30);   // 접어 둔 상태로 다시 열기
     renderPin();
   } catch (e) { pipWin = null; renderPin(); }
+}
+function pipSetCollapsed(on) {
+  pinState.collapsed = !!on; savePin();
+  if (!pipWin || !pipWin.document) { renderPin(); return; }
+  const doc = pipWin.document;
+  doc.body.classList.toggle("pip-collapsed", pinState.collapsed);
+  const btn = doc.getElementById("pip-collapse");
+  if (btn) { btn.textContent = pinState.collapsed ? "▾" : "–"; btn.title = pinState.collapsed ? "펼치기" : "창 내리기 (제목줄만 남김)"; }
+  try {
+    const frame = Math.max(0, pipWin.outerHeight - pipWin.innerHeight);     // 창 테두리/제목 높이
+    if (pinState.collapsed) {
+      if (pipWin.outerHeight > 90) pinState.pipH = pipWin.outerHeight;      // 펼칠 때 돌아올 높이 기억
+      const head = doc.getElementById("pip-head");
+      pipWin.resizeTo(pipWin.outerWidth, Math.round((head ? head.getBoundingClientRect().height : 38) + frame + 2));
+    } else {
+      pipWin.resizeTo(pipWin.outerWidth, Math.max(200, pinState.pipH || 400));
+    }
+    savePin();
+  } catch (_) {}
 }
 function closePip() { if (pipWin) { try { pipWin.close(); } catch (_) {} pipWin = null; } }
 
@@ -2473,6 +2519,8 @@ function renderPin() {
   if (pipWin && pipWin.document) {
     const pb = pipWin.document.getElementById("pip-body");
     if (pb) { pb.innerHTML = pinItemsHtml(); pb.style.opacity = ""; }
+    const cnt = pipWin.document.getElementById("pip-cnt");   // 접어 둬도 남은 개수는 보이게
+    if (cnt) { const n = Store.state.todos.filter((t) => !t.done && t.due && t.due <= todayStr()).length; cnt.textContent = n ? String(n) : ""; }
     pipWin.document.documentElement.style.opacity = (pinState.opacity / 100).toFixed(2); // 창 전체 투명도
     w.hidden = true; return;
   }
