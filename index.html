@@ -564,6 +564,16 @@
   .pin-opacity{display:none;align-items:center;gap:6px;padding:6px 10px;border-bottom:1px solid var(--border);font-size:10.5px;color:var(--text-faint);}
   .pin-opacity input{flex:1;}
   .pin-widget.show-op:not(.collapsed) .pin-opacity{display:flex;}
+  /* 고정 창 자체의 보기 설정: 투명도 · 글자 크기 (앱 스타일이 PiP 창으로 복사됨) */
+  .pin-set{display:none;align-items:center;gap:5px;padding:6px 10px;border-bottom:1px solid var(--border);font-size:10.5px;color:var(--text-faint);}
+  .pin-set .lb{flex:none;min-width:50px;white-space:nowrap;}
+  .pin-set input[type=range]{flex:1;min-width:0;}
+  .pin-set .sb{flex:none;width:21px;height:21px;border-radius:5px;border:1px solid var(--border);background:var(--surface-2);
+    color:var(--text);font-size:13px;font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
+  .pin-set .sb:hover{background:var(--surface-3);}
+  .pin-set .sv{flex:none;width:36px;text-align:right;font-variant-numeric:tabular-nums;}
+  .pin-widget.show-op:not(.collapsed) .pin-set{display:flex;}
+  body.pip-collapsed #pip-fs-row{display:none;}
   .pin-qa{display:none;align-items:center;gap:6px;padding:7px 10px;border-bottom:1px solid var(--border);}
   .pin-widget.show-qa:not(.collapsed) .pin-qa{display:flex;}
   .pin-qa select{border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:6px;font-size:11px;padding:5px 4px;flex:none;}
@@ -922,6 +932,13 @@
       <input type="range" id="pin-opacity" min="35" max="100" value="100" />
       <span id="pin-opacity-val">100%</span>
     </div>
+    <div class="pin-set" id="pin-fs-row">
+      <span class="lb">글자 크기</span>
+      <button type="button" class="sb" id="pin-fs-dn" title="글자 작게">−</button>
+      <input type="range" id="pin-fs" min="70" max="160" step="5" value="100" />
+      <button type="button" class="sb" id="pin-fs-up" title="글자 크게">＋</button>
+      <span class="sv" id="pin-fs-val">100%</span>
+    </div>
     <div class="pin-qa" id="pin-qa" hidden>
       <select id="pin-qa-kind"><option value="todo">할 일</option><option value="event">일정</option></select>
       <input id="pin-qa-input" type="text" placeholder="제목 입력 후 Enter" autocomplete="off" />
@@ -940,7 +957,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-10-12 · 고정 창 내리기 · 고정 유지";
+const APP_VERSION = "2026-10-13 · 고정 창 글자 크기 조절";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -2350,7 +2367,7 @@ function importData() {
 /* ---------- 핀: 오늘 할 일 고정 ----------
    지원 브라우저(크롬 등)에서는 Document Picture-in-Picture로 '항상 위'에 뜨는
    실제 창을 띄웁니다. 미지원 시 앱 내부 플로팅 위젯으로 대체합니다. */
-const pinState = { open: false, collapsed: false, opacity: 100, x: null, y: null, doneOpen: false, keepOnClose: true, pipH: 400 };
+const pinState = { open: false, collapsed: false, opacity: 100, x: null, y: null, doneOpen: false, keepOnClose: true, pipH: 400, fontScale: 100 };
 let pipWin = null;
 function pipSupported() { return "documentPictureInPicture" in window; }
 function loadPin() { try { const p = JSON.parse(localStorage.getItem("scheduler:pin") || "{}"); Object.assign(pinState, p); pinState.open = false; pinState.doneOpen = false; } catch (e) {} }
@@ -2443,12 +2460,21 @@ async function openPip() {
         <span class="pip-t">오늘 할 일</span>
         <span class="pip-cnt" id="pip-cnt"></span>
         <button class="pip-b" id="pip-add" title="추가">+</button>
-        <button class="pip-b" id="pip-optoggle" title="투명도">◐</button>
+        <button class="pip-b" id="pip-optoggle" title="보기 설정 (투명도 · 글자 크기)">◐</button>
         <button class="pip-b ${pinState.keepOnClose ? "on" : ""}" id="pip-keep" title="${pinState.keepOnClose ? "고정 유지 켜짐 — 이 창을 닫아도 앱 안 위젯으로 고정이 이어집니다" : "고정 유지 꺼짐 — 이 창을 닫으면 고정도 해제됩니다"}"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M9 4h6l-1 6 3 3v2H7v-2l3-3-1-6z"/><path d="M12 15v5"/></svg></button>
         <button class="pip-b" id="pip-collapse" title="${pinState.collapsed ? "펼치기" : "창 내리기 (제목줄만 남김)"}">${pinState.collapsed ? "▾" : "–"}</button>
       </div>
-      <div id="pip-op-row" style="display:none;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--border);font-size:10.5px;color:var(--text-faint);">
-        투명도 <input type="range" id="pip-opacity" min="35" max="100" value="${pinState.opacity}" style="flex:1"/> <span id="pip-opacity-val">${pinState.opacity}%</span>
+      <div class="pin-set" id="pip-op-row" style="display:none;">
+        <span class="lb">투명도</span>
+        <input type="range" id="pip-opacity" min="35" max="100" value="${pinState.opacity}"/>
+        <span class="sv" id="pip-opacity-val">${pinState.opacity}%</span>
+      </div>
+      <div class="pin-set" id="pip-fs-row" style="display:none;">
+        <span class="lb">글자 크기</span>
+        <button type="button" class="sb" id="pip-fs-dn" title="글자 작게">−</button>
+        <input type="range" id="pip-fs" min="70" max="160" step="5" value="${pinState.fontScale}"/>
+        <button type="button" class="sb" id="pip-fs-up" title="글자 크게">＋</button>
+        <span class="sv" id="pip-fs-val">${pinState.fontScale}%</span>
       </div>
       <div id="pip-qa" class="pin-qa" style="display:none;">
         <select id="pip-qa-kind"><option value="todo">할 일</option><option value="event">일정</option></select>
@@ -2468,7 +2494,24 @@ async function openPip() {
       b.title = pinState.keepOnClose ? "고정 유지 켜짐 — 이 창을 닫아도 앱 안 위젯으로 고정이 이어집니다" : "고정 유지 꺼짐 — 이 창을 닫으면 고정도 해제됩니다";
       toast(pinState.keepOnClose ? "창을 닫아도 고정을 유지합니다" : "창을 닫으면 고정도 해제됩니다");
     });
-    doc.getElementById("pip-optoggle").addEventListener("click", () => { const r = doc.getElementById("pip-op-row"); r.style.display = (r.style.display === "none" || !r.style.display) ? "flex" : "none"; });
+    doc.getElementById("pip-optoggle").addEventListener("click", () => {
+      const rows = [doc.getElementById("pip-op-row"), doc.getElementById("pip-fs-row")];
+      const show = rows[0].style.display === "none" || !rows[0].style.display;
+      rows.forEach((r) => (r.style.display = show ? "flex" : "none"));
+      doc.getElementById("pip-optoggle").classList.toggle("on", show);
+    });
+    // 글자 크기 — 이 창 안에서 바로 조절 (± 버튼 / 슬라이더)
+    const fsr = doc.getElementById("pip-fs");
+    const fsApply = (v, save) => {
+      pinState.fontScale = Math.max(70, Math.min(160, v));
+      fsr.value = pinState.fontScale;
+      doc.getElementById("pip-fs-val").textContent = pinState.fontScale + "%";
+      applyPinFont(); if (save) savePin();
+    };
+    fsr.addEventListener("input", () => fsApply(parseInt(fsr.value, 10), false));
+    fsr.addEventListener("change", () => fsApply(parseInt(fsr.value, 10), true));
+    doc.getElementById("pip-fs-dn").addEventListener("click", () => fsApply(pinState.fontScale - 5, true));
+    doc.getElementById("pip-fs-up").addEventListener("click", () => fsApply(pinState.fontScale + 5, true));
     doc.getElementById("pip-add").addEventListener("click", () => { const r = doc.getElementById("pip-qa"); const show = (r.style.display === "none" || !r.style.display); r.style.display = show ? "flex" : "none"; if (show) setTimeout(() => doc.getElementById("pip-qa-input").focus(), 20); });
     wireQuickAdd(doc, "pip-qa-kind", "pip-qa-input", "pip-qa-go");
     const pop = doc.getElementById("pip-opacity");
@@ -2503,6 +2546,12 @@ function pipSetCollapsed(on) {
     savePin();
   } catch (_) {}
 }
+// 고정 창·위젯 목록의 글자 크기 (제목줄은 그대로 두고 내용만 확대/축소)
+function applyPinFont() {
+  const z = (Math.max(70, Math.min(160, pinState.fontScale || 100)) / 100).toFixed(3);
+  const b = document.getElementById("pin-body"); if (b) b.style.zoom = z;
+  if (pipWin && pipWin.document) { const pb = pipWin.document.getElementById("pip-body"); if (pb) pb.style.zoom = z; }
+}
 function closePip() { if (pipWin) { try { pipWin.close(); } catch (_) {} pipWin = null; } }
 
 function togglePin() {
@@ -2522,6 +2571,7 @@ function renderPin() {
     const cnt = pipWin.document.getElementById("pip-cnt");   // 접어 둬도 남은 개수는 보이게
     if (cnt) { const n = Store.state.todos.filter((t) => !t.done && t.due && t.due <= todayStr()).length; cnt.textContent = n ? String(n) : ""; }
     pipWin.document.documentElement.style.opacity = (pinState.opacity / 100).toFixed(2); // 창 전체 투명도
+    applyPinFont();
     w.hidden = true; return;
   }
   if (!pinState.open) { w.hidden = true; return; }
@@ -2533,12 +2583,25 @@ function renderPin() {
   else { w.style.left = pinState.x + "px"; w.style.top = pinState.y + "px"; w.style.right = "auto"; }
   document.getElementById("pin-opacity").value = pinState.opacity;
   document.getElementById("pin-opacity-val").textContent = pinState.opacity + "%";
+  document.getElementById("pin-fs").value = pinState.fontScale;
+  document.getElementById("pin-fs-val").textContent = pinState.fontScale + "%";
   document.getElementById("pin-body").innerHTML = pinItemsHtml();
+  applyPinFont();
 }
 function wirePin() {
   document.getElementById("pin-btn").addEventListener("click", togglePin);
   document.getElementById("pin-hide").addEventListener("click", () => { pinState.open = false; savePin(); closePip(); renderPin(); });
   document.getElementById("pin-collapse").addEventListener("click", () => { pinState.collapsed = !pinState.collapsed; savePin(); renderPin(); });
+  const wFsApply = (v, save) => {
+    pinState.fontScale = Math.max(70, Math.min(160, v));
+    document.getElementById("pin-fs").value = pinState.fontScale;
+    document.getElementById("pin-fs-val").textContent = pinState.fontScale + "%";
+    applyPinFont(); if (save) savePin();
+  };
+  document.getElementById("pin-fs").addEventListener("input", (e) => wFsApply(parseInt(e.target.value, 10), false));
+  document.getElementById("pin-fs").addEventListener("change", (e) => wFsApply(parseInt(e.target.value, 10), true));
+  document.getElementById("pin-fs-dn").addEventListener("click", () => wFsApply(pinState.fontScale - 5, true));
+  document.getElementById("pin-fs-up").addEventListener("click", () => wFsApply(pinState.fontScale + 5, true));
   document.getElementById("pin-optoggle").addEventListener("click", () => {
     const w = document.getElementById("pin-widget"); w.classList.toggle("show-op");
     document.getElementById("pin-optoggle").classList.toggle("on", w.classList.contains("show-op"));
