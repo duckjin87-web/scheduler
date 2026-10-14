@@ -164,6 +164,29 @@
   .pp.pp-excel{background-image:repeating-linear-gradient(#cdd3d1 0 1px,transparent 1px 6px),repeating-linear-gradient(90deg,#cdd3d1 0 1px,transparent 1px 6px);border-top:5px solid #217346;}
   .pp.pp-dot{background-image:radial-gradient(circle,#c3bca8 1px,transparent 1.4px);background-size:6px 6px;}
   .pp.pp-none{background-image:linear-gradient(135deg,transparent 45%,#c86 46% 54%,transparent 55%);}
+  /* 캘린더 디자인 프리셋 선택 */
+  .set-row.col{flex-direction:column;align-items:stretch;gap:12px;}
+  .design-opts{display:flex;flex-wrap:wrap;gap:8px;}
+  .design-opt{flex:1 1 150px;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:3px;
+    border:1.5px solid var(--border);background:var(--surface);border-radius:11px;padding:9px 11px;text-align:left;}
+  .design-opt.active{border-color:var(--work);box-shadow:0 0 0 1px var(--work);}
+  .design-opt b{font-size:12.5px;font-weight:700;color:var(--text);}
+  .design-opt small{font-size:10.5px;color:var(--text-faint);line-height:1.35;}
+  .design-opt .dp{width:100%;height:30px;border-radius:6px;border:1px solid var(--border);overflow:hidden;
+    display:flex;flex-direction:column;justify-content:center;gap:3px;padding:4px 5px;margin-bottom:3px;}
+  .design-opt .dp i{display:block;height:5px;border-radius:2px;}
+  .dp-basic{background:var(--surface-2);}
+  .dp-basic i{background:color-mix(in srgb, var(--work) 45%, var(--surface));}
+  .dp-basic i:nth-child(2){width:62%;background:color-mix(in srgb, var(--high) 50%, var(--surface));}
+  .dp-basic i:nth-child(3){width:45%;}
+  .dp-line{background:#fff;border-color:#E8EAED;}
+  .dp-line i{background:#C9DAF3;border-radius:3px;}
+  .dp-line i:nth-child(2){width:62%;background:#F6D9C8;}
+  .dp-line i:nth-child(3){width:45%;background:#CDE6D6;}
+  .dp-night{background:#16181D;border-color:#2A2F36;gap:2px;}
+  .dp-night i{height:4px;background:#2C4A5E;border-left:2px solid #5BBFA8;border-radius:0 2px 2px 0;}
+  .dp-night i:nth-child(2){width:62%;background:#4A3A2E;border-left-color:#E0AD6E;}
+  .dp-night i:nth-child(3){width:45%;background:#3A2E4A;border-left-color:#9B8CE0;}
   /* 슬라이더 + 상하(−/+) 미세조정 버튼 */
   .slider-ctl{display:flex;align-items:center;gap:6px;min-width:190px;}
   .slider-ctl input[type=range]{flex:1;min-width:56px;}
@@ -293,6 +316,43 @@
   .week-grid .head .num{font-size:17px;line-height:1;}
   .week-grid .head.today{color:var(--work);}
   .week-grid .head.today .num{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:28px;border-radius:50%;background:var(--work);color:#fff;}
+  /* ================= 캘린더 디자인 프리셋 ================= */
+  /* --- 라인 클린: 선을 지우고 흰 여백으로 구분, 칸은 넉넉하게 --- */
+  body.design-line .week-grid{background-color:var(--surface);}
+  body.design-line .week-grid :is(.cell,.head,.band-cell,.corner,.hourlabel,.band-label,.m-cell,.proj-lane,.proj-label,.m-cell){
+    border-color:color-mix(in srgb, var(--text) 9%, transparent);}
+  body.design-line .week-grid :is(.head,.corner,.band-label,.proj-label){background:var(--surface);}
+  body.design-line .week-grid .head::before{content:none;}          /* 엑셀 열 문자 숨김 */
+  body.design-line .week-grid .head.today{background:var(--surface);outline:none;}
+  body.design-line .week-grid .cell.today-col{background:transparent;}   /* 오늘 열 음영 없이 날짜 원으로만 표시 */
+  body.design-line .week-grid .band-cell.today-col{background:color-mix(in srgb, var(--work) 6%, var(--surface));}
+  body.design-line .week-grid .band-cell{background:var(--surface);}
+  body.design-line .week-grid .band-cell.todo-row{background:color-mix(in srgb, var(--high) 3%, var(--surface));}
+  body.design-line .week-grid :is(.band-label,.band-cell){border-top-width:1px;border-bottom-width:1px;}
+  body.design-line .week-grid :is(.evt,.cal-chip,.m-item){border-radius:4px;box-shadow:none;}
+  body.design-line .week-grid .evt.timed{box-shadow:none;}
+  body.design-line .month-grid{grid-auto-rows:minmax(102px,1fr);}
+  /* --- 미드나잇: 칸을 낮추고 글자를 촘촘히, 선은 거의 지움 --- */
+  body.design-night .week-grid{background-color:var(--surface);}
+  body.design-night .week-grid :is(.cell,.head,.band-cell,.corner,.hourlabel,.band-label,.m-cell,.proj-lane,.proj-label){
+    border-color:color-mix(in srgb, var(--text) 7%, transparent);}
+  body.design-night .week-grid :is(.head,.corner,.band-label,.proj-label){background:color-mix(in srgb, var(--text) 3%, var(--surface));}
+  body.design-night .week-grid .head::before{content:none;}
+  body.design-night .week-grid .head{min-height:28px;padding:5px 2px;}
+  body.design-night .week-grid .head .num{font-size:15px;}
+  body.design-night .week-grid .head .dow{font-size:13px;}
+  body.design-night .week-grid .head.today .num{min-width:24px;height:24px;}
+  body.design-night .week-grid .hourlabel{font-size:9.5px;padding-top:2px;}
+  body.design-night .week-grid :is(.evt,.cal-chip,.m-item){font-size:10px;border-radius:0 3px 3px 0;box-shadow:none;}
+  body.design-night .week-grid .evt.timed{padding:1px 4px;border-left-width:2px;}
+  body.design-night .week-grid .band-cell{padding:3px;min-height:26px;}
+  body.design-night .week-grid .band-cell .cal-chip{height:18px;min-height:18px;}
+  body.design-night .week-grid .cell.today-col{background:color-mix(in srgb, var(--text) 3.5%, transparent);}
+  body.design-night .month-grid{grid-auto-rows:minmax(84px,1fr);}
+  body.design-night .month-grid .m-item{height:15px;min-height:15px;}
+  /* 현재 시각 선 (오늘 열) */
+  .now-line{position:absolute;left:0;right:0;height:0;border-top:1.5px solid var(--urgent);z-index:3;pointer-events:none;}
+  .now-line::before{content:"";position:absolute;left:-3px;top:-4px;width:7px;height:7px;border-radius:50%;background:var(--urgent);}
   /* ---------- 공휴일: 빨간 날짜 + 파스텔 음영 ---------- */
   .week-grid .head.red{color:var(--hol);}
   .week-grid .head.red .num{color:var(--hol);}
@@ -377,8 +437,8 @@
     .m-item b{display:none;}
     .m-d{font-size:10.5px;padding:0 4px;}
   }
-  .week-grid .hourlabel{font-size:10.5px;color:var(--text-faint);text-align:right;padding:4px 6px 0 0;border-top:1px solid var(--border);height:46px;}
-  .week-grid .cell{border-top:1px solid var(--border);border-left:1px solid var(--border);height:46px;padding:0;position:relative;cursor:pointer;transition:background .1s;}
+  .week-grid .hourlabel{font-size:10.5px;color:var(--text-faint);text-align:right;padding:4px 6px 0 0;border-top:1px solid var(--border);height:var(--cell-h,46px);}
+  .week-grid .cell{border-top:1px solid var(--border);border-left:1px solid var(--border);height:var(--cell-h,46px);padding:0;position:relative;cursor:pointer;transition:background .1s;}
   .week-grid .cell:hover{background:var(--surface-2);}
   /* 셀 자체는 쌓임 맥락을 만들지 않고, 일정 블록이 다음 시간 칸 위로 올라오도록 블록에 z-index */
   .evt.timed{position:absolute;margin:0;padding:2px 5px;overflow:hidden;box-shadow:var(--shadow);}
@@ -957,7 +1017,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-10-13 · 고정 창 글자 크기 조절";
+const APP_VERSION = "2026-10-14 · 캘린더 디자인(라인 클린·미드나잇)";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1244,6 +1304,7 @@ function evTimeText(e) { if (e.allDay) return "종일"; if (!e.time) return ""; 
 // 분류 이모지: 업무=회사, 개인=사람
 function catIcon(cat) { return cat === "personal" ? "👤" : "🏢"; }
 const daysBetween = (a, b) => Math.round((parseYMD(b) - parseYMD(a)) / 86400000);
+const nowMin = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
 const fmtMD = (s) => { if (!s) return ""; const d = parseYMD(s); return `${d.getMonth() + 1}/${d.getDate()}`; };
 
 /* ---------- 프로젝트 헬퍼 ---------- */
@@ -1441,7 +1502,7 @@ function renderWeek() {
     grid += bandRow("종일<br>·할일", "all");
   }
   // 시간 행 — 시간 범위(시작~종료)만큼 세로로 채워지는 블록으로 표시
-  const CELL_H = 46;
+  const CELL_H = calRowH();
   const toMin = (t) => { const [a, b] = (t || "0:0").split(":").map(Number); return a * 60 + (b || 0); };
   // 하루 단위 겹침 배치: 시간이 겹치는 묶음(cluster)마다 열을 나누고, 비어 있는 오른쪽 열은 넓혀서 사용
   const dayLayout = {};
@@ -1488,7 +1549,11 @@ function renderWeek() {
         const left = (L.col / L.n) * 100, w = (L.span / L.n) * 100;
         return `<div class="evt timed pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}${projCls(e)}" style="${inProject(e) ? `--pc:${projectById(e.projectId).color};` : ""}top:${top.toFixed(1)}px;left:calc(${left}% + 1px);width:calc(${w}% - 3px);height:${height.toFixed(1)}px;" title="${esc(evTimeText(e))} ${esc(e.title)}" draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="rz rz-top" data-rz="top" title="위로 끌어 시작 시간 변경"></span><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span><span class="t">${esc(evTimeText(e))}</span><span class="ci">${catIcon(e.cat)}</span>${e.rolledFrom ? `<span class="evt-d">D+${daysBetween(e.rolledFrom, e.date)}</span>` : ""}${projDot(e.projectId)}${esc(e.title)}${e.repeat !== "none" ? " ↻" : ""}<span class="rz rz-bot" data-rz="bot" title="아래로 끌어 종료 시간 변경"></span></div>`;
       }).join("");
-      grid += `<div class="cell ${starts.length ? "has-evt" : ""} ${isToday ? "today-col" : ""} ${isHoliday(ds) ? "holiday-col" : ""}" data-date="${ds}" data-hour="${pad(h)}:00">${inner}</div>`;
+      // 오늘 열의 현재 시각 선 (지금 시간이 이 칸 안에 있을 때)
+      const nowM = nowMin();
+      const nl = isToday && nowM >= h * 60 && nowM < (h + 1) * 60
+        ? `<div class="now-line" style="top:${(((nowM - h * 60) / 60) * CELL_H).toFixed(1)}px" title="지금 ${minToHM(nowM)}"></div>` : "";
+      grid += `<div class="cell ${starts.length ? "has-evt" : ""} ${isToday ? "today-col" : ""} ${isHoliday(ds) ? "holiday-col" : ""}" data-date="${ds}" data-hour="${pad(h)}:00">${inner}${nl}</div>`;
     });
   }
   grid += `</div></div>`;
@@ -1604,6 +1669,14 @@ function renderSettings() {
         ${slider("set-alsec", 0, 60, 5, prefs.alertSec, prefs.alertSec === 0 ? "계속" : prefs.alertSec + "초")}</div>
       <div class="set-row"><div><div class="lab">알림 팝업 미리보기</div><div class="desc">현재 설정으로 팝업 예시를 확인합니다</div></div>
         <button class="btn-sub" id="set-alert-demo">예시 보기</button></div>
+    </div>
+
+    <p class="panel-title" style="margin-top:20px">캘린더 디자인</p>
+    <div class="set-group">
+      <div class="set-row col"><div><div class="lab">전체 디자인</div><div class="desc">선·칸 높이·일정 블록 모양을 한 번에 바꿉니다. 색상·종이 질감·글자 크기는 아래에서 따로 조정할 수 있어요.</div></div>
+        <div class="design-opts">${Object.keys(CAL_DESIGNS).map((k) => `<button class="design-opt ${prefs.calDesign === k ? "active" : ""}" data-design="${k}">
+          <span class="dp dp-${k}"><i></i><i></i><i></i></span><b>${CAL_DESIGNS[k].name}</b><small>${CAL_DESIGNS[k].desc}</small></button>`).join("")}</div>
+      </div>
     </div>
 
     <p class="panel-title" style="margin-top:20px">일반</p>
@@ -2229,9 +2302,16 @@ const THEMES = {
   mint:     { name: "민트", dot: "#8CCBAE", bg: "#E8F5EE", surface: "#F4FBF7", s2: "#DAEEE3", s3: "#C9E6D5", work: "#2F8F6B" },
   lavender: { name: "라벤더", dot: "#B3A6E3", bg: "#F0ECFA", surface: "#F9F6FF", s2: "#E5DEF6", s3: "#D7CDEF", work: "#6E5FB0" },
 };
+// 캘린더 디자인 프리셋 — 선·칸 높이·블록 모양·글자 크기를 한 묶음으로 바꿈
+const CAL_DESIGNS = {
+  basic: { name: "기본", desc: "지금 쓰시던 모양", row: 46 },
+  line:  { name: "라인 클린", desc: "흰 여백 위주 · 선 최소 · 넉넉한 칸", row: 48 },
+  night: { name: "미드나잇", desc: "촘촘한 칸 · 저대비 선 · 어두운 모드에 최적", row: 38 },
+};
+const calRowH = () => (CAL_DESIGNS[prefs.calDesign] || CAL_DESIGNS.basic).row;
 const PAPER_STYLES = ["none", "grid", "ruled", "excel", "dot"];
 const PAPER_LABEL = { none: "없음", grid: "모눈", ruled: "유선", excel: "엑셀", dot: "도트" };
-const prefs = { paperStyle: "grid", theme: "cream", panelOp: 92, contrast: "auto", calScale: 100, alertScale: 100, alertSec: 0, splitBand: true };
+const prefs = { paperStyle: "grid", theme: "cream", panelOp: 92, contrast: "auto", calScale: 100, alertScale: 100, alertSec: 0, splitBand: true, calDesign: "basic" };
 function loadPrefs() {
   try {
     const p = JSON.parse(localStorage.getItem("scheduler:prefs") || "{}");
@@ -2244,6 +2324,7 @@ function loadPrefs() {
     if (Number.isFinite(p.alertScale)) prefs.alertScale = Math.max(70, Math.min(160, p.alertScale));
     if (Number.isFinite(p.alertSec)) prefs.alertSec = Math.max(0, Math.min(120, p.alertSec));
     if (typeof p.splitBand === "boolean") prefs.splitBand = p.splitBand;
+    if (CAL_DESIGNS[p.calDesign]) prefs.calDesign = p.calDesign;
   } catch (e) {}
 }
 function savePrefs() { try { localStorage.setItem("scheduler:prefs", JSON.stringify(prefs)); } catch (e) {} }
@@ -2266,6 +2347,8 @@ function applyThemeColors() {
 }
 function applyPrefs() {
   PAPER_STYLES.forEach((s) => document.body.classList.toggle("paper-" + s, prefs.paperStyle === s));
+  Object.keys(CAL_DESIGNS).forEach((d) => document.body.classList.toggle("design-" + d, prefs.calDesign === d));
+  document.documentElement.style.setProperty("--cell-h", calRowH() + "px");
   document.body.classList.toggle("contrast-strong", prefs.contrast === "strong");
   const el = document.documentElement;
   el.style.setProperty("--panel-op", prefs.panelOp + "%");
@@ -2390,9 +2473,11 @@ function pinItemsHtml() {
   h += `<div class="pin-divider">오늘 일정</div>`;
   h += events.length ? events.map((e) => {
     const dd = e._delay ? `<span class="dd">D+${e._delay}</span>` : "";
+    // 고정 창에는 시간을 적지 않음 (시간순으로 이미 정렬되어 있음)
+    const meta = [e.location ? esc(e.location) : "", projTag(e.projectId)].filter(Boolean).join(" ");
     return `<div class="pin-todo pri-${e.priority}">
       <div class="box" data-pin-ev-toggle="${e._base || e.id}"></div>
-      <div class="pin-tx" data-pin-edit-event="${e._base || e.id}"><div class="t">${dd}${catIcon(e.cat)} ${esc(e.title)}</div><div class="m">${esc(evTimeText(e))}${e.location ? " · " + esc(e.location) : ""}${projTag(e.projectId)}</div></div>
+      <div class="pin-tx" data-pin-edit-event="${e._base || e.id}"><div class="t">${dd}${catIcon(e.cat)} ${esc(e.title)}</div>${meta ? `<div class="m">${meta}</div>` : ""}</div>
     </div>`;
   }).join("") : `<div class="pin-empty">오늘 일정 없음</div>`;
 
@@ -2828,7 +2913,7 @@ function wireGlobal() {
 
   document.addEventListener("click", (e) => {
     if (e.target.closest("#timepop") || e.target.closest(".pin-widget")) return; // 별도 핸들러 처리
-    const t = e.target.closest("[data-cat],[data-todo-filter],[data-toggle],[data-ev-toggle],[data-edit-event],[data-del-event],[data-edit-todo],[data-del-todo],[data-ww],[data-dash-toggle],#dash-collapse,#wk-prev,#wk-next,#wk-today,#roll-desktop,#roll-mobile,#set-theme,#set-pin,#set-splitband,#set-export,#set-import,#set-clear,#set-alert-demo,#set-close,[data-paper],[data-theme-key],[data-contrast],[data-step],[data-proj],#pj-new,[data-band-more],[data-calmode],[data-goweek]");
+    const t = e.target.closest("[data-cat],[data-todo-filter],[data-toggle],[data-ev-toggle],[data-edit-event],[data-del-event],[data-edit-todo],[data-del-todo],[data-ww],[data-dash-toggle],#dash-collapse,#wk-prev,#wk-next,#wk-today,#roll-desktop,#roll-mobile,#set-theme,#set-pin,#set-splitband,#set-export,#set-import,#set-clear,#set-alert-demo,#set-close,[data-paper],[data-design],[data-theme-key],[data-contrast],[data-step],[data-proj],#pj-new,[data-band-more],[data-calmode],[data-goweek]");
     if (!t) return;
     if (t.dataset.evToggle) { Store.toggleEvent(t.dataset.evToggle); return; }
     if (t.dataset.dashToggle) { ui.dashExp[t.dataset.dashToggle] = !ui.dashExp[t.dataset.dashToggle]; saveUI(); render(); return; }
@@ -2867,6 +2952,12 @@ function wireGlobal() {
       return;
     }
     if (t.dataset.paper) { setPref("paperStyle", t.dataset.paper); render(); return; }
+    if (t.dataset.design) {
+      setPref("calDesign", t.dataset.design); render();
+      if (t.dataset.design === "night" && !currentDark()) toast("미드나잇은 어두운 모드에서 가장 잘 보입니다 — 상단 달 버튼으로 바꿔 보세요");
+      else toast(`캘린더 디자인을 '${CAL_DESIGNS[t.dataset.design].name}'으로 바꿨습니다`);
+      return;
+    }
     if (t.id === "set-theme") { setTheme(!currentDark()); render(); return; }
     if (t.id === "set-pin") { togglePin(); render(); return; }
     if (t.id === "set-splitband") { setPref("splitBand", !prefs.splitBand); render(); return; }
