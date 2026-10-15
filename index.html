@@ -66,7 +66,9 @@
     --shadow-lg: 0 10px 40px rgba(0,0,0,0.55);
   }
   /* 위젯 설정용 전역 변수 (테마/투명도/세부 글자크기) */
-  :root{ --panel-op:100%; --cal-scale:1; --alert-scale:1; }
+  :root{ --panel-op:100%; --cal-scale:1; --alert-scale:1;
+    --today-tint: color-mix(in srgb, var(--work) 12%, var(--surface));   /* 오늘 열 음영 (머리~시간표 공통) */
+  }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;height:100%;}
   html{background:var(--bg);}
@@ -326,9 +328,7 @@
     border-color:color-mix(in srgb, var(--text) 9%, transparent);}
   body.design-line .week-grid :is(.head,.corner,.band-label,.proj-label){background:var(--surface);}
   body.design-line .week-grid .head::before{content:none;}          /* 엑셀 열 문자 숨김 */
-  body.design-line .week-grid .head.today{background:var(--surface);outline:none;}
-  body.design-line .week-grid .cell.today-col{background:transparent;}   /* 오늘 열 음영 없이 날짜 원으로만 표시 */
-  body.design-line .week-grid .band-cell.today-col{background:color-mix(in srgb, var(--work) 6%, var(--surface));}
+  body.design-line .week-grid .head.today{outline:none;}
   body.design-line .week-grid .band-cell{background:var(--surface);}
   body.design-line .week-grid .band-cell.todo-row{background:color-mix(in srgb, var(--high) 3%, var(--surface));}
   body.design-line .week-grid :is(.band-label,.band-cell){border-top-width:1px;border-bottom-width:1px;}
@@ -350,15 +350,15 @@
   body.design-night .week-grid .evt.timed{padding:1px 4px;border-left-width:2px;}
   body.design-night .week-grid .band-cell{padding:3px;min-height:26px;}
   body.design-night .week-grid .band-cell .cal-chip{height:18px;min-height:18px;}
-  body.design-night .week-grid .cell.today-col{background:color-mix(in srgb, var(--text) 3.5%, transparent);}
   body.design-night .month-grid{grid-auto-rows:minmax(84px,1fr);}
   body.design-night .month-grid .m-item{height:15px;min-height:15px;}
   /* 현재 시각 선 (오늘 열) */
   .now-line{position:absolute;left:0;right:0;height:0;border-top:1.5px solid var(--urgent);z-index:3;pointer-events:none;}
   .now-line::before{content:"";position:absolute;left:-3px;top:-4px;width:7px;height:7px;border-radius:50%;background:var(--urgent);}
   /* ---------- 지연 경고 테두리 (캘린더 · 고정 창) ---------- */
+  /* D+5 이상: 주황 점선 / D+10 이상: 빨간 실선 */
   .week-grid :is(.evt,.cal-chip,.m-item,.pj-chip).late-warn,
-  .pin-todo.late-warn{outline:2px solid var(--late-warn);outline-offset:-2px;}
+  .pin-todo.late-warn{outline:2px dashed var(--late-warn);outline-offset:-2px;}
   .week-grid :is(.evt,.cal-chip,.m-item,.pj-chip).late-crit,
   .pin-todo.late-crit{outline:2px solid var(--late-crit);outline-offset:-2px;}
   /* D+N 배지도 테두리와 같은 색으로 (고정 창의 .pin-todo .dd 규칙을 이기도록 함께 지정) */
@@ -374,14 +374,14 @@
   .week-grid .head.today.holiday{background:color-mix(in srgb, var(--hol) calc(var(--hol-tint) * 2), var(--surface-2));}
   .week-grid .band-cell.holiday-col, .week-grid .cell.holiday-col{background:color-mix(in srgb, var(--hol) var(--hol-tint), var(--surface));}
   .week-grid .band-cell.holiday-col.today-col, .week-grid .cell.holiday-col.today-col{
-    background:color-mix(in srgb, var(--hol) var(--hol-tint), color-mix(in srgb, var(--work) 10%, var(--surface)));}
+    background:color-mix(in srgb, var(--hol) var(--hol-tint), var(--today-tint));}
   .week-grid .cell.holiday-col:hover{background:color-mix(in srgb, var(--hol) calc(var(--hol-tint) * 1.8), var(--surface));}
   /* 종일·할일 칸 맨 위에 보이는 공휴일 이름 칩 */
   .week-grid .band-cell .cal-chip.holiday{background:color-mix(in srgb, var(--hol) 16%, var(--surface));
     border:1px solid color-mix(in srgb, var(--hol) 45%, transparent);color:var(--hol);font-weight:800;cursor:default;justify-content:center;}
   /* 월간 */
   .m-cell.holiday-col{background:color-mix(in srgb, var(--hol) var(--hol-tint), var(--surface));}
-  .m-cell.holiday-col.today{background:color-mix(in srgb, var(--hol) var(--hol-tint), color-mix(in srgb, var(--work) 10%, var(--surface)));}
+  .m-cell.holiday-col.today{background:color-mix(in srgb, var(--hol) var(--hol-tint), var(--today-tint));}
   .m-cell.holiday-col:hover{background:color-mix(in srgb, var(--hol) calc(var(--hol-tint) * 1.8), var(--surface));}
   .m-d.red{color:var(--hol);}
   .m-d.sat{color:var(--work);}
@@ -397,11 +397,11 @@
   .week-grid .band-label.todo-lab{color:var(--high);}
   .week-grid .allday-row + .band-label.todo-lab, .week-grid .band-label.todo-lab{border-top:1px dashed var(--border-strong);}
   .week-grid .band-cell.todo-row{border-top:1px dashed var(--border-strong);background:color-mix(in srgb, var(--high) 4%, var(--surface));}
-  .week-grid .band-cell.todo-row.today-col{background:color-mix(in srgb, var(--high) 4%, color-mix(in srgb, var(--work) 14%, var(--surface)));}
+  .week-grid .band-cell.todo-row.today-col{background:color-mix(in srgb, var(--high) 4%, var(--today-tint));}
   .week-grid .band-cell.todo-row.holiday-col{background:color-mix(in srgb, var(--high) 4%, color-mix(in srgb, var(--hol) var(--hol-tint), var(--surface)));}
   .week-grid .band-cell{border-top:2px solid var(--border-strong);border-bottom:2px solid var(--border-strong);border-left:1px solid var(--border);
     min-height:32px;padding:4px 3px;display:flex;flex-direction:column;gap:3px;background:color-mix(in srgb, var(--text) 3%, var(--surface));}
-  .week-grid .band-cell.today-col{background:color-mix(in srgb, var(--work) 14%, var(--surface));}
+  .week-grid .band-cell.today-col{background:var(--today-tint);}
   /* 월간 그리드 */
   /* 첫 줄(요일 머리)은 글자 높이만, 날짜 줄만 같은 높이로 채움 */
   .month-grid{grid-template-rows:auto;grid-auto-rows:minmax(94px,1fr);min-height:100%;}
@@ -413,7 +413,7 @@
     padding:2px 3px 3px;display:flex;flex-direction:column;gap:2px;cursor:pointer;transition:background .1s;}
   .m-cell:hover{background:var(--surface-2);}
   .m-cell.other{background:color-mix(in srgb, var(--text) 4%, var(--surface));}
-  .m-cell.today{background:color-mix(in srgb, var(--work) 10%, var(--surface));}
+  .m-cell.today{background:var(--today-tint);}
   .m-top{display:flex;align-items:center;justify-content:space-between;gap:4px;flex:none;}
   .m-d{border:0;background:transparent;font-family:inherit;font-size:11.5px;font-weight:800;color:var(--text-soft);
     padding:1px 6px;border-radius:999px;cursor:pointer;line-height:1.5;}
@@ -454,8 +454,8 @@
   .week-grid .cell:hover{background:var(--surface-2);}
   /* 셀 자체는 쌓임 맥락을 만들지 않고, 일정 블록이 다음 시간 칸 위로 올라오도록 블록에 z-index */
   .evt.timed{position:absolute;margin:0;padding:2px 5px;overflow:hidden;box-shadow:var(--shadow);}
-  .week-grid .cell.today-col{background:color-mix(in srgb, var(--work) 10%, var(--surface));}
-  .week-grid .head.today{background:color-mix(in srgb, var(--work) 16%, var(--surface));}
+  .week-grid .cell.today-col{background:var(--today-tint);}
+  .week-grid .head.today{background:color-mix(in srgb, var(--work) 17%, var(--surface));}
   .week-grid .drop-hover{background:var(--work-soft) !important;outline:2px dashed var(--work);outline-offset:-2px;}
   .evt{
     border-radius:6px;padding:3px 6px;font-size:11px;font-weight:600;margin-bottom:2px;line-height:1.3;
@@ -763,6 +763,7 @@
   .week-grid .proj-label .pl-nm{padding:1px 5px;border-radius:5px;font-size:10px;font-weight:800;color:#fff;background:var(--pc);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;line-height:1.45;}
   .week-grid .proj-label .pl-pc{font-size:9.5px;font-weight:800;color:color-mix(in srgb, var(--pc) 70%, var(--text));text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums;}
   .week-grid .proj-label .pj-late{font-size:8.5px;padding:0 3px;margin-left:0;}
+  .lane-today{grid-row:1;align-self:stretch;background:var(--today-tint);margin:-4px 0;z-index:0;pointer-events:none;}
   .week-grid .proj-lane{grid-column:2 / -1;display:grid;align-items:center;border-bottom:1px solid var(--border);border-left:1px solid var(--border);min-height:32px;padding:4px 0;background:color-mix(in srgb, var(--pc) 5%, var(--surface));}
   .pj-bar{grid-row:1;position:relative;height:24px;margin:0 3px;border-radius:7px;min-width:0;cursor:pointer;overflow:hidden;
     background:color-mix(in srgb, var(--pc) 14%, var(--surface));border:1px solid color-mix(in srgb, var(--pc) 50%, transparent);transition:filter .12s;}
@@ -871,6 +872,13 @@
   /* 드래그: 30분 단위 미리보기 + 30분 안내선 */
   .week-grid .cell::after{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px dashed color-mix(in srgb, var(--border) 75%, transparent);pointer-events:none;}
   .week-grid .cell > .evt{z-index:1;}
+  /* 모바일: 길게 눌러 옮기는 중 */
+  body.dragging-touch{-webkit-user-select:none;user-select:none;}
+  body.dragging-touch .week-scroll{touch-action:none;}
+  .week-grid [data-drag]{-webkit-touch-callout:none;}
+  .drag-ghost{position:fixed;z-index:300;pointer-events:none;opacity:.92;transform:translate(-50%,-50%) scale(1.04);
+    box-shadow:var(--shadow-lg);border-radius:6px;overflow:hidden;margin:0;}
+  .week-grid .dragging{opacity:.35;}
   .drop-ghost{position:absolute;left:2px;right:2px;z-index:4;pointer-events:none;box-sizing:border-box;border:2px dashed var(--work);border-radius:6px;
     background:color-mix(in srgb, var(--work) 16%, transparent);color:var(--work);font-size:10.5px;font-weight:800;padding:1px 5px;font-variant-numeric:tabular-nums;overflow:hidden;}
   /* 일정 블록 크기 조절 (위/아래 가장자리) */
@@ -1028,7 +1036,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-10-15 · 지연 경고 테두리(D+5·D+10)";
+const APP_VERSION = "2026-10-16 · 오늘 음영 · 지연 점선 · 길게 눌러 이동";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1486,7 +1494,9 @@ function renderWeek() {
     }).join("");
     grid += `<div class="proj-label" style="--pc:${p.color}" data-proj="${p.id}" title="${esc(p.name)} · ${st.done}/${st.total} 완료 — 클릭해서 단계 보기">
       <span class="pl-nm">${esc(p.name)}</span><span class="pl-pc">${st.pct}% · ${st.done}/${st.total}${st.delay ? ` <b class="pj-late">D+${st.delay}</b>` : ""}</span></div>`;
+    const tIdx = week.findIndex((d) => ymd(d) === today);
     grid += `<div class="proj-lane" style="grid-template-columns:${dayCols};--pc:${p.color}">
+      ${tIdx >= 0 ? `<span class="lane-today" style="grid-column:${tIdx + 1}"></span>` : ""}
       <div class="pj-bar ${contL ? "cont-l" : ""} ${contR ? "cont-r" : ""}" style="grid-column:${si + 1} / ${ei + 2}" data-proj="${p.id}" title="${esc(p.name)} · ${st.pct}% (${st.done}/${st.total}) — 클릭해서 단계 보기"><span class="pj-fill" style="width:${st.pct}%"></span></div>${chips}</div>`;
   });
   // 종일 / 할 일 밴드 — 설정에 따라 한 줄로 합치거나(기본 분리) 종류별로 나눠서 표시
@@ -2825,42 +2835,9 @@ function wireCalendarDnD() {
     el.addEventListener("dragend", () => { el.classList.remove("dragging"); dragData = null; clearDropUI(grid); });
   });
   grid.querySelectorAll(".cell, .band-cell, .m-cell").forEach((cell) => {
-    const isBand = cell.dataset.band === "1";
-    const isMonth = cell.dataset.month === "1";
-    cell.addEventListener("dragover", (e) => {
-      if (!dragData) return; e.preventDefault();
-      if (dragData.type === "event" && !isBand && !isMonth) {
-        grid.querySelectorAll(".drop-hover").forEach((c) => c.classList.remove("drop-hover"));
-        showDropGhost(grid, cell.dataset.date, dropStartMin(cell, e.clientY));
-      } else {
-        grid.querySelectorAll(".drop-ghost").forEach((g) => g.remove());
-        cell.classList.add("drop-hover");
-      }
-    });
+    cell.addEventListener("dragover", (e) => { if (!dragData) return; e.preventDefault(); hoverCell(grid, cell, e.clientY); });
     cell.addEventListener("dragleave", () => cell.classList.remove("drop-hover"));
-    cell.addEventListener("drop", (e) => {
-      e.preventDefault(); if (!dragData) return;
-      const date = cell.dataset.date;
-      const startMin = !isBand && !isMonth && dragData.type === "event" ? dropStartMin(cell, e.clientY) : 0;
-      clearDropUI(grid);
-      if (dragData.type === "todo") {
-        const td = Store.state.todos.find((x) => x.id === dragData.id);
-        const oldDue = td && td.due, pid = td && td.projectId;
-        Store.updateTodo(dragData.id, { due: date }); toast("할 일을 옮겼습니다");
-        offerCascade(pid, dragData.id, oldDue, date);
-      } else if (dragData.type === "event") {
-        const ev = Store.state.events.find((x) => x.id === dragData.id); if (!ev) return;
-        const oldDate = ev.date, pid = ev.projectId, evId = dragData.id;
-        setTimeout(() => offerCascade(pid, evId, oldDate, date), 0);
-        if (isMonth) { if (ev.date === date) return; Store.updateEvent(evId, { date }); toast(`${fmtMD(date)}로 옮겼습니다`); }
-        else if (isBand) { Store.updateEvent(evId, { date, allDay: true, time: "", endTime: "" }); toast("종일 일정으로 옮겼습니다"); }
-        else {
-          const time = minToHM(startMin), endTime = minToHM(Math.min(startMin + dragData.dur, 23 * 60 + 59));
-          Store.updateEvent(evId, { date, allDay: false, time, endTime });
-          toast(`${fmtMD(date)} ${time}–${endTime}로 옮겼습니다`);
-        }
-      }
-    });
+    cell.addEventListener("drop", (e) => { e.preventDefault(); if (!dragData) return; dropOnCell(grid, cell, e.clientY); });
   });
   // 프로젝트 줄 위에 놓기 → 커서가 있는 날짜 칸으로 날짜만 변경 (시간·종일 여부는 유지)
   const heads = [...grid.querySelectorAll(".head[data-date]")];
@@ -2872,23 +2849,138 @@ function wireCalendarDnD() {
       lane.classList.add("drop-hover");
     });
     lane.addEventListener("dragleave", (e) => { if (!lane.contains(e.relatedTarget)) lane.classList.remove("drop-hover"); });
-    lane.addEventListener("drop", (e) => {
-      e.preventDefault(); if (!dragData) return;
-      const date = dateAt(e.clientX); clearDropUI(grid);
-      if (!date) return;
-      if (dragData.type === "todo") {
-        const td = Store.state.todos.find((x) => x.id === dragData.id); if (!td || td.due === date) return;
-        const oldDue = td.due, pid = td.projectId, id = td.id;
-        Store.updateTodo(id, { due: date }); toast(`${fmtMD(date)}로 옮겼습니다`);
-        offerCascade(pid, id, oldDue, date);
-      } else if (dragData.type === "event") {
-        const ev = Store.state.events.find((x) => x.id === dragData.id); if (!ev || ev.date === date) return;
-        const oldDate = ev.date, pid = ev.projectId, evId = ev.id;
-        setTimeout(() => offerCascade(pid, evId, oldDate, date), 0);
-        Store.updateEvent(evId, { date }); toast(`${fmtMD(date)}로 옮겼습니다`);
-      }
-    });
+    lane.addEventListener("drop", (e) => { e.preventDefault(); if (!dragData) return; dropOnLane(grid, dateAt(e.clientX)); });
   });
+  wireTouchDrag(grid, dateAt);
+}
+
+/* ---------- 드롭 처리 (데스크탑 드래그 · 모바일 길게 눌러 이동 공용) ---------- */
+function hoverCell(grid, cell, clientY) {
+  const isBand = cell.dataset.band === "1", isMonth = cell.dataset.month === "1";
+  if (dragData.type === "event" && !isBand && !isMonth) {
+    grid.querySelectorAll(".drop-hover").forEach((c) => c.classList.remove("drop-hover"));
+    showDropGhost(grid, cell.dataset.date, dropStartMin(cell, clientY));
+  } else {
+    grid.querySelectorAll(".drop-ghost").forEach((g) => g.remove());
+    grid.querySelectorAll(".drop-hover").forEach((c) => c.classList.remove("drop-hover"));
+    cell.classList.add("drop-hover");
+  }
+}
+function dropOnCell(grid, cell, clientY) {
+  const isBand = cell.dataset.band === "1", isMonth = cell.dataset.month === "1";
+  const date = cell.dataset.date;
+  const startMin = !isBand && !isMonth && dragData.type === "event" ? dropStartMin(cell, clientY) : 0;
+  clearDropUI(grid);
+  if (dragData.type === "todo") {
+    const td = Store.state.todos.find((x) => x.id === dragData.id);
+    const oldDue = td && td.due, pid = td && td.projectId;
+    Store.updateTodo(dragData.id, { due: date }); toast("할 일을 옮겼습니다");
+    offerCascade(pid, dragData.id, oldDue, date);
+  } else if (dragData.type === "event") {
+    const ev = Store.state.events.find((x) => x.id === dragData.id); if (!ev) return;
+    const oldDate = ev.date, pid = ev.projectId, evId = dragData.id;
+    setTimeout(() => offerCascade(pid, evId, oldDate, date), 0);
+    if (isMonth) { if (ev.date === date) return; Store.updateEvent(evId, { date }); toast(`${fmtMD(date)}로 옮겼습니다`); }
+    else if (isBand) { Store.updateEvent(evId, { date, allDay: true, time: "", endTime: "" }); toast("종일 일정으로 옮겼습니다"); }
+    else {
+      const time = minToHM(startMin), endTime = minToHM(Math.min(startMin + dragData.dur, 23 * 60 + 59));
+      Store.updateEvent(evId, { date, allDay: false, time, endTime });
+      toast(`${fmtMD(date)} ${time}–${endTime}로 옮겼습니다`);
+    }
+  }
+}
+function dropOnLane(grid, date) {
+  clearDropUI(grid);
+  if (!date) return;
+  if (dragData.type === "todo") {
+    const td = Store.state.todos.find((x) => x.id === dragData.id); if (!td || td.due === date) return;
+    const oldDue = td.due, pid = td.projectId, id = td.id;
+    Store.updateTodo(id, { due: date }); toast(`${fmtMD(date)}로 옮겼습니다`);
+    offerCascade(pid, id, oldDue, date);
+  } else if (dragData.type === "event") {
+    const ev = Store.state.events.find((x) => x.id === dragData.id); if (!ev || ev.date === date) return;
+    const oldDate = ev.date, pid = ev.projectId, evId = ev.id;
+    setTimeout(() => offerCascade(pid, evId, oldDate, date), 0);
+    Store.updateEvent(evId, { date }); toast(`${fmtMD(date)}로 옮겼습니다`);
+  }
+}
+
+/* ---------- 모바일: 길게 눌러서 일정 옮기기 ---------- */
+const LONG_PRESS_MS = 420, LP_MOVE_TOL = 10;
+function wireTouchDrag(grid, dateAt) {
+  let st = null;
+  const stop = () => {
+    if (!st) return;
+    clearTimeout(st.timer);
+    if (st.ghost) st.ghost.remove();
+    if (st.el) st.el.classList.remove("dragging");
+    try { if (st.active) grid.releasePointerCapture(st.pid); } catch (_) {}
+    document.body.classList.remove("dragging-touch");
+    st = null; dragData = null; clearDropUI(grid);
+  };
+  const start = (x, y) => {
+    const el = st.el;
+    dragData = { type: el.dataset.drag, id: el.dataset.id, grabMin: 0, dur: 30 };
+    if (dragData.type === "event") {
+      dragData.dur = evDurMin(Store.state.events.find((v) => v.id === el.dataset.id));
+      const c = el.classList.contains("timed") && el.closest(".cell");
+      if (c) { const er = el.getBoundingClientRect(), cr = c.getBoundingClientRect(); dragData.grabMin = Math.max(0.5, ((y - er.top) / cr.height) * 60); }
+    }
+    st.active = true;
+    el.classList.add("dragging");
+    document.body.classList.add("dragging-touch");
+    const r = el.getBoundingClientRect();
+    const g = el.cloneNode(true);
+    g.className = el.className.replace(/\bdragging\b/, "") + " drag-ghost";
+    g.style.cssText += `;width:${r.width}px;height:${r.height}px;left:${x}px;top:${y}px;`;
+    document.body.appendChild(g); st.ghost = g;
+    try { grid.setPointerCapture(st.pid); } catch (_) {}
+    try { navigator.vibrate && navigator.vibrate(15); } catch (_) {}
+  };
+  const targetAt = (x, y) => {
+    const t = document.elementFromPoint(x, y); if (!t) return {};
+    return { cell: t.closest(".cell, .band-cell, .m-cell"), lane: t.closest(".proj-lane") };
+  };
+  grid.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "mouse" || rzState) return;                      // 마우스는 기존 드래그 사용
+    const el = e.target.closest("[data-drag]"); if (!el) return;
+    if (e.target.closest(".rz, .cal-check, .pj-more, .band-more, .m-more")) return;   // 체크·접기 버튼은 제외
+    stop();
+    st = { el, x0: e.clientX, y0: e.clientY, pid: e.pointerId, active: false, ghost: null };
+    st.timer = setTimeout(() => { if (st) start(st.x0, st.y0); }, LONG_PRESS_MS);
+  }, { passive: true });
+  grid.addEventListener("pointermove", (e) => {
+    if (!st || e.pointerId !== st.pid) return;
+    if (!st.active) {                                                       // 길게 누르기 전에 움직이면 스크롤로 보고 취소
+      if (Math.abs(e.clientX - st.x0) > LP_MOVE_TOL || Math.abs(e.clientY - st.y0) > LP_MOVE_TOL) stop();
+      return;
+    }
+    e.preventDefault();
+    st.ghost.style.left = e.clientX + "px"; st.ghost.style.top = e.clientY + "px";
+    const sc = grid.closest(".week-scroll");                                // 가장자리로 끌면 자동 스크롤 (모바일은 가로도)
+    if (sc) { const r = sc.getBoundingClientRect();
+      if (e.clientY < r.top + 46) sc.scrollTop -= 10;
+      else if (e.clientY > r.bottom - 46) sc.scrollTop += 10;
+      if (e.clientX < r.left + 40) sc.scrollLeft -= 10;
+      else if (e.clientX > r.right - 40) sc.scrollLeft += 10; }
+    const { cell, lane } = targetAt(e.clientX, e.clientY);
+    if (cell) hoverCell(grid, cell, e.clientY);
+    else if (lane) { grid.querySelectorAll(".drop-ghost").forEach((g) => g.remove());
+      grid.querySelectorAll(".drop-hover").forEach((c) => c.classList.remove("drop-hover")); lane.classList.add("drop-hover"); }
+    else clearDropUI(grid);
+  }, { passive: false });
+  const finish = (e) => {
+    if (!st || e.pointerId !== st.pid) return;
+    if (!st.active) { stop(); return; }
+    const { cell, lane } = targetAt(e.clientX, e.clientY);
+    const ghost = st.ghost; if (ghost) { ghost.remove(); st.ghost = null; }
+    suppressClickUntil = Date.now() + 500;                                  // 놓자마자 수정창이 열리지 않게
+    if (cell) dropOnCell(grid, cell, e.clientY);
+    else if (lane) dropOnLane(grid, dateAt(e.clientX));
+    stop();
+  };
+  grid.addEventListener("pointerup", finish);
+  grid.addEventListener("pointercancel", () => stop());
 }
 
 /* ---------- 전역 이벤트 ---------- */
