@@ -365,6 +365,138 @@
   .late-warn :is(.evt-d,.dd,.dbadge), .pin-todo.late-warn .dd{background:var(--late-warn);}
   .late-crit :is(.evt-d,.dd,.dbadge), .pin-todo.late-crit .dd{background:var(--late-crit);}
   .pin-todo:is(.late-warn,.late-crit){border-radius:7px;}
+
+  /* ================= 타임테이블 (출고 일정) ================= */
+  :root{ --tt-weigh:#7C6FB0; --tt-mat:#2A8FBF; --tt-mfg:#3A6B70; --tt-move:#6B7480; --tt-prod:#4C8C5A; --tt-part:#B5651D; --tt-ship:#C2772A; }
+  .tt-actions{display:flex;gap:8px;flex-wrap:wrap;}
+  .tt-kpis{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+  .tt-kpi{flex:1 1 110px;min-width:0;border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:7px 11px;}
+  .tt-kpi .k{font-size:10.5px;color:var(--text-faint);font-weight:700;white-space:nowrap;}
+  .tt-kpi .v{font-size:18px;font-weight:800;line-height:1.3;font-variant-numeric:tabular-nums;}
+  .tt-kpi.bad .v{color:var(--late-crit);} .tt-kpi.warn .v{color:var(--late-warn);}
+  .tt-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .tt-rules{border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:10px 12px;margin-bottom:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px 16px;}
+  .tt-rule{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text-soft);}
+  .tt-rule span{flex:1;min-width:0;}
+  .tt-rule b{min-width:20px;text-align:center;font-size:14px;color:var(--text);font-variant-numeric:tabular-nums;}
+  .tt-rule .step-btn{width:26px;height:26px;font-size:15px;}
+  .tt-rules-note{grid-column:1 / -1;font-size:11.5px;color:var(--text-faint);}
+  .tt-scroll{overflow:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border);border-radius:10px;background:var(--surface);}
+  .tt-grid{display:grid;min-width:640px;--tt-gut:176px;}
+  .tt-grid > div{min-width:0;}
+  .tt-corner,.tt-h{position:sticky;top:0;z-index:4;background:var(--surface-2);border-bottom:1px solid var(--border);}
+  .tt-corner{left:0;z-index:5;font-size:10.5px;font-weight:700;color:var(--text-faint);display:flex;align-items:center;padding:0 10px;}
+  .tt-h{border-left:1px solid var(--border);text-align:center;padding:4px 1px;line-height:1.2;font-variant-numeric:tabular-nums;}
+  .tt-h b{display:block;font-size:12px;font-weight:800;color:var(--text-soft);}
+  .tt-h i{font-style:normal;font-size:9.5px;color:var(--text-faint);}
+  .tt-h.mon{border-left:1.5px solid var(--border-strong);}
+  .tt-h.we{background:color-mix(in srgb, var(--text) 6%, var(--surface-2));}
+  .tt-h.we b{font-size:9.5px;color:var(--text-faint);}
+  .tt-h.hol b,.tt-h.hol i{color:var(--hol);}
+  .tt-h.today{background:color-mix(in srgb, var(--work) 17%, var(--surface));}
+  .tt-h.today b{color:var(--work);}
+  .tt-g{position:sticky;left:0;z-index:3;background:var(--surface-2);border-bottom:1px solid var(--border);padding:6px 9px;cursor:pointer;
+    display:flex;flex-direction:column;justify-content:center;gap:2px;}
+  .tt-g:hover{background:var(--surface-3);}
+  .tt-g .nm{font-size:12.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tt-g .mt{font-size:10.5px;color:var(--text-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums;}
+  .tt-pill{align-self:flex-start;font-size:10px;font-weight:800;padding:1px 7px;border-radius:999px;white-space:nowrap;
+    background:var(--surface-3);color:var(--text-soft);}
+  .tt-pill.ok{background:color-mix(in srgb, var(--done) 18%, var(--surface));color:var(--done);}
+  .tt-pill.tight{background:color-mix(in srgb, var(--late-warn) 16%, var(--surface));color:var(--late-warn);}
+  .tt-pill.bad{background:color-mix(in srgb, var(--late-crit) 15%, var(--surface));color:var(--late-crit);}
+  .tt-pill.done{background:var(--surface-3);color:var(--text-faint);}
+  .tt-lane{grid-column:2 / -1;display:grid;border-bottom:1px solid var(--border);padding:5px 0;position:relative;row-gap:3px;}
+  .tt-bg{grid-row:1 / -1;margin:-5px 0;pointer-events:none;}
+  .tt-bg.w{background:color-mix(in srgb, var(--text) 5%, transparent);}
+  .tt-bg.h{background:color-mix(in srgb, var(--hol) var(--hol-tint), transparent);}
+  .tt-bg.t{background:var(--today-tint);}
+  .tt-span-bar{grid-row:1 / -1;margin:2px 1px;border-radius:7px;background:color-mix(in srgb, var(--text) 5%, transparent);
+    border:1px dashed color-mix(in srgb, var(--text) 16%, transparent);pointer-events:none;}
+  .tt-due{grid-row:1 / -1;margin:-5px 0;border-right:2px dashed var(--done);pointer-events:none;position:relative;z-index:1;}
+  .tt-due.bad{border-right-color:var(--late-crit);}
+  .tt-due::after{content:"목표";position:absolute;right:-1px;top:-3px;transform:translateX(50%);font-size:8.5px;font-weight:800;
+    background:var(--surface);color:var(--done);padding:0 2px;border-radius:3px;}
+  .tt-due.bad::after{color:var(--late-crit);}
+  .tt-chip{z-index:2;height:20px;margin:0 2px;border-radius:4px;display:flex;align-items:center;gap:3px;padding:0 4px;min-width:0;
+    font-size:10.5px;font-weight:700;color:#fff;background:var(--c);cursor:pointer;white-space:nowrap;overflow:hidden;box-shadow:0 1px 1px rgba(0,0,0,.08);}
+  .tt-chip .tt-cl{overflow:hidden;text-overflow:ellipsis;min-width:0;}
+  .tt-ck{flex:none;width:12px;height:12px;border-radius:3px;border:1.5px solid rgba(255,255,255,.85);display:inline-flex;align-items:center;justify-content:center;font-size:9px;line-height:1;}
+  .tt-chip.done{opacity:.45;} .tt-chip.done .tt-cl{text-decoration:line-through;}
+  .tt-chip.done .tt-ck{background:rgba(255,255,255,.9);color:var(--c);}
+  .tt-chip.over{outline:2px solid var(--late-crit);outline-offset:-2px;}
+  .tt-chip.s-part{background:var(--surface);color:var(--c);border:1.5px solid var(--c);}
+  .tt-chip.s-part .tt-ck{border-color:var(--c);}
+  .tt-chip.s-part.warn{outline:2px dashed var(--late-warn);outline-offset:-2px;}
+  .s-weigh{--c:var(--tt-weigh);} .s-mat{--c:var(--tt-mat);} .s-mfg{--c:var(--tt-mfg);} .s-move{--c:var(--tt-move);}
+  .s-prod{--c:var(--tt-prod);} .s-part{--c:var(--tt-part);} .s-ship{--c:var(--tt-ship);}
+  .tt-legend{display:flex;flex-wrap:wrap;gap:6px 12px;margin:9px 2px 0;font-size:11px;color:var(--text-faint);}
+  .tt-legend span{display:inline-flex;align-items:center;gap:5px;}
+  .tt-legend i{width:10px;height:10px;border-radius:3px;background:var(--c);display:inline-block;}
+  .tt-outside{font-size:12px;color:var(--text-faint);margin:8px 2px 0;}
+  .tt-empty{border:1px dashed var(--border-strong);border-radius:12px;padding:22px 16px;text-align:center;color:var(--text-soft);background:var(--surface);}
+  .tt-empty b{display:block;font-size:15px;color:var(--text);margin-bottom:4px;}
+  .tt-empty p{margin:0 auto 12px;max-width:46ch;font-size:12.5px;}
+  .tt-empty .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  /* 목록 카드 */
+  .tt-list-h{font-size:12px;font-weight:800;color:var(--text-faint);margin:18px 2px 8px;}
+  .tt-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;}
+  .tt-card{border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:11px 13px;cursor:pointer;display:flex;flex-direction:column;gap:5px;min-width:0;}
+  .tt-card:hover{border-color:var(--border-strong);}
+  .tt-card.is-done{opacity:.6;}
+  .tt-card-h{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .tt-card-h b{font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+  .tt-card-m{font-size:11.5px;color:var(--text-faint);font-variant-numeric:tabular-nums;}
+  .tt-card-d{font-size:12px;color:var(--text-soft);font-variant-numeric:tabular-nums;line-height:1.5;}
+  .tt-prog-w{display:flex;align-items:center;gap:8px;}
+  .tt-prog{flex:1;height:5px;border-radius:999px;background:var(--surface-3);overflow:hidden;}
+  .tt-prog i{display:block;height:100%;background:var(--tt-prod);}
+  .tt-prog-t{font-size:10.5px;font-weight:800;color:var(--text-faint);font-variant-numeric:tabular-nums;}
+  .tt-warn{font-size:11.5px;font-weight:700;color:var(--late-crit);}
+  .tt-warn.soft{color:var(--late-warn);}
+  /* 출고 건 입력창 */
+  .modal.tt-modal{max-width:620px;}
+  .field-row.tt-3{grid-template-columns:repeat(3,minmax(0,1fr));}
+  @media (max-width:520px){ .field-row.tt-3{grid-template-columns:1fr 1fr;} }
+  .tt-type{display:flex;}
+  .tt-type button{flex:1;}
+  .tt-back{margin-top:-2px;}
+  .tt-preview{border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:12px;background:var(--surface-2);display:flex;flex-direction:column;gap:7px;}
+  .tt-pv-empty{font-size:12.5px;color:var(--text-faint);}
+  .tt-chain{display:flex;flex-wrap:wrap;align-items:center;gap:5px;}
+  .tt-chain .c{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:3px 9px;font-size:11.5px;font-weight:700;white-space:nowrap;}
+  .tt-chain .c i{width:7px;height:7px;border-radius:50%;background:var(--c);flex:none;}
+  .tt-chain .c b{font-weight:600;color:var(--text-soft);font-variant-numeric:tabular-nums;}
+  .tt-chain .ar{font-size:11px;color:var(--text-faint);}
+  .tt-pv-line{font-size:12.5px;color:var(--text-soft);}
+  .tt-pv-line b{color:var(--text);}
+  .tt-pv-line.bad b{color:var(--late-crit);} .tt-pv-line.ok b{color:var(--done);}
+  .tt-pchk{margin:2px 0 8px;}
+  .tt-prow{display:grid;grid-template-columns:38px minmax(0,1.2fr) minmax(0,.9fr) minmax(0,1.3fr) 26px;gap:6px;align-items:center;margin-bottom:6px;}
+  .tt-prow input{width:100%;min-width:0;border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:8px;padding:7px 8px;font-size:13px;}
+  .tt-pn{font-size:12px;font-weight:800;color:var(--tt-part);}
+  .tt-pst{font-size:11px;color:var(--done);font-weight:700;line-height:1.3;}
+  .tt-pst.bad{color:var(--late-crit);}
+  .tt-px{border:none;background:transparent;color:var(--text-faint);font-size:17px;padding:0;}
+  .tt-padd-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+  .tt-padd{border:1px dashed var(--border-strong);background:transparent;color:var(--text-soft);border-radius:8px;padding:6px 11px;font-size:12px;font-weight:700;}
+  .tt-remain{font-size:11.5px;color:var(--text-faint);font-weight:700;}
+  @media (max-width:520px){ .tt-prow{grid-template-columns:30px 1fr 1fr 24px;} .tt-pst{grid-column:2 / -1;} }
+  .tt-steps-h{font-size:11.5px;font-weight:800;color:var(--text-soft);margin:4px 0 6px;}
+  .tt-steps{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:12px;}
+  .tt-srow{display:grid;grid-template-columns:20px 10px minmax(0,1fr) auto 64px;gap:8px;align-items:center;padding:8px 11px;border-bottom:1px solid var(--border);font-size:12.5px;}
+  .tt-srow:last-child{border-bottom:none;}
+  .tt-srow.over{background:color-mix(in srgb, var(--late-crit) 7%, var(--surface));}
+  .tt-srow.done .tt-sl{text-decoration:line-through;color:var(--text-faint);}
+  .tt-sck{width:17px;height:17px;border-radius:5px;border:1.6px solid var(--border-strong);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;color:#fff;}
+  .tt-sck.on{background:var(--done);border-color:var(--done);}
+  .tt-dot{width:9px;height:9px;border-radius:3px;background:var(--c);}
+  .tt-sl{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .tt-sd{font-variant-numeric:tabular-nums;font-weight:700;color:var(--text-soft);white-space:nowrap;}
+  .tt-ss{font-size:11px;font-weight:800;text-align:right;color:var(--text-faint);white-space:nowrap;}
+  .tt-srow.over .tt-ss{color:var(--late-crit);}
+  @media (max-width:640px){ .tt-grid{--tt-gut:112px;} .tt-g .mt{display:none;}
+    .tt-kpis{gap:6px;} .tt-kpi{flex:1 1 28%;padding:5px 8px;} .tt-kpi .v{font-size:15px;} .tt-kpi .k{font-size:10px;} }
   /* ---------- 공휴일: 빨간 날짜 + 파스텔 음영 ---------- */
   .week-grid .head.red{color:var(--hol);}
   .week-grid .head.red .num{color:var(--hol);}
@@ -968,6 +1100,7 @@
       <button class="tab" data-view="today"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>오늘 <span class="count" id="c-today"></span></button>
       <button class="tab" data-view="calendar"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>캘린더</button>
       <button class="tab" data-view="projects"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="11" height="4" rx="1.5"/><rect x="7" y="10" width="13" height="4" rx="1.5"/><rect x="5" y="16" width="9" height="4" rx="1.5"/></svg>프로젝트</button>
+      <button class="tab" data-view="timetable"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M3 4v16h18"/><rect x="6" y="6" width="7" height="3" rx="1"/><rect x="10" y="11" width="9" height="3" rx="1"/><rect x="8" y="16" width="5" height="2.5" rx="1"/></svg>타임테이블</button>
     </div>
     <div class="tab-sep tb-desktop"></div>
     <div class="chip-row" data-chips></div>
@@ -991,6 +1124,7 @@
     <button data-view="today"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>오늘</button>
     <button data-view="calendar"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>캘린더</button>
     <button data-view="projects"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="11" height="4" rx="1.5"/><rect x="7" y="10" width="13" height="4" rx="1.5"/><rect x="5" y="16" width="9" height="4" rx="1.5"/></svg>프로젝트</button>
+    <button data-view="timetable"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M3 4v16h18"/><rect x="6" y="6" width="7" height="3" rx="1"/><rect x="10" y="11" width="9" height="3" rx="1"/><rect x="8" y="16" width="5" height="2.5" rx="1"/></svg>타임테이블</button>
     <button data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.34 1.87l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.7 1.7 0 00-1.87-.34 1.7 1.7 0 00-1 1.55V21a2 2 0 11-4 0v-.09a1.7 1.7 0 00-1-1.55 1.7 1.7 0 00-1.87.34l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.7 1.7 0 00.34-1.87 1.7 1.7 0 00-1.55-1H3a2 2 0 110-4h.09a1.7 1.7 0 001.55-1 1.7 1.7 0 00-.34-1.87l-.06-.06a2 2 0 112.83-2.83l.06.06a1.7 1.7 0 001.87.34H9a1.7 1.7 0 001-1.55V3a2 2 0 114 0v.09a1.7 1.7 0 001 1.55 1.7 1.7 0 001.87-.34l.06-.06a2 2 0 112.83 2.83l-.06.06a1.7 1.7 0 00-.34 1.87V9a1.7 1.7 0 001.55 1H21a2 2 0 110 4h-.09a1.7 1.7 0 00-1.55 1z"/></svg>설정</button>
   </nav>
 
@@ -1036,7 +1170,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-10-16 · 오늘 음영 · 지연 점선 · 길게 눌러 이동";
+const APP_VERSION = "2026-10-19 · 타임테이블(출고 일정)";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1079,6 +1213,86 @@ function holidayName(ds) {
 const isHoliday = (ds) => !!holidayName(ds);
 // 빨간 날짜: 공휴일 + 일요일 (음영은 공휴일에만)
 const isRedDay = (ds) => isHoliday(ds) || parseYMD(ds).getDay() === 0;
+
+/* ---------- 타임테이블 계산 (영업일 기준: 주말·공휴일 제외) ---------- */
+const isBizDay = (ds) => { const w = parseYMD(ds).getDay(); return w !== 0 && w !== 6 && !isHoliday(ds); };
+// n영업일 뒤. 시작일이 쉬는 날이면 먼저 다음 영업일로 옮긴 뒤 셈
+function addBiz(ds, n) {
+  let d = parseYMD(ds);
+  while (!isBizDay(ymd(d))) d = addDays(d, 1);
+  for (let k = 0; k < n;) { d = addDays(d, 1); if (isBizDay(ymd(d))) k++; }
+  return ymd(d);
+}
+// n영업일 앞. 시작일이 쉬는 날이면 먼저 이전 영업일로
+function subBiz(ds, n) {
+  let d = parseYMD(ds);
+  while (!isBizDay(ymd(d))) d = addDays(d, -1);
+  for (let k = 0; k < n;) { d = addDays(d, -1); if (isBizDay(ymd(d))) k++; }
+  return ymd(d);
+}
+// a → b 사이 영업일 수 (b가 뒤면 +, 앞이면 −)
+function bizDiff(a, b) {
+  if (!a || !b || a === b) return 0;
+  const step = a < b ? 1 : -1; let d = parseYMD(a), n = 0;
+  while (ymd(d) !== b) { d = addDays(d, step); if (isBizDay(ymd(d))) n += step; }
+  return n;
+}
+// 계산 규칙 (설정 > 타임테이블 규칙에서 변경)
+const TT_RULES_DEFAULT = { gapMove: 2, gapProd: 1, gapShip: 1, matMin: 2 };
+const ttRules = () => ({ ...TT_RULES_DEFAULT, ...((typeof prefs !== "undefined" && prefs.tt) || {}) });
+/* 출고 건 일정 계산
+   이동 = 자재셋팅·제조(업체 제조면 원료셋팅) 중 늦은 날 + gapMove영업일
+   생산 = 이동 + gapProd영업일부터 ⌈발주량 ÷ 일별 CAPA⌉영업일
+   납품 = 생산 마지막 날 + gapShip영업일  →  출고 목표일과 비교해 여유/지연 */
+function ttPlan(o) {
+  const R = ttRules();
+  const prodDays = Math.max(1, Math.ceil(o.qty / o.capa));
+  const base = [o.matDate, o.mfgDate].filter(Boolean).sort().pop() || null;
+  const lead = R.gapMove + R.gapProd + (prodDays - 1) + R.gapShip;      // 셋팅 → 납품 영업일
+  const latestSet = o.due ? subBiz(o.due, lead) : null;                  // 목표일을 맞추려면 늦어도 이날까지 셋팅
+  const weigh = o.weighDate || (o.mfgType === "own" && o.mfgDate ? subBiz(o.mfgDate, 1) : null);
+  if (!base) return { ok: false, prodDays, lead, latestSet, weigh };
+  const move = addBiz(base, R.gapMove);
+  const prodStart = addBiz(move, R.gapProd);
+  const prodList = [prodStart]; while (prodList.length < prodDays) prodList.push(addBiz(prodList[prodList.length - 1], 1));
+  const prodEnd = prodList[prodList.length - 1];
+  const ship = addBiz(prodEnd, R.gapShip);
+  const slack = o.due ? bizDiff(ship, o.due) : null;                     // + 여유 / − 지연 (영업일)
+  // 자재셋팅은 생산 시작 최소 matMin영업일 전
+  const matGap = o.matDate ? bizDiff(o.matDate, prodStart) : null;
+  const matOk = matGap == null || matGap >= R.matMin;
+  // 파샬: 그 날 전까지 생산된 수량 안에서만 내보낼 수 있음
+  const madeBefore = (ds) => Math.min(o.qty, prodList.filter((d) => d < ds).length * o.capa);
+  const parts = (o.partial ? o.partials : []).filter((x) => x.date && x.qty).slice().sort((a, b) => a.date.localeCompare(b.date));
+  let cum = 0;
+  const partChecks = parts.map((x) => { cum += x.qty; const can = madeBefore(x.date); return { ...x, cum, can, ok: cum <= can }; });
+  const partSum = parts.reduce((n, x) => n + x.qty, 0);
+  return { ok: true, base, move, prodStart, prodEnd, prodDays, prodList, ship, slack, latestSet, lead, weigh,
+    matGap, matOk, partChecks, partSum, remain: Math.max(0, o.qty - partSum), over: partSum > o.qty };
+}
+// 공정 목록 (캘린더·체크리스트 공용)
+function ttSteps(o, plan) {
+  const vendor = o.mfgType === "vendor";
+  const st = [];
+  if (plan.weigh) st.push({ key: "weigh", label: "원료칭량", short: "칭량", date: plan.weigh, cls: "s-weigh" });
+  st.push({ key: "mat", label: "자재셋팅", short: "자재", date: o.matDate, cls: "s-mat" });
+  st.push({ key: "mfg", label: vendor ? "원료셋팅(업체 제조)" : "제조", short: vendor ? "원료" : "제조", date: o.mfgDate, cls: "s-mfg" });
+  if (plan.ok) {
+    st.push({ key: "move", label: "이동", short: "이동", date: plan.move, cls: "s-move" });
+    st.push({ key: "prod", label: `생산 ${plan.prodDays}일`, short: `생산 ${plan.prodDays}일`, date: plan.prodStart, end: plan.prodEnd, cls: "s-prod" });
+    plan.partChecks.forEach((x, i) => st.push({ key: "p:" + x.id, label: `파샬 ${i + 1}차 ${x.qty.toLocaleString()}ea`, short: `파샬 ${x.qty.toLocaleString()}`, date: x.date, cls: "s-part", partOk: x.ok }));
+    st.push({ key: "ship", label: o.partial && plan.partSum ? `최종 납품 (잔량 ${plan.remain.toLocaleString()}ea)` : "납품", short: "납품", date: plan.ship, cls: "s-ship" });
+  }
+  return st.map((x) => ({ ...x, done: x.key.startsWith("p:") ? !!(o.partials.find((p) => "p:" + p.id === x.key) || {}).done : !!o.done[x.key] }));
+}
+// 예시 출고 건 (처음 실행 · '예시 넣어 보기')
+function ttSampleOrder() {
+  const T = todayStr();
+  const mat = addBiz(T, 2), mfg = addBiz(T, 3);                         // 자재 모레, 제조 글피
+  const ship = addBiz(mfg, TT_RULES_DEFAULT.gapMove + TT_RULES_DEFAULT.gapProd + 1 + TT_RULES_DEFAULT.gapShip);
+  return { item: "수분진정 토너 200ml", client: "○○코스메틱", qty: 3000, capa: 1500, mfgType: "own",
+    matDate: mat, mfgDate: mfg, due: addBiz(ship, 1), lot: "", note: "예시 출고 건 — 지우셔도 됩니다" };
+}
 function addMin(hhmm, mins) { if (!hhmm) return ""; const [h, m] = hhmm.split(":").map(Number); let t = h * 60 + m + mins; t = ((t % 1440) + 1440) % 1440; return pad(Math.floor(t / 60)) + ":" + pad(t % 60); }
 const todayStr = () => ymd(new Date());
 const DOW = ["일", "월", "화", "수", "목", "금", "토"];
@@ -1105,7 +1319,7 @@ const PROJECT_COLOR_MIGRATE = { "#2F8F6B": "#2A95C5", "#C77F3A": "#A0509A", "#C2
 /* ---------- Store (데이터 계층) ---------- */
 const Store = (() => {
   const KEY = "scheduler:v1";
-  let state = { version: 2, events: [], todos: [], projects: [] };
+  let state = { version: 2, events: [], todos: [], projects: [], orders: [] };
   const subs = [];
 
   function normalizeEvent(e) {
@@ -1137,6 +1351,25 @@ const Store = (() => {
       color: PROJECT_COLOR_MIGRATE[p.color] || p.color || PROJECT_COLORS[0], note: p.note || "", createdAt: p.createdAt || Date.now() };
   }
 
+  // 타임테이블 출고 건: 자재셋팅일·제조예정일은 입력, 이동·생산·납품은 규칙으로 계산 (ttPlan)
+  const TT_STEP_KEYS = ["weigh", "mat", "mfg", "move", "prod", "ship"];
+  function normalizeOrder(o) {
+    const num = (v, d) => { const x = parseInt(String(v == null ? "" : v).replace(/[^\d]/g, ""), 10); return Number.isFinite(x) && x > 0 ? x : d; };
+    const done = {}; TT_STEP_KEYS.forEach((k) => (done[k] = !!(o.done && o.done[k])));
+    return {
+      id: o.id || uid(), item: String(o.item || "").trim() || "새 품목", client: String(o.client || "").trim(),
+      qty: num(o.qty, 1000), capa: num(o.capa, 1000),
+      due: o.due || null,                                  // 출고 목표일
+      matDate: o.matDate || null,                          // 자재셋팅일 (입력)
+      mfgDate: o.mfgDate || null,                          // 제조예정일 (업체 제조면 원료셋팅일)
+      mfgType: o.mfgType === "vendor" ? "vendor" : "own",
+      weighDate: o.weighDate || null,                      // 원료칭량일 (비우면 제조 1영업일 전)
+      partial: !!o.partial,                                // 파샬(중간) 출고 사용
+      partials: Array.isArray(o.partials) ? o.partials.map((x) => ({ id: x.id || uid(), date: x.date || null, qty: num(x.qty, 0), done: !!x.done })) : [],
+      done, lot: String(o.lot || "").trim(), note: String(o.note || ""), createdAt: o.createdAt || Date.now(),
+    };
+  }
+
   function seed() {
     const base = startOfWeek(new Date());
     const d = (n) => ymd(addDays(base, n));
@@ -1163,13 +1396,15 @@ const Store = (() => {
       normalizeTodo({ title: "평가자료 작성", cat: "work", priority: "high", due: d(3), projectId: pid }),
       normalizeTodo({ title: "최종 발주", cat: "work", due: d(6), projectId: pid }));
     state.events.push(normalizeEvent({ title: "계약 검토 미팅", cat: "work", date: d(5), time: "14:00", endTime: "15:00", projectId: pid }));
+    state.orders = [normalizeOrder(ttSampleOrder())];
   }
   function load() {
     try {
       const raw = localStorage.getItem(KEY);
       if (raw) { const p = JSON.parse(raw); if (p && Array.isArray(p.events) && Array.isArray(p.todos)) {
         state = { version: 2, events: p.events.map(normalizeEvent), todos: p.todos.map(normalizeTodo),
-          projects: Array.isArray(p.projects) ? p.projects.map(normalizeProject) : [] }; return; } }
+          projects: Array.isArray(p.projects) ? p.projects.map(normalizeProject) : [],
+          orders: Array.isArray(p.orders) ? p.orders.map(normalizeOrder) : [] }; return; } }
     } catch (e) {}
     seed(); persist();
   }
@@ -1263,27 +1498,40 @@ const Store = (() => {
       if (n) emit(); return n;
     },
     rollover() { const today = todayStr(); let n = 0; state.todos.forEach((t) => { if (!t.done && !t.projectId && t.due && t.due < today) { t.rolledFrom = t.due; t.due = today; n++; } }); if (n) emit(); return n; },
-    replaceAll(next) { if (next && Array.isArray(next.events) && Array.isArray(next.todos)) { state = { version: 2, events: next.events.map(normalizeEvent), todos: next.todos.map(normalizeTodo), projects: Array.isArray(next.projects) ? next.projects.map(normalizeProject) : [] }; emit(); return true; } return false; },
-    exportJSON() { return JSON.stringify({ version: 2, events: state.events, todos: state.todos, projects: state.projects }, null, 2); },
+    replaceAll(next) { if (next && Array.isArray(next.events) && Array.isArray(next.todos)) { state = { version: 2, events: next.events.map(normalizeEvent), todos: next.todos.map(normalizeTodo), projects: Array.isArray(next.projects) ? next.projects.map(normalizeProject) : [], orders: Array.isArray(next.orders) ? next.orders.map(normalizeOrder) : [] }; emit(); return true; } return false; },
+    exportJSON() { return JSON.stringify({ version: 2, events: state.events, todos: state.todos, projects: state.projects, orders: state.orders }, null, 2); },
+    // ---- 타임테이블 출고 건 ----
+    normalizeOrder,
+    addOrder(o) { const no = normalizeOrder(o); state.orders.push(no); emit(); return no.id; },
+    updateOrder(id, patch) { const o = state.orders.find((x) => x.id === id); if (o) Object.assign(o, normalizeOrder({ ...o, ...patch })); emit(); },
+    deleteOrder(id) { state.orders = state.orders.filter((x) => x.id !== id); emit(); },
+    toggleOrderStep(id, key) {
+      const o = state.orders.find((x) => x.id === id); if (!o) return;
+      if (key.startsWith("p:")) { const pt = o.partials.find((x) => x.id === key.slice(2)); if (pt) pt.done = !pt.done; }
+      else if (key in o.done) o.done[key] = !o.done[key];
+      emit();
+    },
   };
 })();
 
 /* ---------- UI 상태 (일부 저장) ---------- */
 const ui = { view: "today", cat: "all", search: "", todoFilter: "active", weekRef: startOfWeek(new Date()),
   calMode: "week", monthRef: startOfMonth(new Date()), workweek: false, bandOpen: {},
+  ttRef: startOfWeek(new Date()), ttSpan: 14, ttRulesOpen: false, ttShowDone: false,   // 타임테이블
   splitW: 300, dashCollapsed: false, dashExp: { summary: false, important: false } };
 function loadUI() {
   try {
     const p = JSON.parse(localStorage.getItem("scheduler:ui") || "{}");
     if (typeof p.workweek === "boolean") ui.workweek = p.workweek;
     if (p.calMode === "week" || p.calMode === "month") ui.calMode = p.calMode;
+    if ([7, 14, 28].includes(p.ttSpan)) ui.ttSpan = p.ttSpan;
     if (p.view && p.view !== "todo") ui.view = p.view; // 할일 탭 제거됨
     if (typeof p.splitW === "number") ui.splitW = Math.max(180, Math.min(560, p.splitW));
     if (typeof p.dashCollapsed === "boolean") ui.dashCollapsed = p.dashCollapsed;
     if (p.dashExp) ui.dashExp = { summary: !!p.dashExp.summary, important: !!p.dashExp.important };
   } catch (e) {}
 }
-function saveUI() { try { localStorage.setItem("scheduler:ui", JSON.stringify({ workweek: ui.workweek, calMode: ui.calMode, view: ui.view, splitW: ui.splitW, dashCollapsed: ui.dashCollapsed, dashExp: ui.dashExp })); } catch (e) {} }
+function saveUI() { try { localStorage.setItem("scheduler:ui", JSON.stringify({ workweek: ui.workweek, calMode: ui.calMode, ttSpan: ui.ttSpan, view: ui.view, splitW: ui.splitW, dashCollapsed: ui.dashCollapsed, dashExp: ui.dashExp })); } catch (e) {} }
 
 /* ---------- 필터 & 반복 전개 ---------- */
 function matchCat(x) { return ui.cat === "all" || x.cat === ui.cat; }
@@ -1634,6 +1882,349 @@ function renderMonth() {
   return g + `</div></div>`;
 }
 
+/* ================= 타임테이블 (출고 건별 공정 일정) ================= */
+const ttRange = () => [...Array(ui.ttSpan)].map((_, i) => ymd(addDays(ui.ttRef, i)));
+function ttStatus(pl, o) {
+  if (o.done.ship) return { cls: "done", txt: "출고 완료" };
+  if (!pl.ok) return { cls: "", txt: "날짜 입력 필요" };
+  if (pl.slack == null) return { cls: "", txt: `납품 ${fmtMD(pl.ship)}` };
+  if (pl.slack < 0) return { cls: "bad", txt: `목표보다 ${-pl.slack}일 늦음` };
+  if (pl.slack === 0) return { cls: "tight", txt: "목표일 딱 맞음" };
+  return { cls: "ok", txt: `여유 ${pl.slack}일` };
+}
+// 공정이 끝날 날을 지났는데 체크가 없으면 지난 일수
+function ttStepOverdue(st, today) {
+  if (st.done || !st.date) return 0;
+  const last = st.end || st.date;
+  return last < today ? daysBetween(last, today) : 0;
+}
+const ttIsToday = (st, today) => !st.done && st.date && (st.end ? st.date <= today && today <= st.end : st.date === today);
+function ttWarnings(o, pl) {
+  const R = ttRules(), w = [];
+  if (!pl.ok) return w;
+  if (!pl.matOk) w.push({ t: `자재셋팅이 생산 시작 ${R.matMin}영업일 전보다 늦습니다 (지금 ${pl.matGap}일 전)` });
+  if (pl.over) w.push({ t: `파샬 수량 합계(${pl.partSum.toLocaleString()}ea)가 발주량을 넘습니다` });
+  pl.partChecks.forEach((x, i) => { if (!x.ok) w.push({ t: `파샬 ${i + 1}차: ${fmtMD(x.date)}까지 생산량 ${x.can.toLocaleString()}ea로 누적 ${x.cum.toLocaleString()}ea를 낼 수 없습니다` }); });
+  [o.matDate, o.mfgDate].forEach((d, i) => { if (d && !isBizDay(d)) w.push({ t: `${i ? (o.mfgType === "vendor" ? "원료셋팅일" : "제조예정일") : "자재셋팅일"} ${fmtMD(d)}은 쉬는 날이라 다음 영업일 기준으로 계산합니다`, soft: true }); });
+  return w;
+}
+
+function renderTimetable() {
+  const R = ttRules(), today = todayStr();
+  const days = ttRange(), first = days[0], last = days[days.length - 1];
+  const idx = (ds) => days.indexOf(ds);
+  const q = (ui.search || "").trim().toLowerCase();
+  const rows = Store.state.orders
+    .filter((o) => !q || [o.item, o.client, o.lot].join(" ").toLowerCase().includes(q))
+    .map((o) => { const pl = ttPlan(o); return { o, pl, steps: ttSteps(o, pl) }; })
+    .sort((a, b) => (a.o.done.ship - b.o.done.ship) || (a.pl.ship || a.o.due || "9999").localeCompare(b.pl.ship || b.o.due || "9999"));
+  const active = rows.filter((r) => !r.o.done.ship), finished = rows.filter((r) => r.o.done.ship);
+
+  // 요약
+  const lateN = active.filter((r) => r.pl.ok && r.pl.slack != null && r.pl.slack < 0).length;
+  const overN = active.filter((r) => r.steps.some((st) => ttStepOverdue(st, today))).length;
+  const todayN = active.reduce((n, r) => n + r.steps.filter((st) => ttIsToday(st, today)).length, 0);
+  const wk0 = ymd(startOfWeek(new Date())), wk1 = ymd(addDays(startOfWeek(new Date()), 6));
+  const shipWk = active.filter((r) => r.pl.ok && r.pl.ship >= wk0 && r.pl.ship <= wk1).length;
+
+  let h = `<div class="view-head"><div><h2>타임테이블</h2><div class="sub">출고 건별 공정 일정 · 자재셋팅·제조일을 넣으면 이동·생산·납품이 영업일 기준으로 계산됩니다</div></div>
+    <div class="tt-actions"><button class="btn-sub" data-tt-rules>계산 규칙</button><button class="btn-primary" data-tt-new>＋ 출고 건</button></div></div>`;
+  if (ui.ttRulesOpen) {
+    const rule = (k, label, max) => `<div class="tt-rule"><span>${label}</span><button type="button" class="step-btn" data-tt-rule="${k}" data-dir="-1">−</button><b>${R[k]}</b><button type="button" class="step-btn" data-tt-rule="${k}" data-dir="1" data-max="${max}">＋</button><small>영업일</small></div>`;
+    h += `<div class="tt-rules">
+      ${rule("gapMove", "자재·제조 셋팅 → 이동", 15)}
+      ${rule("gapProd", "이동 → 생산 시작", 10)}
+      ${rule("gapShip", "생산 마지막 날 → 납품", 10)}
+      ${rule("matMin", "자재셋팅은 생산 최소 ○일 전", 10)}
+      <div class="tt-rules-note">생산 기간은 발주량 ÷ 일별 CAPA(올림)만큼 이어서 잡습니다. 주말과 공휴일은 모두 건너뜁니다.</div>
+    </div>`;
+  }
+  if (!Store.state.orders.length) {
+    return h + `<div class="tt-empty"><b>아직 출고 건이 없습니다</b>
+      <p>품목·발주량·일별 CAPA와 자재셋팅일·제조예정일을 넣으면 이동·생산·납품일이 자동으로 잡히고, 출고 목표일과 비교해 여유나 지연을 보여 줍니다.</p>
+      <div class="row"><button class="btn-primary" data-tt-new>＋ 출고 건 추가</button><button class="btn-sub" data-tt-sample>예시 넣어 보기</button></div></div>`;
+  }
+  h += `<div class="tt-kpis">
+    <div class="tt-kpi ${lateN ? "bad" : ""}"><div class="k">목표일 지연</div><div class="v">${lateN}건</div></div>
+    <div class="tt-kpi ${overN ? "warn" : ""}"><div class="k">체크 안 된 지난 공정</div><div class="v">${overN}건</div></div>
+    <div class="tt-kpi"><div class="k">오늘 공정</div><div class="v">${todayN}개</div></div>
+    <div class="tt-kpi"><div class="k">이번 주 납품</div><div class="v">${shipWk}건</div></div>
+    <div class="tt-kpi"><div class="k">진행 중</div><div class="v">${active.length}건</div></div>
+  </div>`;
+  const fd = parseYMD(first), ld = parseYMD(last);
+  h += `<div class="tt-bar">
+    <div class="week-nav"><button data-tt-nav="-1" title="이전 주">${IC.left}</button><button class="today-btn" data-tt-nav="0">오늘</button><button data-tt-nav="1" title="다음 주">${IC.right}</button>
+      <span class="cal-title">${fd.getMonth() + 1}/${fd.getDate()} – ${ld.getMonth() + 1}/${ld.getDate()}</span></div>
+    <div class="seg">${[[7, "1주"], [14, "2주"], [28, "4주"]].map(([n, l]) => `<button class="${ui.ttSpan === n ? "active" : ""}" data-tt-span="${n}">${l}</button>`).join("")}</div>
+  </div>`;
+
+  // ---- 캘린더 (출고 건마다 한 줄) ----
+  const colW = (ds) => { const w = parseYMD(ds).getDay(); return w === 0 || w === 6 ? "minmax(14px,.3fr)" : `minmax(${ui.ttSpan > 14 ? 30 : 40}px,1fr)`; };
+  const dayCols = days.map(colW).join(" ");
+  let g = `<div class="tt-scroll"><div class="tt-grid" style="grid-template-columns:var(--tt-gut) ${dayCols}"><div class="tt-corner">출고 건</div>`;
+  days.forEach((ds) => {
+    const d = parseYMD(ds), w = d.getDay(), we = w === 0 || w === 6, hol = holidayName(ds);
+    const num = d.getDate() === 1 || ds === first ? `${d.getMonth() + 1}/${d.getDate()}` : d.getDate();
+    g += `<div class="tt-h ${ds === today ? "today" : ""} ${we ? "we" : ""} ${hol ? "hol" : ""} ${w === 1 ? "mon" : ""}"${hol ? ` title="${esc(hol)}"` : ""}><b>${num}</b>${we ? "" : `<i>${DOW[w]}</i>`}</div>`;
+  });
+  let outside = 0;
+  active.concat(ui.ttShowDone ? finished : []).forEach(({ o, pl, steps }) => {
+    const dated = steps.filter((st) => st.date);
+    const ends = dated.map((st) => st.end || st.date).concat(o.due ? [o.due] : []);
+    const starts = dated.map((st) => st.date).concat(o.due ? [o.due] : []);
+    if (!starts.length) { outside++; return; }
+    const spanA = starts.sort()[0], spanB = ends.sort().pop();
+    if (spanB < first || spanA > last) { outside++; return; }
+    // 칩 배치: 겹치면 아래 줄로
+    const items = [];
+    dated.forEach((st) => {
+      let a = st.date, b = st.end || st.date;
+      if (b < first || a > last) return;
+      if (a < first) a = first; if (b > last) b = last;
+      items.push({ st, cs: idx(a), ce: idx(b) });
+    });
+    items.sort((x, y) => x.cs - y.cs || (y.ce - y.cs) - (x.ce - x.cs));
+    const lanes = [];
+    items.forEach((it) => { let r = 0; while ((lanes[r] || []).some(([a, b]) => !(it.ce < a || it.cs > b))) r++; (lanes[r] = lanes[r] || []).push([it.cs, it.ce]); it.r = r; });
+    const nR = Math.max(1, lanes.length);
+    const S = ttStatus(pl, o);
+    g += `<div class="tt-g" data-tt-open="${o.id}" title="${esc(o.item)} — 눌러서 열기"><div class="nm">${esc(o.item)}</div><div class="mt">${esc(o.client || "거래처 없음")} · ${o.qty.toLocaleString()}ea</div><span class="tt-pill ${S.cls}">${S.txt}</span></div>`;
+    let lane = `<div class="tt-lane" style="grid-template-columns:${dayCols};grid-template-rows:repeat(${nR},20px)">`;
+    days.forEach((ds, i) => {
+      const w = parseYMD(ds).getDay();
+      const bg = ds === today ? "t" : w === 0 || w === 6 ? "w" : isHoliday(ds) ? "h" : "";
+      if (bg) lane += `<span class="tt-bg ${bg}" style="grid-column:${i + 1}"></span>`;
+    });
+    const sa = idx(spanA < first ? first : spanA), sb = idx(spanB > last ? last : spanB);
+    lane += `<span class="tt-span-bar" style="grid-column:${sa + 1} / ${sb + 2}"></span>`;
+    if (o.due && o.due >= first && o.due <= last) lane += `<span class="tt-due ${pl.ok && pl.slack < 0 ? "bad" : ""}" style="grid-column:${idx(o.due) + 1}" title="출고 목표일 ${fmtMD(o.due)}"></span>`;
+    items.forEach(({ st, cs, ce, r }) => {
+      const od = ttStepOverdue(st, today), warn = st.partOk === false;
+      const range = st.end && st.end !== st.date ? `${fmtMD(st.date)}–${fmtMD(st.end)}` : fmtMD(st.date);
+      lane += `<div class="tt-chip ${st.cls}${st.done ? " done" : ""}${od ? " over" : ""}${warn ? " warn" : ""}" style="grid-column:${cs + 1} / ${ce + 2};grid-row:${r + 1}" data-tt-open="${o.id}" title="${esc(o.item)} · ${esc(st.label)} ${range}${st.done ? " (완료)" : ""}${od ? ` — ${od}일 지남` : ""}${warn ? " — 그날까지 생산량이 부족합니다" : ""}"><span class="tt-ck" data-tt-step="${o.id}|${st.key}" title="완료 표시">${st.done ? "✓" : ""}</span><span class="tt-cl">${st.key === "ship" ? "▼ " : ""}${esc(st.short)}</span></div>`;
+    });
+    g += lane + `</div>`;
+  });
+  g += `</div></div>`;
+  h += g;
+  h += `<div class="tt-legend">${[["s-weigh", "원료칭량"], ["s-mat", "자재셋팅"], ["s-mfg", "제조/원료셋팅"], ["s-move", "이동"], ["s-prod", "생산"], ["s-part", "파샬 출고"], ["s-ship", "납품"]].map(([c, l]) => `<span class="${c}"><i></i>${l}</span>`).join("")}<span>┆ 점선 = 출고 목표일</span></div>`;
+  if (outside) h += `<div class="tt-outside">이 기간 밖의 출고 건 ${outside}개는 아래 목록에 있습니다.</div>`;
+
+  // ---- 목록 ----
+  const card = ({ o, pl, steps }) => {
+    const S = ttStatus(pl, o), doneN = steps.filter((x) => x.done).length;
+    const mfgL = o.mfgType === "vendor" ? "원료" : "제조";
+    const dates = pl.ok
+      ? `자재 ${fmtMD(o.matDate) || "—"} · ${mfgL} ${fmtMD(o.mfgDate) || "—"} → 이동 ${fmtMD(pl.move)} → 생산 ${fmtMD(pl.prodStart)}${pl.prodDays > 1 ? "–" + fmtMD(pl.prodEnd) : ""} (${pl.prodDays}일) → 납품 ${fmtMD(pl.ship)}`
+      : "자재셋팅일·제조예정일을 넣으면 일정이 계산됩니다";
+    const warns = ttWarnings(o, pl);
+    const back = pl.ok && pl.slack < 0 && pl.latestSet ? `<div class="tt-warn soft">목표일을 맞추려면 자재·${mfgL} 셋팅이 ${fmtMD(pl.latestSet)}까지 끝나야 합니다</div>` : "";
+    return `<div class="tt-card ${o.done.ship ? "is-done" : ""}" data-tt-open="${o.id}">
+      <div class="tt-card-h"><b>${esc(o.item)}</b><span class="tt-pill ${S.cls}">${S.txt}</span></div>
+      <div class="tt-card-m">${esc(o.client || "거래처 없음")} · 발주 ${o.qty.toLocaleString()}ea · CAPA ${o.capa.toLocaleString()}/일${o.due ? ` · 목표 ${fmtMD(o.due)}` : ""}${o.mfgType === "vendor" ? " · 업체 제조" : ""}${o.partial && pl.partSum ? ` · 파샬 ${pl.partChecks.length}회` : ""}${o.lot ? ` · LOT ${esc(o.lot)}` : ""}</div>
+      <div class="tt-card-d">${dates}</div>
+      <div class="tt-prog-w"><div class="tt-prog"><i style="width:${steps.length ? Math.round((doneN / steps.length) * 100) : 0}%"></i></div><span class="tt-prog-t">${doneN}/${steps.length}</span></div>
+      ${warns.map((w) => `<div class="tt-warn ${w.soft ? "soft" : ""}">${esc(w.t)}</div>`).join("")}${back}
+    </div>`;
+  };
+  if (active.length) h += `<div class="tt-list-h">진행 중 · ${active.length}</div><div class="tt-cards">${active.map(card).join("")}</div>`;
+  if (finished.length) h += `<div class="tt-list-h" style="cursor:pointer" data-tt-done>출고 완료 · ${finished.length} ${ui.ttShowDone ? "▲" : "▼"}</div>${ui.ttShowDone ? `<div class="tt-cards">${finished.map(card).join("")}</div>` : ""}`;
+  if (q && !rows.length) h += `<div class="tt-outside">'${esc(ui.search)}'에 맞는 출고 건이 없습니다.</div>`;
+  return h;
+}
+
+// 타임테이블 화면의 버튼·칩 클릭
+function ttClick(e) {
+  if (ui.view !== "timetable" || !e.target.closest("#content")) return;
+  const t = e.target.closest("[data-tt-step],[data-tt-open],[data-tt-new],[data-tt-sample],[data-tt-nav],[data-tt-span],[data-tt-rules],[data-tt-rule],[data-tt-done]");
+  if (!t) return;
+  if (t.dataset.ttStep) { const [id, key] = t.dataset.ttStep.split("|"); Store.toggleOrderStep(id, key); e.stopPropagation(); return; }
+  if (t.dataset.ttOpen) { openOrder(t.dataset.ttOpen); return; }
+  if (t.hasAttribute("data-tt-new")) { openOrder(null); return; }
+  if (t.hasAttribute("data-tt-sample")) { Store.addOrder(ttSampleOrder()); toast("예시 출고 건을 넣었습니다 — 눌러서 내용을 바꿔 보세요"); return; }
+  if (t.dataset.ttNav != null) { const n = +t.dataset.ttNav; ui.ttRef = n ? addDays(ui.ttRef, 7 * n) : startOfWeek(new Date()); render(); return; }
+  if (t.dataset.ttSpan) { ui.ttSpan = +t.dataset.ttSpan; saveUI(); render(); return; }
+  if (t.hasAttribute("data-tt-rules")) { ui.ttRulesOpen = !ui.ttRulesOpen; render(); return; }
+  if (t.hasAttribute("data-tt-done")) { ui.ttShowDone = !ui.ttShowDone; render(); return; }
+  if (t.dataset.ttRule) {
+    const R = ttRules(), k = t.dataset.ttRule, max = +(t.dataset.max || 10);
+    const v = Math.max(0, Math.min(max, R[k] + (+t.dataset.dir || 0)));
+    setPref("tt", { ...R, [k]: v }); render(); return;
+  }
+}
+
+/* ---------- 출고 건 입력·수정 창 ---------- */
+function openOrder(id) {
+  modalState = { kind: "order", id: id || null };
+  renderOrderModal(id || null);
+  document.getElementById("modal-backdrop").classList.add("open");
+}
+function renderOrderModal(id) {
+  const saved = id ? Store.state.orders.find((x) => x.id === id) : null;
+  const isNew = !saved;
+  const o = saved || { item: "", client: "", qty: "", capa: "", due: addBiz(todayStr(), 10), mfgType: "own", matDate: "", mfgDate: "", weighDate: "", partial: false, partials: [], lot: "", note: "", done: {} };
+  const parts = (o.partials || []).map((x) => ({ ...x }));
+  let mfgType = o.mfgType || "own";
+  const m = document.getElementById("modal");
+  m.className = "modal tt-modal";
+  m.innerHTML = `
+    <h3>${isNew ? "출고 건 추가" : "출고 건"}</h3>
+    <div class="field-row">
+      <div class="field"><label for="tt-item">품목</label><input id="tt-item" value="${esc(isNew ? "" : o.item)}" placeholder="예: 수분진정 토너 200ml" autocomplete="off" /></div>
+      <div class="field"><label for="tt-client">거래처</label><input id="tt-client" value="${esc(o.client)}" placeholder="예: ○○코스메틱" autocomplete="off" /></div>
+    </div>
+    <div class="field-row tt-3">
+      <div class="field"><label for="tt-qty">발주량 (ea)</label><input id="tt-qty" inputmode="numeric" value="${o.qty || ""}" placeholder="3000" autocomplete="off" /></div>
+      <div class="field"><label for="tt-capa">일별 CAPA (ea/일)</label><input id="tt-capa" inputmode="numeric" value="${o.capa || ""}" placeholder="1500" autocomplete="off" /></div>
+      <div class="field"><label for="tt-due">출고 목표일</label><input id="tt-due" type="date" value="${o.due || ""}" /></div>
+    </div>
+    <div class="field"><label>제조 구분</label>
+      <div class="seg tt-type"><button type="button" data-v="own">자사 제조</button><button type="button" data-v="vendor">업체 제조</button></div>
+      <div class="pj-hint" id="tt-type-hint" style="margin-top:6px"></div></div>
+    <div class="field-row tt-3">
+      <div class="field"><label for="tt-mat">자재셋팅일</label><input id="tt-mat" type="date" value="${o.matDate || ""}" /></div>
+      <div class="field"><label for="tt-mfg" id="tt-mfg-lab">제조예정일</label><input id="tt-mfg" type="date" value="${o.mfgDate || ""}" /></div>
+      <div class="field"><label for="tt-weigh">원료칭량일 <small class="lab-hint">비우면 자동</small></label><input id="tt-weigh" type="date" value="${o.weighDate || ""}" /></div>
+    </div>
+    <button type="button" class="more-btn tt-back" id="tt-back">↺ 출고 목표일에서 역산해 자재·제조일 채우기</button>
+    <div class="tt-preview" id="tt-preview"></div>
+    <label class="inline-check tt-pchk"><input type="checkbox" id="tt-partial" ${o.partial ? "checked" : ""} /> 파샬(중간) 출고 추가</label>
+    <div id="tt-parts" ${o.partial ? "" : "hidden"}></div>
+    <div class="field-row">
+      <div class="field"><label for="tt-lot">제조번호 (LOT)</label><input id="tt-lot" value="${esc(o.lot)}" placeholder="비워 두면 나중에" autocomplete="off" /></div>
+      <div class="field"><label for="tt-note">메모</label><input id="tt-note" value="${esc(o.note)}" autocomplete="off" /></div>
+    </div>
+    ${isNew ? "" : `<div class="tt-steps-h">공정 체크</div><div class="tt-steps" id="tt-steps"></div>`}
+    <div class="modal-actions">
+      ${isNew ? "" : `<button type="button" class="btn-del" id="tt-del">삭제</button>`}
+      <button type="button" class="btn-sub" id="tt-close">닫기</button>
+      <button type="button" class="btn-primary" id="tt-save">${isNew ? "추가" : "저장"}</button>
+    </div>`;
+
+  const $ = (x) => document.getElementById(x);
+  const val = (x) => ($(x) ? $(x).value : "");
+  const hasQty = () => /\d/.test(val("tt-qty")) && /\d/.test(val("tt-capa"));
+  const readForm = () => ({ ...(saved || {}), item: val("tt-item"), client: val("tt-client"), qty: val("tt-qty"), capa: val("tt-capa"),
+    due: val("tt-due") || null, mfgType, matDate: val("tt-mat") || null, mfgDate: val("tt-mfg") || null, weighDate: val("tt-weigh") || null,
+    partial: $("tt-partial").checked, partials: parts.map((x) => ({ ...x })), lot: val("tt-lot"), note: val("tt-note") });
+  const draft = () => Store.normalizeOrder(readForm());
+
+  const preview = () => {
+    const box = $("tt-preview");
+    if (!hasQty()) { box.innerHTML = `<div class="tt-pv-empty">발주량과 일별 CAPA를 넣으면 생산 기간이 계산됩니다.</div>`; return; }
+    const d = draft(), pl = ttPlan(d), mfgL = mfgType === "vendor" ? "원료셋팅" : "제조";
+    let x = `<div class="tt-pv-line">생산 <b>${pl.prodDays}일</b> = ${d.qty.toLocaleString()}ea ÷ ${d.capa.toLocaleString()}ea/일 (올림)</div>`;
+    if (!pl.ok) {
+      x += `<div class="tt-pv-line">자재셋팅일과 ${mfgL}일을 넣으면 이동·생산·납품일이 계산됩니다.</div>`;
+      if (pl.latestSet) x += `<div class="tt-pv-line">출고 목표일 ${fmtMD(d.due)}을 맞추려면 늦어도 <b>${fmtKDate(pl.latestSet)}</b>까지 셋팅해야 합니다.</div>`;
+    } else {
+      const c = (cls, l, v) => `<span class="c ${cls}"><i></i>${l} <b>${v}</b></span>`;
+      const ar = `<span class="ar">→</span>`;
+      x += `<div class="tt-chain">${pl.weigh ? c("s-weigh", "칭량", fmtMD(pl.weigh)) : ""}${c("s-mat", "자재", fmtMD(d.matDate) || "—")}${c("s-mfg", mfgType === "vendor" ? "원료" : "제조", fmtMD(d.mfgDate) || "—")}${ar}${c("s-move", "이동", fmtMD(pl.move))}${ar}${c("s-prod", "생산", fmtMD(pl.prodStart) + (pl.prodDays > 1 ? "–" + fmtMD(pl.prodEnd) : ""))}${ar}${c("s-ship", "납품", fmtMD(pl.ship))}</div>`;
+      if (d.due) {
+        x += pl.slack < 0
+          ? `<div class="tt-pv-line bad">출고 목표 ${fmtMD(d.due)}보다 <b>${-pl.slack}영업일 늦습니다</b> — 늦어도 ${fmtKDate(pl.latestSet)}까지 셋팅해야 맞출 수 있습니다.</div>`
+          : `<div class="tt-pv-line ok">출고 목표 ${fmtMD(d.due)}까지 <b>${pl.slack ? `${pl.slack}영업일 여유` : "딱 맞습니다"}</b>${pl.slack ? ` · 셋팅은 ${fmtMD(pl.latestSet)}까지 늦춰도 됩니다` : ""}.</div>`;
+      }
+      ttWarnings(d, pl).forEach((w) => (x += `<div class="tt-warn ${w.soft ? "soft" : ""}">${esc(w.t)}</div>`));
+    }
+    box.innerHTML = x;
+  };
+  const drawParts = () => {
+    const box = $("tt-parts"); if (box.hidden) return;
+    const pl = hasQty() ? ttPlan(draft()) : { ok: false, partChecks: [] };
+    const chk = {}; (pl.partChecks || []).forEach((x) => (chk[x.id] = x));
+    box.innerHTML = parts.map((p, i) => {
+      const c = chk[p.id];
+      // 그 날 전까지 생산된 수량 안에서 누적 출고가 가능한지
+      const st = c ? (c.ok ? `가능 · 누적 ${c.cum.toLocaleString()}ea / 생산 ${c.can.toLocaleString()}ea` : `생산 부족 · 그날까지 ${c.can.toLocaleString()}ea만 생산됨`) : "";
+      return `<div class="tt-prow" data-i="${i}"><span class="tt-pn">${i + 1}차</span>
+        <input type="date" class="tt-pd" data-i="${i}" value="${p.date || ""}" aria-label="${i + 1}차 출고일" />
+        <input class="tt-pq" data-i="${i}" inputmode="numeric" value="${p.qty || ""}" placeholder="수량" aria-label="${i + 1}차 수량" />
+        <span class="tt-pst ${c && !c.ok ? "bad" : ""}">${st}</span>
+        <button type="button" class="tt-px" data-i="${i}" title="이 차수 삭제">×</button></div>`;
+    }).join("") + `<div class="tt-padd-row"><button type="button" class="tt-padd" id="tt-padd">＋ 파샬 차수 추가</button>
+      <span class="tt-remain">${pl.ok ? `잔량 ${pl.remain.toLocaleString()}ea → 최종 납품 ${fmtMD(pl.ship)}${pl.over ? " · 발주량 초과" : ""}` : ""}</span></div>`;
+  };
+  const drawSteps = () => {
+    const box = $("tt-steps"); if (!box || !saved) return;
+    const d = Store.normalizeOrder({ ...readForm(), done: saved.done });
+    const pl = ttPlan(d), steps = ttSteps(d, pl), today = todayStr();
+    box.innerHTML = steps.map((st) => {
+      const od = ttStepOverdue(st, today);
+      const range = st.date ? fmtMD(st.date) + (st.end && st.end !== st.date ? "–" + fmtMD(st.end) : "") : "—";
+      return `<div class="tt-srow ${st.cls}${st.done ? " done" : ""}${od ? " over" : ""}"><span class="tt-sck ${st.done ? "on" : ""}" data-k="${st.key}" title="완료 표시">${st.done ? "✓" : ""}</span><i class="tt-dot"></i>
+        <span class="tt-sl">${esc(st.label)}</span><span class="tt-sd">${range}</span><span class="tt-ss">${st.done ? "완료" : od ? `${od}일 지남` : ttIsToday(st, today) ? "오늘" : ""}</span></div>`;
+    }).join("");
+  };
+  const refresh = () => { preview(); drawParts(); drawSteps(); };
+  const setType = (v) => {
+    mfgType = v;
+    m.querySelectorAll(".tt-type button").forEach((b) => b.classList.toggle("active", b.dataset.v === v));
+    $("tt-mfg-lab").textContent = v === "vendor" ? "원료셋팅일" : "제조예정일";
+    $("tt-type-hint").textContent = v === "vendor"
+      ? "업체 제조: 원료를 자재처럼 셋팅해 함께 보냅니다. 자재셋팅일과 원료셋팅일 중 늦은 날 기준으로 이동합니다."
+      : "자사 제조: 자재셋팅일과 제조예정일 중 늦은 날 기준으로 이동합니다.";
+  };
+  const addPart = () => {
+    const pl = hasQty() ? ttPlan(draft()) : { ok: false };
+    parts.push({ id: uid(), date: pl.ok ? (pl.prodDays > 1 ? addBiz(pl.prodStart, 1) : pl.ship) : "", qty: "", done: false });
+  };
+
+  m.querySelectorAll(".tt-type button").forEach((b) => b.addEventListener("click", () => { setType(b.dataset.v); refresh(); }));
+  setType(mfgType);
+  m.addEventListener("input", (e) => {
+    const el = e.target;
+    if (el.closest && el.closest("#tt-parts")) {
+      const i = +el.dataset.i;
+      if (el.classList.contains("tt-pd")) parts[i].date = el.value || null;
+      if (el.classList.contains("tt-pq")) parts[i].qty = el.value;
+      preview(); return;
+    }
+    if (el.id === "tt-partial") return;
+    refresh();
+  });
+  m.addEventListener("change", (e) => {
+    const el = e.target;
+    if (el.id === "tt-partial") { $("tt-parts").hidden = !el.checked; if (el.checked && !parts.length) addPart(); refresh(); return; }
+    if (el.closest && el.closest("#tt-parts")) { drawParts(); drawSteps(); }
+  });
+  $("tt-parts").addEventListener("click", (e) => {
+    if (e.target.id === "tt-padd") { addPart(); refresh(); return; }
+    const x = e.target.closest(".tt-px"); if (x) { parts.splice(+x.dataset.i, 1); refresh(); }
+  });
+  if ($("tt-steps")) $("tt-steps").addEventListener("click", (e) => {
+    const k = e.target.closest("[data-k]"); if (!k) return;
+    const key = k.dataset.k;
+    Store.toggleOrderStep(saved.id, key);
+    if (key.startsWith("p:")) { const p = parts.find((x) => "p:" + x.id === key); if (p) p.done = !p.done; }
+    drawSteps();
+  });
+  $("tt-back").addEventListener("click", () => {
+    if (!val("tt-due")) { toast("출고 목표일을 먼저 넣어 주세요"); $("tt-due").focus(); return; }
+    if (!hasQty()) { toast("발주량과 일별 CAPA를 먼저 넣어 주세요"); (/\d/.test(val("tt-qty")) ? $("tt-capa") : $("tt-qty")).focus(); return; }
+    const pl = ttPlan(draft());
+    $("tt-mat").value = pl.latestSet; $("tt-mfg").value = pl.latestSet;
+    refresh(); toast(`${fmtKDate(pl.latestSet)}까지 셋팅하면 목표일에 맞습니다`);
+  });
+  $("tt-close").addEventListener("click", closeModal);
+  $("tt-save").addEventListener("click", () => {
+    const item = val("tt-item").trim();
+    if (!item) { toast("품목을 넣어 주세요"); $("tt-item").focus(); return; }
+    if (!hasQty()) { toast("발주량과 일별 CAPA를 넣어 주세요"); (/\d/.test(val("tt-qty")) ? $("tt-capa") : $("tt-qty")).focus(); return; }
+    const f = readForm(); f.item = item;
+    if (isNew) { Store.addOrder(f); toast(`'${item}' 출고 건을 추가했습니다`); }
+    else { Store.updateOrder(saved.id, f); toast("저장했습니다"); }
+    closeModal();
+  });
+  if ($("tt-del")) $("tt-del").addEventListener("click", () => {
+    if (!confirm(`'${saved.item}' 출고 건을 삭제할까요?`)) return;
+    Store.deleteOrder(saved.id); closeModal(); toast("출고 건을 삭제했습니다");
+  });
+  refresh();
+  if (isNew) setTimeout(() => $("tt-item").focus(), 30);
+}
+
 /* ---------- 렌더: 할 일 ---------- */
 function renderTodo() {
   let list = visibleTodos();
@@ -1836,6 +2427,13 @@ function render() {
   else if (ui.view === "todo") content.innerHTML = renderTodo();
   else if (ui.view === "settings") content.innerHTML = renderSettings();
   else if (ui.view === "projects") content.innerHTML = renderProjects();
+  else if (ui.view === "timetable") {
+    const old = lastRenderedView === "timetable" && content.querySelector(".tt-scroll");
+    const keep = old ? { top: old.scrollTop, left: old.scrollLeft } : null;
+    content.innerHTML = renderTimetable();
+    const ns = content.querySelector(".tt-scroll");
+    if (keep && ns) { ns.scrollTop = keep.top; ns.scrollLeft = keep.left; }
+  }
   lastRenderedView = ui.view;
   // 캘린더 컨트롤을 상단 탭바로 (한 행에 통합 → 캘린더 영역 확대)
   document.getElementById("tabbar-cal").innerHTML = ui.view === "calendar" ? calControlsHtml() : "";
@@ -2358,6 +2956,10 @@ function loadPrefs() {
     if (Number.isFinite(p.alertSec)) prefs.alertSec = Math.max(0, Math.min(120, p.alertSec));
     if (typeof p.splitBand === "boolean") prefs.splitBand = p.splitBand;
     if (CAL_DESIGNS[p.calDesign]) prefs.calDesign = p.calDesign;
+    if (p.tt && typeof p.tt === "object") {
+      const t = {}; Object.keys(TT_RULES_DEFAULT).forEach((k) => { const v = +p.tt[k]; if (Number.isFinite(v) && v >= 0 && v <= 15) t[k] = Math.round(v); });
+      prefs.tt = t;
+    }
   } catch (e) {}
 }
 function savePrefs() { try { localStorage.setItem("scheduler:prefs", JSON.stringify(prefs)); } catch (e) {} }
@@ -2999,8 +3601,10 @@ function setView(v) { if (v === "settings" && ui.view !== "settings") ui.prevVie
 function wireGlobal() {
   document.addEventListener("click", (e) => { if (Date.now() < suppressClickUntil) { e.stopPropagation(); e.preventDefault(); suppressClickUntil = 0; } }, true);
   document.querySelectorAll(".tab[data-view], .bottom-nav button[data-view]").forEach((b) => b.addEventListener("click", () => setView(b.dataset.view)));
+  document.addEventListener("click", ttClick);   // 타임테이블 화면
   document.getElementById("add-btn").addEventListener("click", () => {
     if (ui.view === "projects") { openModal("project", { cat: ui.cat === "personal" ? "personal" : "work" }); return; }
+    if (ui.view === "timetable") { openOrder(null); return; }
     openModal(ui.view === "todo" ? "todo" : "event", { cat: ui.cat === "personal" ? "personal" : "work" });
   });
   document.getElementById("search").addEventListener("input", (e) => { ui.search = e.target.value; render(); });
