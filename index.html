@@ -367,7 +367,7 @@
   .pin-todo:is(.late-warn,.late-crit){border-radius:7px;}
 
   /* ================= 타임테이블 (출고 일정) ================= */
-  :root{ --tt-weigh:#7C6FB0; --tt-mat:#2A8FBF; --tt-mfg:#3A6B70; --tt-move:#6B7480; --tt-prod:#4C8C5A; --tt-part:#B5651D; --tt-ship:#C2772A; }
+  :root{ --tt-weigh:#7C6FB0; --tt-mat:#2A8FBF; --tt-mfg:#3A6B70; --tt-move:#6B7480; --tt-prod:#4C8C5A; --tt-part:#B5651D; --tt-ship:#C2772A; --tt-judge:#A0476E; --tt-setup:#7A8C3E; }
   .tt-actions{display:flex;gap:8px;flex-wrap:wrap;}
   .tt-kpis{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
   .tt-kpi{flex:1 1 110px;min-width:0;border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:7px 11px;}
@@ -413,11 +413,24 @@
   .tt-bg.t{background:var(--today-tint);}
   .tt-span-bar{grid-row:1 / -1;margin:2px 1px;border-radius:7px;background:color-mix(in srgb, var(--text) 5%, transparent);
     border:1px dashed color-mix(in srgb, var(--text) 16%, transparent);pointer-events:none;}
-  .tt-due{grid-row:1 / -1;margin:-5px 0;border-right:2px dashed var(--done);pointer-events:none;position:relative;z-index:1;}
-  .tt-due.bad{border-right-color:var(--late-crit);}
-  .tt-due::after{content:"목표";position:absolute;right:-1px;top:-3px;transform:translateX(50%);font-size:8.5px;font-weight:800;
-    background:var(--surface);color:var(--done);padding:0 2px;border-radius:3px;}
-  .tt-due.bad::after{color:var(--late-crit);}
+  /* 목표일: 굵은 실선 + 칸 음영 + 위쪽 띠의 '목표 MM/DD' 라벨. 행에 마우스를 올리면 반짝임 */
+  .tt-lane.has-due{padding-top:19px;}
+  .tt-lane.has-due .tt-bg{margin-top:-19px;}
+  .tt-due{--dc:var(--done);grid-row:1 / -1;margin:-5px 0;border-right:3px solid var(--dc);pointer-events:none;position:relative;z-index:3;
+    background:linear-gradient(90deg, transparent, color-mix(in srgb, var(--dc) 13%, transparent));}
+  .tt-lane.has-due .tt-due{margin-top:-19px;}
+  .tt-due.bad{--dc:var(--late-crit);}
+  .tt-due::after{content:attr(data-label);position:absolute;right:-1.5px;top:3px;transform:translateX(50%);font-size:9.5px;font-weight:800;line-height:1;
+    background:var(--dc);color:#fff;padding:2px 6px;border-radius:999px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.18);}
+  .tt-lane:hover .tt-due, .tt-g:hover + .tt-lane .tt-due{animation:tt-due-pulse 1s ease-in-out infinite;}
+  .tt-lane:hover .tt-due::after, .tt-g:hover + .tt-lane .tt-due::after{animation:tt-due-pill 1s ease-in-out infinite;}
+  @keyframes tt-due-pulse{
+    0%,100%{box-shadow:3px 0 0 0 color-mix(in srgb, var(--dc) 0%, transparent);background-color:transparent;}
+    50%{box-shadow:4px 0 10px 1px color-mix(in srgb, var(--dc) 55%, transparent);background-color:color-mix(in srgb, var(--dc) 16%, transparent);} }
+  @keyframes tt-due-pill{ 0%,100%{transform:translateX(50%) scale(1);} 50%{transform:translateX(50%) scale(1.14);} }
+  @media (prefers-reduced-motion:reduce){
+    .tt-lane:hover .tt-due, .tt-g:hover + .tt-lane .tt-due, .tt-lane:hover .tt-due::after, .tt-g:hover + .tt-lane .tt-due::after{animation:none;}
+    .tt-lane:hover .tt-due, .tt-g:hover + .tt-lane .tt-due{background-color:color-mix(in srgb, var(--dc) 18%, transparent);} }
   .tt-chip{z-index:2;height:20px;margin:0 2px;border-radius:4px;display:flex;align-items:center;gap:3px;padding:0 4px;min-width:0;
     font-size:10.5px;font-weight:700;color:#fff;background:var(--c);cursor:pointer;white-space:nowrap;overflow:hidden;box-shadow:0 1px 1px rgba(0,0,0,.08);}
   .tt-chip .tt-cl{overflow:hidden;text-overflow:ellipsis;min-width:0;}
@@ -425,11 +438,19 @@
   .tt-chip.done{opacity:.45;} .tt-chip.done .tt-cl{text-decoration:line-through;}
   .tt-chip.done .tt-ck{background:rgba(255,255,255,.9);color:var(--c);}
   .tt-chip.over{outline:2px solid var(--late-crit);outline-offset:-2px;}
+  .tt-chip.late-warn{outline:2px dashed var(--late-warn);outline-offset:-2px;}
+  .tt-chip.late-crit{outline:2px solid var(--late-crit);outline-offset:-2px;}
+  .tt-dn{flex:none;font-size:9px;font-weight:800;line-height:1;padding:2px 4px;border-radius:999px;background:rgba(255,255,255,.92);color:var(--late-warn);margin-left:auto;font-style:normal;}
+  .tt-chip.late-crit .tt-dn{color:var(--late-crit);}
+  .tt-chip.s-part .tt-dn{background:color-mix(in srgb, var(--late-warn) 14%, var(--surface));}
+  .tt-sd .tt-dn{margin-left:4px;background:color-mix(in srgb, var(--late-warn) 14%, var(--surface));vertical-align:1px;}
+  .tt-sd .tt-dn.late-crit{color:var(--late-crit);background:color-mix(in srgb, var(--late-crit) 13%, var(--surface));}
   .tt-chip.s-part{background:var(--surface);color:var(--c);border:1.5px solid var(--c);}
   .tt-chip.s-part .tt-ck{border-color:var(--c);}
   .tt-chip.s-part.warn{outline:2px dashed var(--late-warn);outline-offset:-2px;}
   .s-weigh{--c:var(--tt-weigh);} .s-mat{--c:var(--tt-mat);} .s-mfg{--c:var(--tt-mfg);} .s-move{--c:var(--tt-move);}
-  .s-prod{--c:var(--tt-prod);} .s-part{--c:var(--tt-part);} .s-ship{--c:var(--tt-ship);}
+  .s-prod{--c:var(--tt-prod);} .s-part{--c:var(--tt-part);} .s-ship{--c:var(--tt-ship);} .s-judge{--c:var(--tt-judge);} .s-setup{--c:var(--tt-setup);}
+  .tt-chip.s-judge{background:repeating-linear-gradient(135deg, var(--c) 0 6px, color-mix(in srgb, var(--c) 82%, #fff) 6px 12px);}
   .tt-legend{display:flex;flex-wrap:wrap;gap:6px 12px;margin:9px 2px 0;font-size:11px;color:var(--text-faint);}
   .tt-legend span{display:inline-flex;align-items:center;gap:5px;}
   .tt-legend i{width:10px;height:10px;border-radius:3px;background:var(--c);display:inline-block;}
@@ -484,7 +505,7 @@
   @media (max-width:520px){ .tt-prow{grid-template-columns:30px 1fr 1fr 24px;} .tt-pst{grid-column:2 / -1;} }
   .tt-steps-h{font-size:11.5px;font-weight:800;color:var(--text-soft);margin:4px 0 6px;}
   .tt-steps{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:12px;}
-  .tt-srow{display:grid;grid-template-columns:20px 10px minmax(0,1fr) auto 64px;gap:8px;align-items:center;padding:8px 11px;border-bottom:1px solid var(--border);font-size:12.5px;}
+  .tt-srow{display:grid;grid-template-columns:20px 10px minmax(0,1fr) auto 60px;gap:8px;align-items:center;padding:8px 11px;border-bottom:1px solid var(--border);font-size:12.5px;}
   .tt-srow:last-child{border-bottom:none;}
   .tt-srow.over{background:color-mix(in srgb, var(--late-crit) 7%, var(--surface));}
   .tt-srow.done .tt-sl{text-decoration:line-through;color:var(--text-faint);}
@@ -494,6 +515,23 @@
   .tt-sl{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .tt-sd{font-variant-numeric:tabular-nums;font-weight:700;color:var(--text-soft);white-space:nowrap;}
   .tt-ss{font-size:11px;font-weight:800;text-align:right;color:var(--text-faint);white-space:nowrap;}
+  .tt-sec-h{font-size:11.5px;font-weight:800;color:var(--text-soft);margin:6px 0 6px;padding-top:8px;border-top:1px dashed var(--border);}
+  .tt-hint{margin:-4px 0 8px;}
+  .tt-hint:empty{display:none;}
+  .tt-judge{display:flex;} .tt-judge button{flex:1;}
+  .tt-srow2{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) 26px;gap:6px;align-items:center;margin-bottom:6px;}
+  .tt-srow2 input{width:100%;min-width:0;border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:8px;padding:7px 8px;font-size:13px;}
+  .tt-srow2 .tt-sn{border-left:3px solid var(--tt-setup);}
+  .tt-sadd{margin:0 0 12px;}
+  .tt-tools{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0 10px;}
+  .tt-link{border:0;background:transparent;padding:2px 0;font-size:12px;font-weight:700;color:var(--work);text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
+  .tt-log{font-size:12px;color:var(--text-soft);margin-bottom:12px;border:1px solid var(--border);border-radius:10px;padding:7px 11px;background:var(--surface-2);}
+  .tt-log summary{cursor:pointer;font-weight:800;font-size:11.5px;color:var(--text-faint);}
+  .tt-log div{padding:3px 0;border-top:1px dashed var(--border);line-height:1.45;}
+  .tt-log div:first-of-type{margin-top:6px;}
+  .tt-log b{font-variant-numeric:tabular-nums;color:var(--text);margin-right:4px;}
+  .tt-fail{margin-left:6px;border:1px solid color-mix(in srgb, var(--late-crit) 45%, transparent);background:color-mix(in srgb, var(--late-crit) 8%, var(--surface));
+    color:var(--late-crit);font-size:10.5px;font-weight:800;border-radius:6px;padding:1px 7px;cursor:pointer;vertical-align:1px;}
   .tt-srow.over .tt-ss{color:var(--late-crit);}
   @media (max-width:640px){ .tt-grid{--tt-gut:112px;} .tt-g .mt{display:none;}
     .tt-kpis{gap:6px;} .tt-kpi{flex:1 1 28%;padding:5px 8px;} .tt-kpi .v{font-size:15px;} .tt-kpi .k{font-size:10px;} }
@@ -1170,7 +1208,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-10-19 · 타임테이블(출고 일정)";
+const APP_VERSION = "2026-10-20 · 타임테이블 판정·추가 셋팅·자동 이월";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1237,61 +1275,160 @@ function bizDiff(a, b) {
   while (ymd(d) !== b) { d = addDays(d, step); if (isBizDay(ymd(d))) n += step; }
   return n;
 }
-// 계산 규칙 (설정 > 타임테이블 규칙에서 변경)
+// 계산 규칙 (타임테이블 > 계산 규칙에서 변경)
 const TT_RULES_DEFAULT = { gapMove: 2, gapProd: 1, gapShip: 1, matMin: 2 };
 const ttRules = () => ({ ...TT_RULES_DEFAULT, ...((typeof prefs !== "undefined" && prefs.tt) || {}) });
+const TT_SETUP_NAMES = ["칼선", "금형", "인쇄판(동판)", "지그", "라벨", "단상자", "부자재"];
+
 /* 출고 건 일정 계산
-   이동 = 자재셋팅·제조(업체 제조면 원료셋팅) 중 늦은 날 + gapMove영업일
-   생산 = 이동 + gapProd영업일부터 ⌈발주량 ÷ 일별 CAPA⌉영업일
-   납품 = 생산 마지막 날 + gapShip영업일  →  출고 목표일과 비교해 여유/지연 */
+   · 원료 쪽: 원료칭량 → 제조(자사) → 판정 D+3/D+4 = 원료 준비 완료  /  업체 제조면 원료셋팅일이 곧 준비 완료
+   · 자재 쪽: 자재셋팅 + 추가 셋팅(칼선·금형 등)
+   · 이동 = 원료·자재·추가 셋팅 중 가장 늦게 끝나는 날 + 2영업일
+   · 생산 = 이동 다음 영업일부터 ⌈발주량 ÷ 하루 양품 수량(CAPA ÷ (1+로스율))⌉영업일
+   · 납품 = 생산 마지막 날 + 1영업일  →  출고 목표일과 비교해 여유/지연
+   · adj: 공정 체크가 늦어 자동으로 밀린 영업일 (판정·이동·생산·납품) */
 function ttPlan(o) {
-  const R = ttRules();
-  const prodDays = Math.max(1, Math.ceil(o.qty / o.capa));
-  const base = [o.matDate, o.mfgDate].filter(Boolean).sort().pop() || null;
-  const lead = R.gapMove + R.gapProd + (prodDays - 1) + R.gapShip;      // 셋팅 → 납품 영업일
-  const latestSet = o.due ? subBiz(o.due, lead) : null;                  // 목표일을 맞추려면 늦어도 이날까지 셋팅
-  const weigh = o.weighDate || (o.mfgType === "own" && o.mfgDate ? subBiz(o.mfgDate, 1) : null);
-  if (!base) return { ok: false, prodDays, lead, latestSet, weigh };
-  const move = addBiz(base, R.gapMove);
+  const R = ttRules(), own = o.mfgType !== "vendor", adj = o.adj || {};
+  const goodPerDay = o.capa / (1 + (o.loss || 0) / 100);
+  const baseDays = Math.max(1, Math.ceil(o.qty / goodPerDay - 1e-9));
+  const prodDays = baseDays + (adj.prod || 0);
+  const judgeDays = own ? o.judgeDays : 0;
+  const judgeEnd = own && o.mfgDate ? addBiz(o.mfgDate, judgeDays + (adj.judge || 0)) : null;
+  const weigh = !own ? null : o.weighDate || (o.mfgDate ? subBiz(o.mfgDate, 1) : null);   // 업체 제조는 칭량 없음
+  const rawReady = own ? judgeEnd : o.mfgDate;                            // 원료 쪽 준비 완료일
+  const setupDates = (o.setups || []).map((s) => s.date).filter(Boolean);
+  // 역산: 목표일을 맞추려면 각 셋팅이 늦어도 언제까지
+  const tail = R.gapMove + R.gapProd + (baseDays - 1) + R.gapShip;
+  const latestMat = o.due ? subBiz(o.due, tail) : null;
+  const latestMfg = o.due ? subBiz(o.due, tail + judgeDays) : null;
+  const common = { own, prodDays, baseDays, goodPerDay, judgeDays, judgeEnd, weigh, latestMat, latestMfg, tail };
+  const cands = [rawReady, o.matDate, ...setupDates].filter(Boolean);
+  if (!cands.length) return { ok: false, ...common };
+  const base = cands.slice().sort().pop();
+  const by = base === rawReady ? (own ? "judge" : "mfg") : base === o.matDate ? "mat" : "setup";   // 이동을 정한 공정(병목)
+  const move = addBiz(base, R.gapMove + (adj.move || 0));
   const prodStart = addBiz(move, R.gapProd);
   const prodList = [prodStart]; while (prodList.length < prodDays) prodList.push(addBiz(prodList[prodList.length - 1], 1));
   const prodEnd = prodList[prodList.length - 1];
-  const ship = addBiz(prodEnd, R.gapShip);
-  const slack = o.due ? bizDiff(ship, o.due) : null;                     // + 여유 / − 지연 (영업일)
-  // 자재셋팅은 생산 시작 최소 matMin영업일 전
-  const matGap = o.matDate ? bizDiff(o.matDate, prodStart) : null;
+  const ship = addBiz(prodEnd, R.gapShip + (adj.ship || 0));
+  const slack = o.due ? bizDiff(ship, o.due) : null;                      // + 여유 / − 지연 (영업일)
+  const matGap = o.matDate ? bizDiff(o.matDate, prodStart) : null;        // 자재셋팅은 생산 최소 matMin영업일 전
   const matOk = matGap == null || matGap >= R.matMin;
-  // 파샬: 그 날 전까지 생산된 수량 안에서만 내보낼 수 있음
-  const madeBefore = (ds) => Math.min(o.qty, prodList.filter((d) => d < ds).length * o.capa);
+  // 파샬: 그 날 전까지 만든 양품 수량 안에서만 내보낼 수 있음
+  const madeBefore = (ds) => Math.min(o.qty, Math.floor(prodList.filter((d) => d < ds).length * goodPerDay));
   const parts = (o.partial ? o.partials : []).filter((x) => x.date && x.qty).slice().sort((a, b) => a.date.localeCompare(b.date));
   let cum = 0;
   const partChecks = parts.map((x) => { cum += x.qty; const can = madeBefore(x.date); return { ...x, cum, can, ok: cum <= can }; });
   const partSum = parts.reduce((n, x) => n + x.qty, 0);
-  return { ok: true, base, move, prodStart, prodEnd, prodDays, prodList, ship, slack, latestSet, lead, weigh,
-    matGap, matOk, partChecks, partSum, remain: Math.max(0, o.qty - partSum), over: partSum > o.qty };
+  return { ok: true, ...common, base, by, move, prodStart, prodEnd, prodList, ship, slack, matGap, matOk,
+    partChecks, partSum, remain: Math.max(0, o.qty - partSum), over: partSum > o.qty, partial: !!o.partial,
+    missing: !o.mfgDate ? "mfg" : !o.matDate ? "mat" : null };
 }
-// 공정 목록 (캘린더·체크리스트 공용)
-function ttSteps(o, plan) {
-  const vendor = o.mfgType === "vendor";
-  const st = [];
-  if (plan.weigh) st.push({ key: "weigh", label: "원료칭량", short: "칭량", date: plan.weigh, cls: "s-weigh" });
-  st.push({ key: "mat", label: "자재셋팅", short: "자재", date: o.matDate, cls: "s-mat" });
-  st.push({ key: "mfg", label: vendor ? "원료셋팅(업체 제조)" : "제조", short: vendor ? "원료" : "제조", date: o.mfgDate, cls: "s-mfg" });
-  if (plan.ok) {
-    st.push({ key: "move", label: "이동", short: "이동", date: plan.move, cls: "s-move" });
-    st.push({ key: "prod", label: `생산 ${plan.prodDays}일`, short: `생산 ${plan.prodDays}일`, date: plan.prodStart, end: plan.prodEnd, cls: "s-prod" });
-    plan.partChecks.forEach((x, i) => st.push({ key: "p:" + x.id, label: `파샬 ${i + 1}차 ${x.qty.toLocaleString()}ea`, short: `파샬 ${x.qty.toLocaleString()}`, date: x.date, cls: "s-part", partOk: x.ok }));
-    st.push({ key: "ship", label: o.partial && plan.partSum ? `최종 납품 (잔량 ${plan.remain.toLocaleString()}ea)` : "납품", short: "납품", date: plan.ship, cls: "s-ship" });
+// 공정 목록 — 공정 순서대로 (rank: 앞뒤 관계, br: 원료/자재/본공정/파샬 갈래)
+function ttSteps(o, pl) {
+  const own = pl.own, st = [];
+  if (pl.weigh) st.push({ key: "weigh", label: "원료칭량", short: "칭량", date: pl.weigh, cls: "s-weigh", br: "raw", rank: 1 });
+  st.push({ key: "mfg", label: own ? "제조" : "원료셋팅", short: own ? "제조" : "원료셋팅", date: o.mfgDate, cls: "s-mfg", br: "raw", rank: 2 });
+  if (own && o.mfgDate) st.push({ key: "judge", label: `판정 D+${o.judgeDays}`, short: `판정 D+${o.judgeDays}`, date: addBiz(o.mfgDate, 1), end: pl.judgeEnd, cls: "s-judge", br: "raw", rank: 3 });
+  st.push({ key: "mat", label: "자재셋팅", short: "자재", date: o.matDate, cls: "s-mat", br: "mat", rank: 3 });
+  (o.setups || []).forEach((s) => st.push({ key: "s:" + s.id, label: s.name, short: s.name, date: s.date, cls: "s-setup", br: "mat", rank: 3 }));
+  if (pl.ok) {
+    st.push({ key: "move", label: "이동", short: "이동", date: pl.move, cls: "s-move", br: "main", rank: 4 });
+    st.push({ key: "prod", label: `생산 ${pl.prodDays}일`, short: `생산 ${pl.prodDays}일`, date: pl.prodStart, end: pl.prodEnd, cls: "s-prod", br: "main", rank: 5 });
+    pl.partChecks.forEach((x, i) => st.push({ key: "p:" + x.id, label: `파샬 ${i + 1}차 ${x.qty.toLocaleString()}ea`, short: `파샬 ${x.qty.toLocaleString()}`, date: x.date, cls: "s-part", br: "part", rank: 6, partOk: x.ok }));
+    st.push({ key: "ship", label: o.partial && pl.partSum ? `최종 납품 (잔량 ${pl.remain.toLocaleString()}ea)` : "납품", short: "납품", date: pl.ship, cls: "s-ship", br: "main", rank: 7 });
   }
-  return st.map((x) => ({ ...x, done: x.key.startsWith("p:") ? !!(o.partials.find((p) => "p:" + p.id === x.key) || {}).done : !!o.done[x.key] }));
+  const doneOf = (k) => k.startsWith("p:") ? !!(o.partials.find((p) => "p:" + p.id === k) || {}).done
+    : k.startsWith("s:") ? !!(o.setups.find((s) => "s:" + s.id === k) || {}).done : !!o.done[k];
+  return st.map((x) => ({ ...x, done: doneOf(x.key) }));
+}
+const ttRef = (st) => st.end || st.date;                                   // 공정이 끝나는 날
+// 최초 계획일 기록 (onlyMissing: 이미 있는 기준은 그대로 두고 새 공정만 추가)
+function ttBaseline(o, onlyMissing) {
+  if (!onlyMissing || !o.plan0 || typeof o.plan0 !== "object") o.plan0 = {};
+  ttSteps(o, ttPlan(o)).forEach((st) => { const r = ttRef(st); if (r && !o.plan0[st.key]) o.plan0[st.key] = r; });
+}
+// 최초 계획일 대비 지연 일수 (달력 기준, 앱의 다른 D+N과 같은 방식)
+function ttDelay(o, st) { const b = o.plan0 && o.plan0[st.key], r = ttRef(st); return b && r && r > b ? daysBetween(b, r) : 0; }
+const ttLateCls = (n) => (n >= LATE_CRIT ? " late-crit" : n >= LATE_WARN ? " late-warn" : "");
+
+/* 공정 체크가 늦으면 자동으로 밀기 — 지난 영업일만큼, 뒤 공정은 계산으로 따라 밀림
+   · 뒤 공정이 이미 체크됐으면 앞 공정은 끝난 것으로 보고 밀지 않음
+   · 생산이 밀리면 아직 안 나간 파샬도 같은 만큼 밀림 */
+function ttAutoShiftOrder(o, today) {
+  if (o.done.ship) return [];
+  const tgt = addBiz(today, 0), notes = [];
+  for (let guard = 0; guard < 40; guard++) {
+    const pl = ttPlan(o), steps = ttSteps(o, pl);
+    const blocked = (x) => steps.some((y) => y.done && y.rank > x.rank && (y.br === "main" || y.br === x.br));
+    const late = steps.find((x) => !x.done && ttRef(x) && ttRef(x) < today && !blocked(x));
+    if (!late) break;
+    const n = bizDiff(ttRef(late), tgt);
+    if (n <= 0) break;
+    const k = late.key, before = pl.prodStart;
+    if (k === "weigh") {
+      if (o.weighDate) { o.weighDate = addBiz(o.weighDate, n); if (o.mfgDate && o.mfgDate <= o.weighDate) o.mfgDate = addBiz(o.weighDate, 1); }
+      else if (o.mfgDate) o.mfgDate = addBiz(o.mfgDate, n);
+    } else if (k === "mfg") o.mfgDate = addBiz(o.mfgDate, n);
+    else if (k === "mat") o.matDate = addBiz(o.matDate, n);
+    else if (k.startsWith("s:")) { const s = o.setups.find((x) => "s:" + x.id === k); s.date = addBiz(s.date, n); }
+    else if (k.startsWith("p:")) { const p = o.partials.find((x) => "p:" + x.id === k); p.date = addBiz(p.date, n); }
+    else o.adj[k] = (o.adj[k] || 0) + n;                                  // 판정·이동·생산·납품
+    const after = ttPlan(o).prodStart;
+    if (before && after && after > before && k !== "prod" && !k.startsWith("p:")) {
+      const d = bizDiff(before, after);
+      o.partials.forEach((p) => { if (!p.done && p.date && p.date >= before) p.date = addBiz(p.date, d); });
+    }
+    notes.push(`${late.label} +${n}일`);
+  }
+  return notes;
+}
+// 같은 라인에서 생산 기간이 겹치는 출고 건
+function ttLineConflicts(rows) {
+  const out = {};
+  const act = rows.filter((r) => r.o.line && r.pl.ok && !r.o.done.prod && !r.o.done.ship);
+  for (let i = 0; i < act.length; i++) for (let j = i + 1; j < act.length; j++) {
+    const a = act[i], b = act[j];
+    if (a.o.line.toLowerCase() !== b.o.line.toLowerCase()) continue;
+    const from = a.pl.prodStart > b.pl.prodStart ? a.pl.prodStart : b.pl.prodStart;
+    const to = a.pl.prodEnd < b.pl.prodEnd ? a.pl.prodEnd : b.pl.prodEnd;
+    if (from > to) continue;
+    (out[a.o.id] = out[a.o.id] || []).push({ other: b.o, from, to });
+    (out[b.o.id] = out[b.o.id] || []).push({ other: a.o, from, to });
+  }
+  return out;
+}
+// 엑셀에서 바로 열리는 CSV (한글 깨짐 방지 BOM)
+function ttExportCsv() {
+  const head = ["품목", "거래처", "발주량", "일별CAPA", "로스율(%)", "라인", "제조구분", "출고목표일", "원료칭량", "제조/원료셋팅", "판정완료", "자재셋팅",
+    "추가셋팅", "이동", "생산시작", "생산종료", "생산일수", "파샬출고", "납품", "목표대비(영업일)", "진행", "LOT", "메모"];
+  const cell = (v) => { const t = v == null ? "" : String(v); return /[",\r\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
+  const lines = [head];
+  Store.state.orders.forEach((o) => {
+    const pl = ttPlan(o), steps = ttSteps(o, pl);
+    lines.push([o.item, o.client, o.qty, o.capa, o.loss || 0, o.line, o.mfgType === "vendor" ? "업체 제조" : "자사 제조", o.due || "",
+      pl.weigh || "", o.mfgDate || "", pl.judgeEnd || "", o.matDate || "",
+      (o.setups || []).map((s) => `${s.name} ${s.date || "-"}`).join(" / "),
+      pl.ok ? pl.move : "", pl.ok ? pl.prodStart : "", pl.ok ? pl.prodEnd : "", pl.prodDays,
+      (o.partial ? o.partials : []).map((p) => `${p.date || "-"} ${p.qty}ea`).join(" / "),
+      pl.ok ? pl.ship : "", pl.ok && pl.slack != null ? pl.slack : "",
+      `${steps.filter((x) => x.done).length}/${steps.length}`, o.lot, o.note]);
+  });
+  const blob = new Blob(["﻿" + lines.map((r) => r.map(cell).join(",")).join("\r\n")], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = `타임테이블_${todayStr()}.csv`;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  return lines.length - 1;
 }
 // 예시 출고 건 (처음 실행 · '예시 넣어 보기')
 function ttSampleOrder() {
   const T = todayStr();
-  const mat = addBiz(T, 2), mfg = addBiz(T, 3);                         // 자재 모레, 제조 글피
-  const ship = addBiz(mfg, TT_RULES_DEFAULT.gapMove + TT_RULES_DEFAULT.gapProd + 1 + TT_RULES_DEFAULT.gapShip);
-  return { item: "수분진정 토너 200ml", client: "○○코스메틱", qty: 3000, capa: 1500, mfgType: "own",
-    matDate: mat, mfgDate: mfg, due: addBiz(ship, 1), lot: "", note: "예시 출고 건 — 지우셔도 됩니다" };
+  const mfg = addBiz(T, 2), mat = addBiz(T, 4);                         // 제조 모레, 자재 나흘 뒤
+  const o = { item: "수분진정 토너 200ml", client: "○○코스메틱", qty: 3000, capa: 1500, mfgType: "own", judgeDays: 4,
+    matDate: mat, mfgDate: mfg, lot: "", note: "예시 출고 건 — 지우셔도 됩니다" };
+  // 판정 완료(제조+4) + 이동 2 + 생산 시작 1 + 생산 2일 + 납품 1, 목표는 그보다 하루 여유
+  o.due = addBiz(mfg, 4 + TT_RULES_DEFAULT.gapMove + TT_RULES_DEFAULT.gapProd + 1 + TT_RULES_DEFAULT.gapShip + 1);
+  return o;
 }
 function addMin(hhmm, mins) { if (!hhmm) return ""; const [h, m] = hhmm.split(":").map(Number); let t = h * 60 + m + mins; t = ((t % 1440) + 1440) % 1440; return pad(Math.floor(t / 60)) + ":" + pad(t % 60); }
 const todayStr = () => ymd(new Date());
@@ -1352,10 +1489,12 @@ const Store = (() => {
   }
 
   // 타임테이블 출고 건: 자재셋팅일·제조예정일은 입력, 이동·생산·납품은 규칙으로 계산 (ttPlan)
-  const TT_STEP_KEYS = ["weigh", "mat", "mfg", "move", "prod", "ship"];
+  const TT_STEP_KEYS = ["weigh", "mfg", "judge", "mat", "move", "prod", "ship"];
   function normalizeOrder(o) {
     const num = (v, d) => { const x = parseInt(String(v == null ? "" : v).replace(/[^\d]/g, ""), 10); return Number.isFinite(x) && x > 0 ? x : d; };
     const done = {}; TT_STEP_KEYS.forEach((k) => (done[k] = !!(o.done && o.done[k])));
+    const adj = {}; ["judge", "move", "prod", "ship"].forEach((k) => { const v = parseInt(o.adj && o.adj[k], 10); adj[k] = Number.isFinite(v) && v > 0 ? v : 0; });
+    const jd = parseInt(o.judgeDays, 10);
     return {
       id: o.id || uid(), item: String(o.item || "").trim() || "새 품목", client: String(o.client || "").trim(),
       qty: num(o.qty, 1000), capa: num(o.capa, 1000),
@@ -1366,6 +1505,13 @@ const Store = (() => {
       weighDate: o.weighDate || null,                      // 원료칭량일 (비우면 제조 1영업일 전)
       partial: !!o.partial,                                // 파샬(중간) 출고 사용
       partials: Array.isArray(o.partials) ? o.partials.map((x) => ({ id: x.id || uid(), date: x.date || null, qty: num(x.qty, 0), done: !!x.done })) : [],
+      judgeDays: jd >= 1 && jd <= 10 ? jd : 4,                 // 자사 제조 판정 기간 (기본 D+4)
+      setups: Array.isArray(o.setups) ? o.setups.map((x) => ({ id: x.id || uid(), name: String(x.name || "").trim() || "추가 셋팅", date: x.date || null, done: !!x.done })) : [],
+      line: String(o.line || "").trim(),                       // 생산 라인 (겹침 경고용)
+      loss: Math.max(0, Math.min(50, parseFloat(o.loss) || 0)), // 로스율 % (생산량에 반영)
+      adj,                                                     // 공정 체크가 늦어 자동으로 밀린 영업일
+      plan0: o.plan0 && typeof o.plan0 === "object" ? { ...o.plan0 } : {},   // 최초 계획일 (D+N 기준)
+      log: Array.isArray(o.log) ? o.log.filter((x) => x && x.text).slice(-30) : [],
       done, lot: String(o.lot || "").trim(), note: String(o.note || ""), createdAt: o.createdAt || Date.now(),
     };
   }
@@ -1502,14 +1648,45 @@ const Store = (() => {
     exportJSON() { return JSON.stringify({ version: 2, events: state.events, todos: state.todos, projects: state.projects, orders: state.orders }, null, 2); },
     // ---- 타임테이블 출고 건 ----
     normalizeOrder,
-    addOrder(o) { const no = normalizeOrder(o); state.orders.push(no); emit(); return no.id; },
-    updateOrder(id, patch) { const o = state.orders.find((x) => x.id === id); if (o) Object.assign(o, normalizeOrder({ ...o, ...patch })); emit(); },
+    addOrder(o) { const no = normalizeOrder({ ...o, plan0: {}, adj: {}, log: [] }); ttBaseline(no, false); state.orders.push(no); emit(); return no.id; },
+    // 수정: 최초 계획일은 그대로 두고(지연 D+N 유지) 새로 생긴 공정만 기준에 추가
+    updateOrder(id, patch) { const o = state.orders.find((x) => x.id === id); if (o) { Object.assign(o, normalizeOrder({ ...o, ...patch })); ttBaseline(o, true); } emit(); },
     deleteOrder(id) { state.orders = state.orders.filter((x) => x.id !== id); emit(); },
     toggleOrderStep(id, key) {
       const o = state.orders.find((x) => x.id === id); if (!o) return;
       if (key.startsWith("p:")) { const pt = o.partials.find((x) => x.id === key.slice(2)); if (pt) pt.done = !pt.done; }
+      else if (key.startsWith("s:")) { const su = o.setups.find((x) => x.id === key.slice(2)); if (su) su.done = !su.done; }
       else if (key in o.done) o.done[key] = !o.done[key];
       emit();
+    },
+    // 공정 체크가 늦은 출고 건을 지난 영업일만큼 자동으로 밀기 (앱을 열 때 · 날짜가 바뀔 때)
+    ttAutoShift() {
+      const today = todayStr(); let changed = false;
+      state.orders.forEach((o) => {
+        ttBaseline(o, true);                                   // 예전 건은 지금 일정을 기준으로
+        const notes = ttAutoShiftOrder(o, today);
+        if (notes.length) { changed = true; o.log.push({ at: today, text: "자동 이월 · " + notes.join(", ") }); o.log = o.log.slice(-30); }
+      });
+      if (changed) emit(); else persist();
+      return changed;
+    },
+    // 지금 일정을 새 기준(최초 계획일)으로 — 납기가 바뀌어 다시 계획할 때
+    rebaseOrder(id) {
+      const o = state.orders.find((x) => x.id === id); if (!o) return;
+      ttBaseline(o, false); o.log.push({ at: todayStr(), text: "지금 일정을 새 기준으로 설정" }); emit();
+    },
+    // 자동 이월로 늘어난 판정·이동·생산·납품 일수 되돌리기 (실제로는 제때 끝났는데 체크를 늦게 한 경우)
+    resetOrderAdj(id) {
+      const o = state.orders.find((x) => x.id === id); if (!o) return;
+      o.adj = { judge: 0, move: 0, prod: 0, ship: 0 }; o.log.push({ at: todayStr(), text: "자동 이월 되돌림" }); emit();
+    },
+    // 판정 부적합 → 재제조: 오늘(쉬는 날이면 다음 영업일) 재칭량, 다음 영업일 재제조
+    judgeFail(id) {
+      const o = state.orders.find((x) => x.id === id); if (!o) return;
+      const w = addBiz(todayStr(), 0), m = addBiz(w, 1);
+      o.weighDate = w; o.mfgDate = m; o.adj.judge = 0;
+      o.done.weigh = false; o.done.mfg = false; o.done.judge = false;
+      o.log.push({ at: todayStr(), text: `판정 부적합 → 재칭량 ${fmtMD(w)} · 재제조 ${fmtMD(m)}` }); emit();
     },
   };
 })();
@@ -1892,63 +2069,69 @@ function ttStatus(pl, o) {
   if (pl.slack === 0) return { cls: "tight", txt: "목표일 딱 맞음" };
   return { cls: "ok", txt: `여유 ${pl.slack}일` };
 }
-// 공정이 끝날 날을 지났는데 체크가 없으면 지난 일수
-function ttStepOverdue(st, today) {
-  if (st.done || !st.date) return 0;
-  const last = st.end || st.date;
-  return last < today ? daysBetween(last, today) : 0;
-}
+// 공정이 끝날 날을 지났는데 체크가 없으면 지난 일수 (자동 이월 전 · 주말 사이)
+function ttStepOverdue(st, today) { if (st.done || !st.date) return 0; const r = ttRef(st); return r < today ? daysBetween(r, today) : 0; }
 const ttIsToday = (st, today) => !st.done && st.date && (st.end ? st.date <= today && today <= st.end : st.date === today);
-function ttWarnings(o, pl) {
+function ttWarnings(o, pl, conf) {
   const R = ttRules(), w = [];
+  (conf || []).forEach((c) => w.push({ t: `${o.line}${/라인$/.test(o.line) ? "" : " 라인"} 생산 겹침 — '${c.other.item}' (${fmtMD(c.from)}${c.from !== c.to ? "–" + fmtMD(c.to) : ""})` }));
   if (!pl.ok) return w;
+  if (pl.missing) w.push({ t: `${pl.missing === "mfg" ? (pl.own ? "제조예정일" : "원료셋팅일") : "자재셋팅일"}이 없어 나머지 날짜만으로 계산했습니다`, soft: true });
   if (!pl.matOk) w.push({ t: `자재셋팅이 생산 시작 ${R.matMin}영업일 전보다 늦습니다 (지금 ${pl.matGap}일 전)` });
   if (pl.over) w.push({ t: `파샬 수량 합계(${pl.partSum.toLocaleString()}ea)가 발주량을 넘습니다` });
-  pl.partChecks.forEach((x, i) => { if (!x.ok) w.push({ t: `파샬 ${i + 1}차: ${fmtMD(x.date)}까지 생산량 ${x.can.toLocaleString()}ea로 누적 ${x.cum.toLocaleString()}ea를 낼 수 없습니다` }); });
-  [o.matDate, o.mfgDate].forEach((d, i) => { if (d && !isBizDay(d)) w.push({ t: `${i ? (o.mfgType === "vendor" ? "원료셋팅일" : "제조예정일") : "자재셋팅일"} ${fmtMD(d)}은 쉬는 날이라 다음 영업일 기준으로 계산합니다`, soft: true }); });
+  pl.partChecks.forEach((x, i) => { if (!x.ok) w.push({ t: `파샬 ${i + 1}차: ${fmtMD(x.date)}까지 양품 ${x.can.toLocaleString()}ea로 누적 ${x.cum.toLocaleString()}ea를 낼 수 없습니다` }); });
+  const lbl = { mat: "자재셋팅일", mfg: pl.own ? "제조예정일" : "원료셋팅일" };
+  [["mat", o.matDate], ["mfg", o.mfgDate]].concat((o.setups || []).map((s) => [s.name, s.date])).forEach(([k, d]) => {
+    if (d && !isBizDay(d)) w.push({ t: `${lbl[k] || k} ${fmtMD(d)}은 쉬는 날이라 다음 영업일 기준으로 계산합니다`, soft: true });
+  });
   return w;
 }
+// 출고 건 한 줄 요약용: 최초 계획 대비 가장 많이 밀린 공정
+function ttWorstDelay(o, steps) { let best = null; steps.forEach((st) => { if (st.done) return; const n = ttDelay(o, st); if (n && (!best || n > best.n)) best = { n, st }; }); return best; }
 
 function renderTimetable() {
   const R = ttRules(), today = todayStr();
   const days = ttRange(), first = days[0], last = days[days.length - 1];
   const idx = (ds) => days.indexOf(ds);
   const q = (ui.search || "").trim().toLowerCase();
-  const rows = Store.state.orders
-    .filter((o) => !q || [o.item, o.client, o.lot].join(" ").toLowerCase().includes(q))
-    .map((o) => { const pl = ttPlan(o); return { o, pl, steps: ttSteps(o, pl) }; })
+  Store.state.orders.forEach((o) => ttBaseline(o, true));                 // 복원한 예전 백업 등: 기준일 채우기
+  const all = Store.state.orders.map((o) => { const pl = ttPlan(o); return { o, pl, steps: ttSteps(o, pl) }; });
+  const conf = ttLineConflicts(all);
+  const rows = all.filter((r) => !q || [r.o.item, r.o.client, r.o.lot, r.o.line].join(" ").toLowerCase().includes(q))
     .sort((a, b) => (a.o.done.ship - b.o.done.ship) || (a.pl.ship || a.o.due || "9999").localeCompare(b.pl.ship || b.o.due || "9999"));
   const active = rows.filter((r) => !r.o.done.ship), finished = rows.filter((r) => r.o.done.ship);
 
   // 요약
   const lateN = active.filter((r) => r.pl.ok && r.pl.slack != null && r.pl.slack < 0).length;
-  const overN = active.filter((r) => r.steps.some((st) => ttStepOverdue(st, today))).length;
+  const slipN = active.filter((r) => ttWorstDelay(r.o, r.steps)).length;
   const todayN = active.reduce((n, r) => n + r.steps.filter((st) => ttIsToday(st, today)).length, 0);
   const wk0 = ymd(startOfWeek(new Date())), wk1 = ymd(addDays(startOfWeek(new Date()), 6));
   const shipWk = active.filter((r) => r.pl.ok && r.pl.ship >= wk0 && r.pl.ship <= wk1).length;
+  const confN = active.filter((r) => conf[r.o.id]).length;
 
-  let h = `<div class="view-head"><div><h2>타임테이블</h2><div class="sub">출고 건별 공정 일정 · 자재셋팅·제조일을 넣으면 이동·생산·납품이 영업일 기준으로 계산됩니다</div></div>
-    <div class="tt-actions"><button class="btn-sub" data-tt-rules>계산 규칙</button><button class="btn-primary" data-tt-new>＋ 출고 건</button></div></div>`;
+  let h = `<div class="view-head"><div><h2>타임테이블</h2><div class="sub">출고 건별 공정 일정 · 칭량·제조·자재 등 셋팅일을 넣으면 판정·이동·생산·납품이 영업일 기준으로 계산됩니다</div></div>
+    <div class="tt-actions"><button class="btn-sub" data-tt-rules>계산 규칙</button>${Store.state.orders.length ? `<button class="btn-sub" data-tt-csv title="엑셀에서 열 수 있는 파일로 저장">CSV 내보내기</button>` : ""}<button class="btn-primary" data-tt-new>＋ 출고 건</button></div></div>`;
   if (ui.ttRulesOpen) {
     const rule = (k, label, max) => `<div class="tt-rule"><span>${label}</span><button type="button" class="step-btn" data-tt-rule="${k}" data-dir="-1">−</button><b>${R[k]}</b><button type="button" class="step-btn" data-tt-rule="${k}" data-dir="1" data-max="${max}">＋</button><small>영업일</small></div>`;
     h += `<div class="tt-rules">
-      ${rule("gapMove", "자재·제조 셋팅 → 이동", 15)}
+      ${rule("gapMove", "셋팅·판정 끝 → 이동", 15)}
       ${rule("gapProd", "이동 → 생산 시작", 10)}
       ${rule("gapShip", "생산 마지막 날 → 납품", 10)}
       ${rule("matMin", "자재셋팅은 생산 최소 ○일 전", 10)}
-      <div class="tt-rules-note">생산 기간은 발주량 ÷ 일별 CAPA(올림)만큼 이어서 잡습니다. 주말과 공휴일은 모두 건너뜁니다.</div>
+      <div class="tt-rules-note">판정 기간(D+3/D+4)과 로스율은 출고 건마다 정합니다. 생산 기간은 발주량 ÷ 하루 양품 수량(올림)만큼 이어서 잡고, 주말과 공휴일은 모두 건너뜁니다.</div>
     </div>`;
   }
   if (!Store.state.orders.length) {
     return h + `<div class="tt-empty"><b>아직 출고 건이 없습니다</b>
-      <p>품목·발주량·일별 CAPA와 자재셋팅일·제조예정일을 넣으면 이동·생산·납품일이 자동으로 잡히고, 출고 목표일과 비교해 여유나 지연을 보여 줍니다.</p>
+      <p>품목·발주량·일별 CAPA와 원료칭량·제조·자재셋팅일을 넣으면 판정·이동·생산·납품일이 자동으로 잡히고, 출고 목표일과 비교해 여유나 지연을 보여 줍니다.</p>
       <div class="row"><button class="btn-primary" data-tt-new>＋ 출고 건 추가</button><button class="btn-sub" data-tt-sample>예시 넣어 보기</button></div></div>`;
   }
   h += `<div class="tt-kpis">
     <div class="tt-kpi ${lateN ? "bad" : ""}"><div class="k">목표일 지연</div><div class="v">${lateN}건</div></div>
-    <div class="tt-kpi ${overN ? "warn" : ""}"><div class="k">체크 안 된 지난 공정</div><div class="v">${overN}건</div></div>
+    <div class="tt-kpi ${slipN ? "warn" : ""}"><div class="k">최초 계획보다 밀림</div><div class="v">${slipN}건</div></div>
     <div class="tt-kpi"><div class="k">오늘 공정</div><div class="v">${todayN}개</div></div>
     <div class="tt-kpi"><div class="k">이번 주 납품</div><div class="v">${shipWk}건</div></div>
+    ${confN ? `<div class="tt-kpi bad"><div class="k">라인 겹침</div><div class="v">${confN}건</div></div>` : ""}
     <div class="tt-kpi"><div class="k">진행 중</div><div class="v">${active.length}건</div></div>
   </div>`;
   const fd = parseYMD(first), ld = parseYMD(last);
@@ -1970,15 +2153,15 @@ function renderTimetable() {
   let outside = 0;
   active.concat(ui.ttShowDone ? finished : []).forEach(({ o, pl, steps }) => {
     const dated = steps.filter((st) => st.date);
-    const ends = dated.map((st) => st.end || st.date).concat(o.due ? [o.due] : []);
     const starts = dated.map((st) => st.date).concat(o.due ? [o.due] : []);
+    const ends = dated.map((st) => ttRef(st)).concat(o.due ? [o.due] : []);
     if (!starts.length) { outside++; return; }
     const spanA = starts.sort()[0], spanB = ends.sort().pop();
     if (spanB < first || spanA > last) { outside++; return; }
     // 칩 배치: 겹치면 아래 줄로
     const items = [];
     dated.forEach((st) => {
-      let a = st.date, b = st.end || st.date;
+      let a = st.date, b = ttRef(st);
       if (b < first || a > last) return;
       if (a < first) a = first; if (b > last) b = last;
       items.push({ st, cs: idx(a), ce: idx(b) });
@@ -1988,8 +2171,9 @@ function renderTimetable() {
     items.forEach((it) => { let r = 0; while ((lanes[r] || []).some(([a, b]) => !(it.ce < a || it.cs > b))) r++; (lanes[r] = lanes[r] || []).push([it.cs, it.ce]); it.r = r; });
     const nR = Math.max(1, lanes.length);
     const S = ttStatus(pl, o);
-    g += `<div class="tt-g" data-tt-open="${o.id}" title="${esc(o.item)} — 눌러서 열기"><div class="nm">${esc(o.item)}</div><div class="mt">${esc(o.client || "거래처 없음")} · ${o.qty.toLocaleString()}ea</div><span class="tt-pill ${S.cls}">${S.txt}</span></div>`;
-    let lane = `<div class="tt-lane" style="grid-template-columns:${dayCols};grid-template-rows:repeat(${nR},20px)">`;
+    g += `<div class="tt-g" data-tt-open="${o.id}" title="${esc(o.item)} — 눌러서 열기"><div class="nm">${esc(o.item)}</div><div class="mt">${esc(o.client || "거래처 없음")} · ${o.qty.toLocaleString()}ea${o.line ? ` · ${esc(o.line)}` : ""}</div><span class="tt-pill ${S.cls}">${S.txt}</span>${conf[o.id] ? `<span class="tt-pill bad">라인 겹침</span>` : ""}</div>`;
+    const hasDue = o.due && o.due >= first && o.due <= last;
+    let lane = `<div class="tt-lane${hasDue ? " has-due" : ""}" style="grid-template-columns:${dayCols};grid-template-rows:repeat(${nR},20px)">`;
     days.forEach((ds, i) => {
       const w = parseYMD(ds).getDay();
       const bg = ds === today ? "t" : w === 0 || w === 6 ? "w" : isHoliday(ds) ? "h" : "";
@@ -1997,33 +2181,38 @@ function renderTimetable() {
     });
     const sa = idx(spanA < first ? first : spanA), sb = idx(spanB > last ? last : spanB);
     lane += `<span class="tt-span-bar" style="grid-column:${sa + 1} / ${sb + 2}"></span>`;
-    if (o.due && o.due >= first && o.due <= last) lane += `<span class="tt-due ${pl.ok && pl.slack < 0 ? "bad" : ""}" style="grid-column:${idx(o.due) + 1}" title="출고 목표일 ${fmtMD(o.due)}"></span>`;
+    if (hasDue) {
+      const bad = pl.ok && pl.slack < 0;
+      lane += `<span class="tt-due ${bad ? "bad" : ""}" style="grid-column:${idx(o.due) + 1}" data-label="목표 ${fmtMD(o.due)}" title="출고 목표일 ${fmtKDate(o.due)}${pl.ok && pl.slack != null ? ` · ${S.txt}` : ""}"></span>`;
+    }
     items.forEach(({ st, cs, ce, r }) => {
-      const od = ttStepOverdue(st, today), warn = st.partOk === false;
+      const od = ttStepOverdue(st, today), warn = st.partOk === false, dn = st.done ? 0 : ttDelay(o, st);
       const range = st.end && st.end !== st.date ? `${fmtMD(st.date)}–${fmtMD(st.end)}` : fmtMD(st.date);
-      lane += `<div class="tt-chip ${st.cls}${st.done ? " done" : ""}${od ? " over" : ""}${warn ? " warn" : ""}" style="grid-column:${cs + 1} / ${ce + 2};grid-row:${r + 1}" data-tt-open="${o.id}" title="${esc(o.item)} · ${esc(st.label)} ${range}${st.done ? " (완료)" : ""}${od ? ` — ${od}일 지남` : ""}${warn ? " — 그날까지 생산량이 부족합니다" : ""}"><span class="tt-ck" data-tt-step="${o.id}|${st.key}" title="완료 표시">${st.done ? "✓" : ""}</span><span class="tt-cl">${st.key === "ship" ? "▼ " : ""}${esc(st.short)}</span></div>`;
+      lane += `<div class="tt-chip ${st.cls}${st.done ? " done" : ""}${od ? " over" : ""}${warn ? " warn" : ""}${ttLateCls(dn)}" style="grid-column:${cs + 1} / ${ce + 2};grid-row:${r + 1}" data-tt-open="${o.id}" title="${esc(o.item)} · ${esc(st.label)} ${range}${st.done ? " (완료)" : ""}${dn ? ` — 최초 ${fmtMD(o.plan0[st.key])}보다 ${dn}일 밀림` : ""}${od ? ` — ${od}일 지남` : ""}${warn ? " — 그날까지 생산량이 부족합니다" : ""}"><span class="tt-ck" data-tt-step="${o.id}|${st.key}" title="완료 표시">${st.done ? "✓" : ""}</span><span class="tt-cl">${st.key === "ship" ? "▼ " : ""}${esc(st.short)}</span>${dn ? `<span class="tt-dn">D+${dn}</span>` : ""}</div>`;
     });
     g += lane + `</div>`;
   });
   g += `</div></div>`;
   h += g;
-  h += `<div class="tt-legend">${[["s-weigh", "원료칭량"], ["s-mat", "자재셋팅"], ["s-mfg", "제조/원료셋팅"], ["s-move", "이동"], ["s-prod", "생산"], ["s-part", "파샬 출고"], ["s-ship", "납품"]].map(([c, l]) => `<span class="${c}"><i></i>${l}</span>`).join("")}<span>┆ 점선 = 출고 목표일</span></div>`;
+  h += `<div class="tt-legend">${[["s-weigh", "원료칭량"], ["s-mfg", "제조/원료셋팅"], ["s-judge", "판정"], ["s-mat", "자재셋팅"], ["s-setup", "추가 셋팅"], ["s-move", "이동"], ["s-prod", "생산"], ["s-part", "파샬 출고"], ["s-ship", "납품"]].map(([c, l]) => `<span class="${c}"><i></i>${l}</span>`).join("")}<span>│ 굵은 선 = 출고 목표일 · D+N = 최초 계획보다 밀린 일수</span></div>`;
   if (outside) h += `<div class="tt-outside">이 기간 밖의 출고 건 ${outside}개는 아래 목록에 있습니다.</div>`;
 
   // ---- 목록 ----
   const card = ({ o, pl, steps }) => {
     const S = ttStatus(pl, o), doneN = steps.filter((x) => x.done).length;
-    const mfgL = o.mfgType === "vendor" ? "원료" : "제조";
+    const mfgL = pl.own ? "제조" : "원료셋팅";
     const dates = pl.ok
-      ? `자재 ${fmtMD(o.matDate) || "—"} · ${mfgL} ${fmtMD(o.mfgDate) || "—"} → 이동 ${fmtMD(pl.move)} → 생산 ${fmtMD(pl.prodStart)}${pl.prodDays > 1 ? "–" + fmtMD(pl.prodEnd) : ""} (${pl.prodDays}일) → 납품 ${fmtMD(pl.ship)}`
-      : "자재셋팅일·제조예정일을 넣으면 일정이 계산됩니다";
-    const warns = ttWarnings(o, pl);
-    const back = pl.ok && pl.slack < 0 && pl.latestSet ? `<div class="tt-warn soft">목표일을 맞추려면 자재·${mfgL} 셋팅이 ${fmtMD(pl.latestSet)}까지 끝나야 합니다</div>` : "";
+      ? `${pl.weigh ? `칭량 ${fmtMD(pl.weigh)} · ` : ""}${mfgL} ${fmtMD(o.mfgDate) || "—"}${pl.own && pl.judgeEnd ? ` → 판정 ~${fmtMD(pl.judgeEnd)}` : ""} · 자재 ${fmtMD(o.matDate) || "—"}${(o.setups || []).filter((s) => s.date).map((s) => ` · ${esc(s.name)} ${fmtMD(s.date)}`).join("")} → 이동 ${fmtMD(pl.move)} → 생산 ${fmtMD(pl.prodStart)}${pl.prodDays > 1 ? "–" + fmtMD(pl.prodEnd) : ""} (${pl.prodDays}일) → 납품 ${fmtMD(pl.ship)}`
+      : "칭량·제조·자재셋팅일을 넣으면 일정이 계산됩니다";
+    const warns = ttWarnings(o, pl, conf[o.id]);
+    const worst = ttWorstDelay(o, steps);
+    const back = pl.ok && pl.slack < 0 && pl.latestMat ? `<div class="tt-warn soft">목표일을 맞추려면 ${mfgL} ${fmtMD(pl.latestMfg)} · 자재 ${fmtMD(pl.latestMat)}까지 끝나야 합니다</div>` : "";
     return `<div class="tt-card ${o.done.ship ? "is-done" : ""}" data-tt-open="${o.id}">
       <div class="tt-card-h"><b>${esc(o.item)}</b><span class="tt-pill ${S.cls}">${S.txt}</span></div>
-      <div class="tt-card-m">${esc(o.client || "거래처 없음")} · 발주 ${o.qty.toLocaleString()}ea · CAPA ${o.capa.toLocaleString()}/일${o.due ? ` · 목표 ${fmtMD(o.due)}` : ""}${o.mfgType === "vendor" ? " · 업체 제조" : ""}${o.partial && pl.partSum ? ` · 파샬 ${pl.partChecks.length}회` : ""}${o.lot ? ` · LOT ${esc(o.lot)}` : ""}</div>
+      <div class="tt-card-m">${esc(o.client || "거래처 없음")} · 발주 ${o.qty.toLocaleString()}ea · CAPA ${o.capa.toLocaleString()}/일${o.loss ? ` · 로스 ${o.loss}%` : ""}${o.line ? ` · ${esc(o.line)}` : ""}${o.due ? ` · 목표 ${fmtMD(o.due)}` : ""}${pl.own ? ` · 판정 D+${o.judgeDays}` : " · 업체 제조"}${o.partial && pl.partSum ? ` · 파샬 ${pl.partChecks.length}회` : ""}${o.lot ? ` · LOT ${esc(o.lot)}` : ""}</div>
       <div class="tt-card-d">${dates}</div>
       <div class="tt-prog-w"><div class="tt-prog"><i style="width:${steps.length ? Math.round((doneN / steps.length) * 100) : 0}%"></i></div><span class="tt-prog-t">${doneN}/${steps.length}</span></div>
+      ${worst ? `<div class="tt-warn ${worst.n >= LATE_CRIT ? "" : "soft"}">최초 계획보다 ${esc({ prod: "생산", judge: "판정" }[worst.st.key] || worst.st.label)} ${worst.n}일 밀림 (D+${worst.n})</div>` : ""}
       ${warns.map((w) => `<div class="tt-warn ${w.soft ? "soft" : ""}">${esc(w.t)}</div>`).join("")}${back}
     </div>`;
   };
@@ -2036,12 +2225,13 @@ function renderTimetable() {
 // 타임테이블 화면의 버튼·칩 클릭
 function ttClick(e) {
   if (ui.view !== "timetable" || !e.target.closest("#content")) return;
-  const t = e.target.closest("[data-tt-step],[data-tt-open],[data-tt-new],[data-tt-sample],[data-tt-nav],[data-tt-span],[data-tt-rules],[data-tt-rule],[data-tt-done]");
+  const t = e.target.closest("[data-tt-step],[data-tt-open],[data-tt-new],[data-tt-sample],[data-tt-nav],[data-tt-span],[data-tt-rules],[data-tt-rule],[data-tt-done],[data-tt-csv]");
   if (!t) return;
   if (t.dataset.ttStep) { const [id, key] = t.dataset.ttStep.split("|"); Store.toggleOrderStep(id, key); e.stopPropagation(); return; }
   if (t.dataset.ttOpen) { openOrder(t.dataset.ttOpen); return; }
   if (t.hasAttribute("data-tt-new")) { openOrder(null); return; }
   if (t.hasAttribute("data-tt-sample")) { Store.addOrder(ttSampleOrder()); toast("예시 출고 건을 넣었습니다 — 눌러서 내용을 바꿔 보세요"); return; }
+  if (t.hasAttribute("data-tt-csv")) { const n = ttExportCsv(); toast(`출고 건 ${n}개를 CSV로 저장했습니다`); return; }
   if (t.dataset.ttNav != null) { const n = +t.dataset.ttNav; ui.ttRef = n ? addDays(ui.ttRef, 7 * n) : startOfWeek(new Date()); render(); return; }
   if (t.dataset.ttSpan) { ui.ttSpan = +t.dataset.ttSpan; saveUI(); render(); return; }
   if (t.hasAttribute("data-tt-rules")) { ui.ttRulesOpen = !ui.ttRulesOpen; render(); return; }
@@ -2054,23 +2244,29 @@ function ttClick(e) {
 }
 
 /* ---------- 출고 건 입력·수정 창 ---------- */
-function openOrder(id) {
+// copyFrom: '복제'로 연 새 출고 건의 초기값
+function openOrder(id, copyFrom) {
   modalState = { kind: "order", id: id || null };
-  renderOrderModal(id || null);
+  renderOrderModal(id || null, copyFrom || null);
   document.getElementById("modal-backdrop").classList.add("open");
 }
-function renderOrderModal(id) {
+function renderOrderModal(id, copyFrom) {
   const saved = id ? Store.state.orders.find((x) => x.id === id) : null;
   const isNew = !saved;
-  const o = saved || { item: "", client: "", qty: "", capa: "", due: addBiz(todayStr(), 10), mfgType: "own", matDate: "", mfgDate: "", weighDate: "", partial: false, partials: [], lot: "", note: "", done: {} };
+  const blank = { item: "", client: "", qty: "", capa: "", due: addBiz(todayStr(), 12), mfgType: "own", judgeDays: 4, matDate: "", mfgDate: "", weighDate: "",
+    setups: [], partial: false, partials: [], line: "", loss: 0, lot: "", note: "", done: {} };
+  const o = saved || (copyFrom ? { ...blank, ...copyFrom } : blank);
+  // 창 안에서만 쓰는 사본 — 저장 전까지 Store를 건드리지 않음
   const parts = (o.partials || []).map((x) => ({ ...x }));
-  let mfgType = o.mfgType || "own";
+  const setups = (o.setups || []).map((x) => ({ ...x }));
+  let mfgType = o.mfgType || "own", judgeDays = o.judgeDays || 4;
   const m = document.getElementById("modal");
   m.className = "modal tt-modal";
-  m.innerHTML = `
-    <h3>${isNew ? "출고 건 추가" : "출고 건"}</h3>
+  // 이벤트는 매번 새로 만드는 #tt-form에만 붙임 (모달 틀에 붙이면 열 때마다 쌓여 예전 값이 덮어씀)
+  m.innerHTML = `<div id="tt-form">
+    <h3>${isNew ? (copyFrom ? "출고 건 복제" : "출고 건 추가") : "출고 건"}</h3>
     <div class="field-row">
-      <div class="field"><label for="tt-item">품목</label><input id="tt-item" value="${esc(isNew ? "" : o.item)}" placeholder="예: 수분진정 토너 200ml" autocomplete="off" /></div>
+      <div class="field"><label for="tt-item">품목</label><input id="tt-item" value="${esc(isNew && !copyFrom ? "" : o.item)}" placeholder="예: 수분진정 토너 200ml" autocomplete="off" /></div>
       <div class="field"><label for="tt-client">거래처</label><input id="tt-client" value="${esc(o.client)}" placeholder="예: ○○코스메틱" autocomplete="off" /></div>
     </div>
     <div class="field-row tt-3">
@@ -2078,15 +2274,25 @@ function renderOrderModal(id) {
       <div class="field"><label for="tt-capa">일별 CAPA (ea/일)</label><input id="tt-capa" inputmode="numeric" value="${o.capa || ""}" placeholder="1500" autocomplete="off" /></div>
       <div class="field"><label for="tt-due">출고 목표일</label><input id="tt-due" type="date" value="${o.due || ""}" /></div>
     </div>
-    <div class="field"><label>제조 구분</label>
-      <div class="seg tt-type"><button type="button" data-v="own">자사 제조</button><button type="button" data-v="vendor">업체 제조</button></div>
-      <div class="pj-hint" id="tt-type-hint" style="margin-top:6px"></div></div>
+    <div class="field-row tt-3">
+      <div class="field"><label for="tt-loss">로스율 (%) <small class="lab-hint">생산량에 반영</small></label><input id="tt-loss" inputmode="decimal" value="${o.loss || ""}" placeholder="0" autocomplete="off" /></div>
+      <div class="field"><label for="tt-line">생산 라인 <small class="lab-hint">겹침 확인</small></label><input id="tt-line" value="${esc(o.line || "")}" placeholder="예: 1라인" autocomplete="off" /></div>
+      <div class="field"><label>제조 구분</label><div class="seg tt-type"><button type="button" data-v="own">자사</button><button type="button" data-v="vendor">업체</button></div></div>
+    </div>
+    <div class="pj-hint tt-hint" id="tt-type-hint"></div>
+    <div class="tt-sec-h">원료 쪽</div>
+    <div class="field-row tt-3">
+      <div class="field" id="tt-weigh-f"><label for="tt-weigh">원료칭량일 <small class="lab-hint">비우면 자동</small></label><input id="tt-weigh" type="date" value="${o.weighDate || ""}" /></div>
+      <div class="field"><label for="tt-mfg" id="tt-mfg-lab">제조예정일</label><input id="tt-mfg" type="date" value="${o.mfgDate || ""}" /></div>
+      <div class="field" id="tt-judge-f"><label>판정 기간</label><div class="seg tt-judge"><button type="button" data-d="3">D+3</button><button type="button" data-d="4">D+4</button></div></div>
+    </div>
+    <div class="tt-sec-h">자재 쪽</div>
     <div class="field-row tt-3">
       <div class="field"><label for="tt-mat">자재셋팅일</label><input id="tt-mat" type="date" value="${o.matDate || ""}" /></div>
-      <div class="field"><label for="tt-mfg" id="tt-mfg-lab">제조예정일</label><input id="tt-mfg" type="date" value="${o.mfgDate || ""}" /></div>
-      <div class="field"><label for="tt-weigh">원료칭량일 <small class="lab-hint">비우면 자동</small></label><input id="tt-weigh" type="date" value="${o.weighDate || ""}" /></div>
     </div>
-    <button type="button" class="more-btn tt-back" id="tt-back">↺ 출고 목표일에서 역산해 자재·제조일 채우기</button>
+    <div id="tt-setups"></div>
+    <datalist id="tt-setup-names">${TT_SETUP_NAMES.map((n) => `<option value="${esc(n)}"></option>`).join("")}</datalist>
+    <button type="button" class="more-btn tt-back" id="tt-back">↺ 출고 목표일에서 역산해 칭량·제조·자재일 채우기</button>
     <div class="tt-preview" id="tt-preview"></div>
     <label class="inline-check tt-pchk"><input type="checkbox" id="tt-partial" ${o.partial ? "checked" : ""} /> 파샬(중간) 출고 추가</label>
     <div id="tt-parts" ${o.partial ? "" : "hidden"}></div>
@@ -2094,41 +2300,59 @@ function renderOrderModal(id) {
       <div class="field"><label for="tt-lot">제조번호 (LOT)</label><input id="tt-lot" value="${esc(o.lot)}" placeholder="비워 두면 나중에" autocomplete="off" /></div>
       <div class="field"><label for="tt-note">메모</label><input id="tt-note" value="${esc(o.note)}" autocomplete="off" /></div>
     </div>
-    ${isNew ? "" : `<div class="tt-steps-h">공정 체크</div><div class="tt-steps" id="tt-steps"></div>`}
+    ${isNew ? "" : `<div class="tt-steps-h">공정 체크 <small>체크가 늦으면 다음 날 자동으로 밀리고, 최초 계획 대비 D+N이 남습니다</small></div><div class="tt-steps" id="tt-steps"></div>
+      <div class="tt-tools">
+        <button type="button" class="tt-link" id="tt-copy">복제해서 새 출고 건</button>
+        <button type="button" class="tt-link" id="tt-rebase" title="납기가 바뀌어 다시 계획할 때 — 지금 일정을 새 기준으로 삼아 D+N을 0부터 셉니다">지금 일정을 새 기준으로</button>
+        ${Object.values(saved.adj || {}).some((v) => v > 0) ? `<button type="button" class="tt-link" id="tt-unadj" title="실제로는 제때 끝났는데 체크를 늦게 해서 밀린 경우">자동 이월 되돌리기</button>` : ""}
+      </div>
+      ${saved.log && saved.log.length ? `<details class="tt-log"><summary>변경 이력 ${saved.log.length}</summary>${saved.log.slice().reverse().map((x) => `<div><b>${fmtMD(x.at)}</b> ${esc(x.text)}</div>`).join("")}</details>` : ""}`}
     <div class="modal-actions">
       ${isNew ? "" : `<button type="button" class="btn-del" id="tt-del">삭제</button>`}
       <button type="button" class="btn-sub" id="tt-close">닫기</button>
       <button type="button" class="btn-primary" id="tt-save">${isNew ? "추가" : "저장"}</button>
-    </div>`;
+    </div></div>`;
 
+  const form = document.getElementById("tt-form");
   const $ = (x) => document.getElementById(x);
   const val = (x) => ($(x) ? $(x).value : "");
   const hasQty = () => /\d/.test(val("tt-qty")) && /\d/.test(val("tt-capa"));
   const readForm = () => ({ ...(saved || {}), item: val("tt-item"), client: val("tt-client"), qty: val("tt-qty"), capa: val("tt-capa"),
-    due: val("tt-due") || null, mfgType, matDate: val("tt-mat") || null, mfgDate: val("tt-mfg") || null, weighDate: val("tt-weigh") || null,
-    partial: $("tt-partial").checked, partials: parts.map((x) => ({ ...x })), lot: val("tt-lot"), note: val("tt-note") });
-  const draft = () => Store.normalizeOrder(readForm());
+    loss: val("tt-loss"), line: val("tt-line"), due: val("tt-due") || null, mfgType, judgeDays,
+    weighDate: val("tt-weigh") || null, mfgDate: val("tt-mfg") || null, matDate: val("tt-mat") || null,
+    setups: setups.map((x) => ({ ...x })), partial: $("tt-partial").checked, partials: parts.map((x) => ({ ...x })),
+    lot: val("tt-lot"), note: val("tt-note") });
+  const draft = () => { const d = Store.normalizeOrder(readForm()); if (saved) { d.plan0 = saved.plan0; d.adj = saved.adj; } return d; };
 
   const preview = () => {
     const box = $("tt-preview");
     if (!hasQty()) { box.innerHTML = `<div class="tt-pv-empty">발주량과 일별 CAPA를 넣으면 생산 기간이 계산됩니다.</div>`; return; }
-    const d = draft(), pl = ttPlan(d), mfgL = mfgType === "vendor" ? "원료셋팅" : "제조";
-    let x = `<div class="tt-pv-line">생산 <b>${pl.prodDays}일</b> = ${d.qty.toLocaleString()}ea ÷ ${d.capa.toLocaleString()}ea/일 (올림)</div>`;
+    const d = draft(), pl = ttPlan(d), mfgL = pl.own ? "제조" : "원료셋팅";
+    const lossTxt = d.loss ? ` (로스 ${d.loss}% → 하루 양품 ${Math.floor(pl.goodPerDay).toLocaleString()}ea)` : "";
+    let x = `<div class="tt-pv-line">생산 <b>${pl.baseDays}일</b> = ${d.qty.toLocaleString()}ea ÷ ${d.capa.toLocaleString()}ea/일${lossTxt}, 올림${pl.prodDays > pl.baseDays ? ` · 체크가 늦어 <b>${pl.prodDays - pl.baseDays}일</b> 늘어남` : ""}</div>`;
     if (!pl.ok) {
-      x += `<div class="tt-pv-line">자재셋팅일과 ${mfgL}일을 넣으면 이동·생산·납품일이 계산됩니다.</div>`;
-      if (pl.latestSet) x += `<div class="tt-pv-line">출고 목표일 ${fmtMD(d.due)}을 맞추려면 늦어도 <b>${fmtKDate(pl.latestSet)}</b>까지 셋팅해야 합니다.</div>`;
+      x += `<div class="tt-pv-line">${mfgL}일이나 자재셋팅일을 넣으면 이동·생산·납품일이 계산됩니다.</div>`;
+      if (pl.latestMat) x += `<div class="tt-pv-line">출고 목표 ${fmtMD(d.due)}을 맞추려면 늦어도 ${mfgL} <b>${fmtKDate(pl.latestMfg)}</b> · 자재 <b>${fmtKDate(pl.latestMat)}</b>까지 끝나야 합니다.</div>`;
     } else {
-      const c = (cls, l, v) => `<span class="c ${cls}"><i></i>${l} <b>${v}</b></span>`;
-      const ar = `<span class="ar">→</span>`;
-      x += `<div class="tt-chain">${pl.weigh ? c("s-weigh", "칭량", fmtMD(pl.weigh)) : ""}${c("s-mat", "자재", fmtMD(d.matDate) || "—")}${c("s-mfg", mfgType === "vendor" ? "원료" : "제조", fmtMD(d.mfgDate) || "—")}${ar}${c("s-move", "이동", fmtMD(pl.move))}${ar}${c("s-prod", "생산", fmtMD(pl.prodStart) + (pl.prodDays > 1 ? "–" + fmtMD(pl.prodEnd) : ""))}${ar}${c("s-ship", "납품", fmtMD(pl.ship))}</div>`;
+      const c = (cls, l, v) => `<span class="c ${cls}"><i></i>${l} <b>${v}</b></span>`, ar = `<span class="ar">→</span>`;
+      const setupC = (d.setups || []).filter((s) => s.date).map((s) => c("s-setup", esc(s.name), fmtMD(s.date))).join("");
+      x += `<div class="tt-chain">${pl.weigh ? c("s-weigh", "칭량", fmtMD(pl.weigh)) : ""}${c("s-mfg", mfgL, fmtMD(d.mfgDate) || "—")}${pl.own && pl.judgeEnd ? c("s-judge", `판정 D+${d.judgeDays}`, "~" + fmtMD(pl.judgeEnd)) : ""}<span class="ar">+</span>${c("s-mat", "자재", fmtMD(d.matDate) || "—")}${setupC}${ar}${c("s-move", "이동", fmtMD(pl.move))}${ar}${c("s-prod", "생산", fmtMD(pl.prodStart) + (pl.prodDays > 1 ? "–" + fmtMD(pl.prodEnd) : ""))}${ar}${c("s-ship", "납품", fmtMD(pl.ship))}</div>`;
+      const byL = { judge: `판정 완료(${fmtMD(pl.judgeEnd)})`, mfg: `원료셋팅(${fmtMD(d.mfgDate)})`, mat: `자재셋팅(${fmtMD(d.matDate)})`, setup: `추가 셋팅(${fmtMD(pl.base)})` }[pl.by];
+      x += `<div class="tt-pv-line">이동은 가장 늦게 끝나는 <b>${byL}</b> 기준 +${ttRules().gapMove}영업일입니다.</div>`;
       if (d.due) {
         x += pl.slack < 0
-          ? `<div class="tt-pv-line bad">출고 목표 ${fmtMD(d.due)}보다 <b>${-pl.slack}영업일 늦습니다</b> — 늦어도 ${fmtKDate(pl.latestSet)}까지 셋팅해야 맞출 수 있습니다.</div>`
-          : `<div class="tt-pv-line ok">출고 목표 ${fmtMD(d.due)}까지 <b>${pl.slack ? `${pl.slack}영업일 여유` : "딱 맞습니다"}</b>${pl.slack ? ` · 셋팅은 ${fmtMD(pl.latestSet)}까지 늦춰도 됩니다` : ""}.</div>`;
+          ? `<div class="tt-pv-line bad">출고 목표 ${fmtMD(d.due)}보다 <b>${-pl.slack}영업일 늦습니다</b> — ${mfgL} ${fmtMD(pl.latestMfg)} · 자재 ${fmtMD(pl.latestMat)}까지 끝나야 맞출 수 있습니다.</div>`
+          : `<div class="tt-pv-line ok">출고 목표 ${fmtMD(d.due)}까지 <b>${pl.slack ? `${pl.slack}영업일 여유` : "딱 맞습니다"}</b>.</div>`;
       }
-      ttWarnings(d, pl).forEach((w) => (x += `<div class="tt-warn ${w.soft ? "soft" : ""}">${esc(w.t)}</div>`));
+      ttWarnings(d, pl, null).forEach((w) => (x += `<div class="tt-warn ${w.soft ? "soft" : ""}">${esc(w.t)}</div>`));
     }
     box.innerHTML = x;
+  };
+  const drawSetups = () => {
+    $("tt-setups").innerHTML = setups.map((s, i) => `<div class="tt-srow2"><input class="tt-sn" data-i="${i}" list="tt-setup-names" value="${esc(s.name)}" placeholder="셋팅 이름 (예: 칼선)" aria-label="추가 셋팅 이름" />
+      <input type="date" class="tt-sd2" data-i="${i}" value="${s.date || ""}" aria-label="${esc(s.name)} 셋팅일" />
+      <button type="button" class="tt-px" data-si="${i}" title="이 셋팅 삭제">×</button></div>`).join("")
+      + `<button type="button" class="tt-padd tt-sadd" id="tt-sadd">＋ 셋팅일 추가 (칼선·금형 등)</button>`;
   };
   const drawParts = () => {
     const box = $("tt-parts"); if (box.hidden) return;
@@ -2136,76 +2360,95 @@ function renderOrderModal(id) {
     const chk = {}; (pl.partChecks || []).forEach((x) => (chk[x.id] = x));
     box.innerHTML = parts.map((p, i) => {
       const c = chk[p.id];
-      // 그 날 전까지 생산된 수량 안에서 누적 출고가 가능한지
-      const st = c ? (c.ok ? `가능 · 누적 ${c.cum.toLocaleString()}ea / 생산 ${c.can.toLocaleString()}ea` : `생산 부족 · 그날까지 ${c.can.toLocaleString()}ea만 생산됨`) : "";
-      return `<div class="tt-prow" data-i="${i}"><span class="tt-pn">${i + 1}차</span>
+      const st = c ? (c.ok ? `가능 · 누적 ${c.cum.toLocaleString()}ea / 양품 ${c.can.toLocaleString()}ea` : `생산 부족 · 그날까지 ${c.can.toLocaleString()}ea만 생산됨`) : "";
+      return `<div class="tt-prow"><span class="tt-pn">${i + 1}차</span>
         <input type="date" class="tt-pd" data-i="${i}" value="${p.date || ""}" aria-label="${i + 1}차 출고일" />
         <input class="tt-pq" data-i="${i}" inputmode="numeric" value="${p.qty || ""}" placeholder="수량" aria-label="${i + 1}차 수량" />
         <span class="tt-pst ${c && !c.ok ? "bad" : ""}">${st}</span>
-        <button type="button" class="tt-px" data-i="${i}" title="이 차수 삭제">×</button></div>`;
+        <button type="button" class="tt-px" data-pi="${i}" title="이 차수 삭제">×</button></div>`;
     }).join("") + `<div class="tt-padd-row"><button type="button" class="tt-padd" id="tt-padd">＋ 파샬 차수 추가</button>
       <span class="tt-remain">${pl.ok ? `잔량 ${pl.remain.toLocaleString()}ea → 최종 납품 ${fmtMD(pl.ship)}${pl.over ? " · 발주량 초과" : ""}` : ""}</span></div>`;
   };
   const drawSteps = () => {
     const box = $("tt-steps"); if (!box || !saved) return;
-    const d = Store.normalizeOrder({ ...readForm(), done: saved.done });
+    const cur = Store.state.orders.find((x) => x.id === saved.id) || saved;
+    const d = Store.normalizeOrder({ ...readForm(), done: cur.done, plan0: cur.plan0, adj: cur.adj,
+      setups: setups.map((s) => ({ ...s, done: !!(cur.setups.find((q) => q.id === s.id) || {}).done })),
+      partials: parts.map((p) => ({ ...p, done: !!(cur.partials.find((q) => q.id === p.id) || {}).done })) });
     const pl = ttPlan(d), steps = ttSteps(d, pl), today = todayStr();
     box.innerHTML = steps.map((st) => {
-      const od = ttStepOverdue(st, today);
+      const od = ttStepOverdue(st, today), dn = ttDelay(d, st);
       const range = st.date ? fmtMD(st.date) + (st.end && st.end !== st.date ? "–" + fmtMD(st.end) : "") : "—";
+      const tag = st.done ? "완료" : od ? `${od}일 지남` : ttIsToday(st, today) ? "오늘" : "";
       return `<div class="tt-srow ${st.cls}${st.done ? " done" : ""}${od ? " over" : ""}"><span class="tt-sck ${st.done ? "on" : ""}" data-k="${st.key}" title="완료 표시">${st.done ? "✓" : ""}</span><i class="tt-dot"></i>
-        <span class="tt-sl">${esc(st.label)}</span><span class="tt-sd">${range}</span><span class="tt-ss">${st.done ? "완료" : od ? `${od}일 지남` : ttIsToday(st, today) ? "오늘" : ""}</span></div>`;
+        <span class="tt-sl">${esc(st.label)}${st.key === "judge" && !st.done ? ` <button type="button" class="tt-fail" data-fail="1" title="부적합 → 다시 칭량·제조">부적합</button>` : ""}</span>
+        <span class="tt-sd">${range}${dn ? ` <em class="tt-dn${ttLateCls(dn)}" title="최초 계획 ${fmtMD(d.plan0[st.key])}">D+${dn}</em>` : ""}</span><span class="tt-ss">${tag}</span></div>`;
     }).join("");
   };
   const refresh = () => { preview(); drawParts(); drawSteps(); };
   const setType = (v) => {
     mfgType = v;
-    m.querySelectorAll(".tt-type button").forEach((b) => b.classList.toggle("active", b.dataset.v === v));
+    form.querySelectorAll(".tt-type button").forEach((b) => b.classList.toggle("active", b.dataset.v === v));
     $("tt-mfg-lab").textContent = v === "vendor" ? "원료셋팅일" : "제조예정일";
+    $("tt-judge-f").hidden = $("tt-weigh-f").hidden = v === "vendor";
     $("tt-type-hint").textContent = v === "vendor"
-      ? "업체 제조: 원료를 자재처럼 셋팅해 함께 보냅니다. 자재셋팅일과 원료셋팅일 중 늦은 날 기준으로 이동합니다."
-      : "자사 제조: 자재셋팅일과 제조예정일 중 늦은 날 기준으로 이동합니다.";
+      ? "업체 제조: 원료를 자재처럼 셋팅해 함께 보냅니다 — 원료셋팅·자재셋팅·추가 셋팅 중 가장 늦은 날 기준으로 이동합니다."
+      : "자사 제조: 제조 후 판정(D+3/D+4)까지 끝나야 이동합니다 — 판정 완료·자재셋팅·추가 셋팅 중 가장 늦은 날 기준.";
   };
+  const setJudge = (n) => { judgeDays = n; form.querySelectorAll(".tt-judge button").forEach((b) => b.classList.toggle("active", +b.dataset.d === n)); };
   const addPart = () => {
     const pl = hasQty() ? ttPlan(draft()) : { ok: false };
     parts.push({ id: uid(), date: pl.ok ? (pl.prodDays > 1 ? addBiz(pl.prodStart, 1) : pl.ship) : "", qty: "", done: false });
   };
 
-  m.querySelectorAll(".tt-type button").forEach((b) => b.addEventListener("click", () => { setType(b.dataset.v); refresh(); }));
-  setType(mfgType);
-  m.addEventListener("input", (e) => {
-    const el = e.target;
-    if (el.closest && el.closest("#tt-parts")) {
-      const i = +el.dataset.i;
-      if (el.classList.contains("tt-pd")) parts[i].date = el.value || null;
-      if (el.classList.contains("tt-pq")) parts[i].qty = el.value;
+  form.querySelectorAll(".tt-type button").forEach((b) => b.addEventListener("click", () => { setType(b.dataset.v); refresh(); }));
+  form.querySelectorAll(".tt-judge button").forEach((b) => b.addEventListener("click", () => { setJudge(+b.dataset.d); refresh(); }));
+  setType(mfgType); setJudge(judgeDays === 3 ? 3 : judgeDays === 4 ? 4 : judgeDays);
+  drawSetups();
+  form.addEventListener("input", (e) => {
+    const el = e.target, i = +el.dataset.i;
+    if (el.closest("#tt-parts")) {                                         // 파샬 입력: 값만 반영 (줄은 다시 그리지 않아 입력이 끊기지 않음)
+      if (parts[i]) { if (el.classList.contains("tt-pd")) parts[i].date = el.value || null; if (el.classList.contains("tt-pq")) parts[i].qty = el.value; }
       preview(); return;
+    }
+    if (el.closest("#tt-setups")) {
+      if (setups[i]) { if (el.classList.contains("tt-sn")) setups[i].name = el.value; if (el.classList.contains("tt-sd2")) setups[i].date = el.value || null; }
+      preview(); drawSteps(); return;
     }
     if (el.id === "tt-partial") return;
     refresh();
   });
-  m.addEventListener("change", (e) => {
+  form.addEventListener("change", (e) => {
     const el = e.target;
     if (el.id === "tt-partial") { $("tt-parts").hidden = !el.checked; if (el.checked && !parts.length) addPart(); refresh(); return; }
-    if (el.closest && el.closest("#tt-parts")) { drawParts(); drawSteps(); }
+    if (el.closest("#tt-parts")) { drawParts(); drawSteps(); }
   });
-  $("tt-parts").addEventListener("click", (e) => {
-    if (e.target.id === "tt-padd") { addPart(); refresh(); return; }
-    const x = e.target.closest(".tt-px"); if (x) { parts.splice(+x.dataset.i, 1); refresh(); }
-  });
-  if ($("tt-steps")) $("tt-steps").addEventListener("click", (e) => {
-    const k = e.target.closest("[data-k]"); if (!k) return;
-    const key = k.dataset.k;
-    Store.toggleOrderStep(saved.id, key);
-    if (key.startsWith("p:")) { const p = parts.find((x) => "p:" + x.id === key); if (p) p.done = !p.done; }
-    drawSteps();
+  form.addEventListener("click", (e) => {
+    const t = e.target;
+    if (t.id === "tt-padd") { addPart(); refresh(); return; }
+    if (t.id === "tt-sadd") { setups.push({ id: uid(), name: "", date: val("tt-mat") || null, done: false }); drawSetups(); refresh(); const ins = form.querySelectorAll(".tt-sn"); if (ins.length) ins[ins.length - 1].focus(); return; }
+    const pi = t.closest("[data-pi]"); if (pi) { parts.splice(+pi.dataset.pi, 1); refresh(); return; }
+    const si = t.closest("[data-si]"); if (si) { setups.splice(+si.dataset.si, 1); drawSetups(); refresh(); return; }
+    if (t.closest("[data-fail]")) {
+      if (!confirm("판정 부적합으로 처리할까요?\n오늘(쉬는 날이면 다음 영업일) 다시 칭량하고 다음 영업일에 다시 제조하는 일정으로 바뀝니다.")) return;
+      Store.judgeFail(saved.id); renderOrderModal(saved.id); toast("판정 부적합 — 재칭량·재제조 일정으로 바꿨습니다"); return;
+    }
+    const k = t.closest("#tt-steps [data-k]");
+    if (k) {
+      const key = k.dataset.k;
+      Store.toggleOrderStep(saved.id, key);
+      const sync = (arr, pre) => { const it = arr.find((x) => pre + x.id === key); if (it) it.done = !it.done; };
+      sync(parts, "p:"); sync(setups, "s:");
+      drawSteps();
+    }
   });
   $("tt-back").addEventListener("click", () => {
     if (!val("tt-due")) { toast("출고 목표일을 먼저 넣어 주세요"); $("tt-due").focus(); return; }
     if (!hasQty()) { toast("발주량과 일별 CAPA를 먼저 넣어 주세요"); (/\d/.test(val("tt-qty")) ? $("tt-capa") : $("tt-qty")).focus(); return; }
     const pl = ttPlan(draft());
-    $("tt-mat").value = pl.latestSet; $("tt-mfg").value = pl.latestSet;
-    refresh(); toast(`${fmtKDate(pl.latestSet)}까지 셋팅하면 목표일에 맞습니다`);
+    $("tt-mfg").value = pl.latestMfg; $("tt-weigh").value = ""; $("tt-mat").value = pl.latestMat;
+    setups.forEach((s) => { if (!s.date) s.date = pl.latestMat; }); drawSetups();
+    refresh(); toast(`${pl.own ? "제조" : "원료셋팅"} ${fmtMD(pl.latestMfg)} · 자재 ${fmtMD(pl.latestMat)}까지 끝나면 목표일에 맞습니다`);
   });
   $("tt-close").addEventListener("click", closeModal);
   $("tt-save").addEventListener("click", () => {
@@ -2213,17 +2456,38 @@ function renderOrderModal(id) {
     if (!item) { toast("품목을 넣어 주세요"); $("tt-item").focus(); return; }
     if (!hasQty()) { toast("발주량과 일별 CAPA를 넣어 주세요"); (/\d/.test(val("tt-qty")) ? $("tt-capa") : $("tt-qty")).focus(); return; }
     const f = readForm(); f.item = item;
+    f.setups = f.setups.filter((s) => s.name.trim() || s.date);            // 비어 있는 셋팅 줄은 버림
     if (isNew) { Store.addOrder(f); toast(`'${item}' 출고 건을 추가했습니다`); }
-    else { Store.updateOrder(saved.id, f); toast("저장했습니다"); }
+    else {
+      const cur = Store.state.orders.find((x) => x.id === saved.id);       // 창을 연 뒤 체크한 상태를 덮어쓰지 않게
+      f.done = cur.done;
+      f.setups = f.setups.map((s) => ({ ...s, done: !!(cur.setups.find((q) => q.id === s.id) || {}).done }));
+      f.partials = f.partials.map((p) => ({ ...p, done: !!(cur.partials.find((q) => q.id === p.id) || {}).done }));
+      Store.updateOrder(saved.id, f); toast("저장했습니다");
+    }
     closeModal();
   });
-  if ($("tt-del")) $("tt-del").addEventListener("click", () => {
-    if (!confirm(`'${saved.item}' 출고 건을 삭제할까요?`)) return;
-    Store.deleteOrder(saved.id); closeModal(); toast("출고 건을 삭제했습니다");
-  });
+  if (!isNew) {
+    $("tt-del").addEventListener("click", () => {
+      if (!confirm(`'${saved.item}' 출고 건을 삭제할까요?`)) return;
+      Store.deleteOrder(saved.id); closeModal(); toast("출고 건을 삭제했습니다");
+    });
+    $("tt-copy").addEventListener("click", () => {
+      const f = readForm();
+      openOrder(null, { item: f.item, client: f.client, qty: f.qty, capa: f.capa, loss: f.loss, line: f.line, mfgType: f.mfgType, judgeDays: f.judgeDays,
+        setups: f.setups.map((s) => ({ name: s.name, date: null })), note: f.note });
+      toast("같은 조건으로 새 출고 건을 만듭니다 — 날짜를 넣어 주세요");
+    });
+    $("tt-rebase").addEventListener("click", () => {
+      if (!confirm("지금 일정을 새 기준으로 삼을까요?\n최초 계획 대비 D+N이 모두 0부터 다시 셉니다. (납기가 바뀌어 다시 계획할 때 사용)")) return;
+      Store.rebaseOrder(saved.id); renderOrderModal(saved.id); toast("지금 일정을 새 기준으로 잡았습니다");
+    });
+    if ($("tt-unadj")) $("tt-unadj").addEventListener("click", () => { Store.resetOrderAdj(saved.id); renderOrderModal(saved.id); toast("자동 이월을 되돌렸습니다"); });
+  }
   refresh();
-  if (isNew) setTimeout(() => $("tt-item").focus(), 30);
+  if (isNew) setTimeout(() => $(copyFrom ? "tt-due" : "tt-item").focus(), 30);
 }
+
 
 /* ---------- 렌더: 할 일 ---------- */
 function renderTodo() {
@@ -3725,6 +3989,7 @@ function wireGlobal() {
   Store.subscribe(render); Store.load();
   Store.purgeOld();                                   // 완료 후 1주일 지난 항목 자동 삭제
   Store.autoCarry();                                  // 어제까지 미완료 항목을 오늘로 이월(D+N)
+  Store.ttAutoShift();                                // 타임테이블: 체크 안 된 지난 공정을 지난 일수만큼 밀기
   setInterval(() => Store.purgeOld(), 60 * 60 * 1000); // 1시간마다 정리
   wireGlobal(); wirePin();
   render();
@@ -3736,7 +4001,9 @@ function wireGlobal() {
     if (d !== _curDay) {
       _curDay = d;
       ui.weekRef = startOfWeek(new Date());
+      ui.ttRef = startOfWeek(new Date());
       Store.autoCarry();
+      Store.ttAutoShift();
       Store.purgeOld();
       render();
     }
