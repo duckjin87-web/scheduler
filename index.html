@@ -582,8 +582,23 @@
   .st-s b{font-size:13px;line-height:1.4;display:block;}
   .st-why{font-size:11.5px;color:var(--text-faint);margin:3px 0 5px;font-variant-numeric:tabular-nums;}
   .st-s p{margin:0;font-size:12.5px;color:var(--text-soft);line-height:1.55;}
+  .st-src{font-size:11px;color:var(--text-faint);margin-top:6px;}
+  .st-src a{color:var(--work);text-decoration:underline;text-underline-offset:2px;}
+  .st-refs summary{cursor:pointer;list-style:none;}
+  .st-refs summary::-webkit-details-marker{display:none;}
+  .st-refs summary h3{margin:0;display:inline;}
+  .st-refs summary::before{content:"▸ ";color:var(--text-faint);}
+  .st-refs[open] summary::before{content:"▾ ";}
+  .st-refs ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:9px;font-size:12px;color:var(--text-soft);line-height:1.5;}
+  .st-refs ol a{color:var(--text);text-decoration:none;}
+  .st-refs ol a:hover{text-decoration:underline;}
+  .st-refs ol i{color:var(--text-faint);font-size:11px;}
+  .st-use{font-size:11.5px;color:var(--work);}
+  .st-tag{display:inline-block;font-size:10px;font-weight:800;padding:0 6px;border-radius:999px;background:color-mix(in srgb, var(--done) 16%, var(--surface));color:var(--done);vertical-align:1px;}
+  .st-tag.old{background:var(--surface-3);color:var(--text-faint);}
+  .st-refnote{font-size:11.5px;color:var(--text-faint);margin:10px 0 0;}
   .st-bars{display:flex;flex-direction:column;gap:7px;}
-  .st-bar{display:grid;grid-template-columns:96px minmax(0,1fr) auto;align-items:center;gap:8px;font-size:12px;border-radius:6px;padding:1px 2px;}
+  .st-bar{display:grid;grid-template-columns:118px minmax(0,1fr) auto;align-items:center;gap:8px;font-size:12px;border-radius:6px;padding:1px 2px;}
   .st-bar:hover{background:var(--surface-2);}
   .st-bar.few .st-bt i{opacity:.4;}   /* 3건 미만: 참고용으로 흐리게 */
   .st-bl{font-weight:700;color:var(--text-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -1288,7 +1303,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-10-26 · 통계(지연 분석·개선 제안)·알림 확인 버튼";
+const APP_VERSION = "2026-10-26 · 통계 연구 근거 적용(원인·준비 기간·80% 여유일)";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -2609,6 +2624,51 @@ const ST_TYPE_TIPS = {
   etc: "자주 밀리는 일은 제목에 첫 행동(누구에게·무엇을)을 적어 두면 바로 시작하기 쉬워집니다.",
 };
 const ST_DOW = ["일", "월", "화", "수", "목", "금", "토"];
+/* 근거 연구 — 메타분석·고인용 연구 중 이 앱 기록(기한·완료일·우선순위·제목)으로 적용할 수 있는 것만 골라 씀.
+   recent: 최근 5년(2021~) 발표 / 그 밖은 지금도 가장 많이 인용되는 기초 연구 */
+const ST_SOURCES = {
+  aeon: { cite: "Aeon, Faber & Panaccio (2021)", recent: true, venue: "PLOS ONE 16(1)", title: "Does time management work? A meta-analysis", url: "https://doi.org/10.1371/journal.pone.0245066",
+    key: "158개 연구·약 5.3만 명 메타분석. 시간관리 행동은 업무 성과와 중간 정도, 웰빙과는 더 강하게 관련되며 성과와의 관련은 최근으로 올수록 커짐", use: "계획 습관 점검(계획 정확도) 제안" },
+  mcii: { cite: "Wang, Wang & Gai (2021)", recent: true, venue: "Frontiers in Psychology 12", title: "A meta-analysis of the effects of mental contrasting with implementation intentions on goal attainment", url: "https://doi.org/10.3389/fpsyg.2021.565202",
+    key: "21개 연구(약 1.6만 명) 메타분석. '장애물을 떠올리고 언제·어디서·어떻게 할지(만약~하면) 정하기'가 목표 달성에 소~중간 효과(g≈0.34)", use: "오래 밀린 일·모호한 제목 → '다음 행동' 한 문장 계획" },
+  flyv: { cite: "Flyvbjerg (2021)", recent: true, venue: "Project Management Journal 52(6), 531–546", title: "Top Ten Behavioral Biases in Project Management: An Overview", url: "https://doi.org/10.1177/87569728211049046",
+    key: "계획 오류·기저율 무시가 일정 초과의 주원인. 비슷한 과거 사례의 실제 분포로 예측하는 '참조집단 예측(reference class forecasting)'을 처방", use: "유형별 '80% 지키는 여유일', 판정 기간 등 기본값을 내 실적으로 보정" },
+  knowles: { cite: "Knowles, Servátka, Sullivan & Genç (2022)", recent: true, venue: "Economic Inquiry 60(2), 706–720", title: "Procrastination and the non-monotonic effect of deadlines on task completion", url: "https://doi.org/10.1111/ecin.13042",
+    key: "현장 실험(약 3,300명). 1주 기한·기한 없음보다 1개월 기한일 때 완료율이 가장 낮음 — 긴 기한이 미루기·잊기를 허용", use: "기한까지 기간(준비 기간)별 지연율, 남에게 요청할 때 짧은 회신 기한" },
+  kc: { cite: "KC, Staats, Kouchaki & Gino (2020)", recent: false, venue: "Management Science 66(10), 4397–4416", title: "Task Selection and Workload: A Focus on Completing Easy Tasks Hurts Performance", url: "https://doi.org/10.1287/mnsc.2019.3419",
+    key: "6년치 응급실 실적 분석. 업무가 몰리면 쉬운 일부터 끝내는 경향이 생기고, 난이도를 보정하면 오히려 처리 성과가 나빠짐", use: "큰 작업이 바로 할 일보다 많이 밀리는지 비교" },
+  interrupt: { cite: "Puranik, Koopman & Vough (2020)", recent: false, venue: "Journal of Management 46(6), 806–842", title: "Pardon the interruption: An integrative review and future research agenda for research on work interruptions", url: "https://doi.org/10.1177/0149206319887428",
+    key: "업무 중단(인터럽션) 연구 통합 리뷰. 중단의 유형과 주의 전환 비용 등 결과를 정리", use: "회신·연락은 수시 대응 대신 시간을 정해 모아서 처리" },
+  steel: { cite: "Steel (2007)", recent: false, venue: "Psychological Bulletin 133(1), 65–94", title: "The nature of procrastination: A meta-analytic and theoretical review", url: "https://doi.org/10.1037/0033-2909.133.1.65",
+    key: "691개 상관 메타분석. 하기 싫은 정도(과제 혐오), 보상·기한까지의 거리, 자기효능감, 충동성이 미루기의 일관된 예측 요인", use: "지연 원인 분류(큰 작업·먼 기한·모호함)의 틀" },
+  urgency: { cite: "Zhu, Yang & Hsee (2018)", recent: false, venue: "Journal of Consumer Research 45(3), 673–690", title: "The mere urgency effect", url: "https://doi.org/10.1093/jcr/ucy008",
+    key: "5개 실험. 사람은 결과(성과)보다 마감이 임박한 일을 고르는 경향 — 바쁘다고 느낄수록 강하고, 선택 순간 성과를 떠올리면 약해짐", use: "'보통' 우선순위의 중요한 일이 급한 일에 밀리는지 비교" },
+  segment: { cite: "Forsyth & Burt (2008)", recent: false, venue: "Memory & Cognition 36(4), 791–798", title: "Allocating time to future tasks: The effect of task segmentation on planning fallacy bias", url: "https://doi.org/10.3758/MC.36.4.791",
+    key: "3개 실험. 일을 하위 단계로 나눠 각각 시간을 잡으면 한 덩어리로 잡을 때보다 더 많은(현실적인) 시간을 배정", use: "큰 작업은 단계로 쪼개서 각각 기한 잡기" },
+};
+const stSrc = (keys) => (keys || []).filter((k) => ST_SOURCES[k]);
+// 지연 원인 유형 (Steel 2007의 예측 요인 + 타인 의존) — 제목·종류로 추정
+const ST_CAUSES = [
+  { k: "event", label: "일정(회의·방문)", hint: "끝난 뒤 체크하지 않으면 자동 이월되어 지연으로 잡힘" },
+  { k: "wait", label: "남의 회신·승인 대기", hint: "다른 사람 응답이 있어야 끝나는 일", re: /회신|답변|요청|승인|결재|피드백|컨펌|확정|수령|대기|문의|받기/ },
+  { k: "big", label: "큰 작업(쪼개기 필요)", hint: "작성·기획·분석처럼 한 번에 끝나지 않는 일", re: /작성|기획|분석|준비|정리|보고서|자료|계획|설계|개선|교육/ },
+  { k: "vague", label: "모호한 제목", hint: "무엇을 하면 끝인지 제목만으로 알기 어려운 일" },
+  { k: "do", label: "바로 할 수 있는 일", hint: "확인·발송·입력처럼 짧게 끝나는 일" },
+];
+function stCauseOf(r) {
+  if (r.k === "event") return "event";
+  const t = r.t || "";
+  if (ST_CAUSES[1].re.test(t)) return "wait";
+  if (ST_CAUSES[2].re.test(t)) return "big";
+  if (stTypeOf(t) === ST_OTHER && t.replace(/\s/g, "").length <= 8) return "vague";
+  return "do";
+}
+// 기한까지 준비 기간(등록일 → 원래 기한)
+const ST_LEADS = [[0, 3, "3일 이내"], [4, 7, "4~7일"], [8, 14, "8~14일"], [15, 9999, "15일 이상"]];
+const stLeadOf = (r) => (r.lead == null ? null : ST_LEADS.findIndex(([a, b]) => r.lead >= a && r.lead <= b));
+// 참조집단: 이 그룹에서 80%를 지키려면 기한에 며칠을 더 두면 되나 (지연일 80번째 백분위)
+function stP80(recs) { if (recs.length < 4) return null; const d = recs.map((r) => r.d).sort((a, b) => a - b); return d[Math.ceil(d.length * 0.8) - 1]; }
+const ST_TYPE_SRC = { reply: ["knowles", "interrupt"], quote: ["knowles"], doc: ["segment", "kc"], meet: [], quality: ["flyv"], ship: [], prod: ["flyv"], check: ["mcii"], etc: ["mcii"] };
 const ST_STEP_LABEL = { weigh: "원료칭량", mfg: "제조·원료셋팅", judge: "판정", mat: "자재셋팅", setup: "추가 셋팅", move: "이동", prod: "생산", part: "파샬 출고", ship: "납품" };
 const ST_STEP_TIPS = {
   judge: (avg) => `판정이 평균 ${avg}일 밀립니다. 판정 기간 기본값을 실제에 맞게 늘리거나, 시험 의뢰를 제조 당일 오전에 접수해 대기 시간을 줄이세요.`,
@@ -2633,7 +2693,9 @@ function statRecordOf(x, kind) {
   let end;
   if (x.done) end = x.doneAt ? ymd(new Date(x.doneAt)) : cur;
   else end = cur < today ? today : cur;
-  return { k: kind, id: x.id, t: x.title, cat: x.cat, pr: x.priority, pj: x.projectId || null, orig, end,
+  const made = x.createdAt ? ymd(new Date(x.createdAt)) : null;
+  const lead = made && made <= orig ? daysBetween(made, orig) : null;          // 등록 → 원래 기한까지 준비 기간
+  return { k: kind, id: x.id, t: x.title, cat: x.cat, pr: x.priority, pj: x.projectId || null, orig, end, lead,
     d: Math.max(0, daysBetween(orig, end)), open: !x.done };
 }
 function statCollect(days) {
@@ -2677,115 +2739,167 @@ function statOrders(days) {
 const stPct = (x) => `${Math.round(x * 100)}%`;
 const stDay = (x) => (Math.round(x * 10) / 10).toString();
 
-// 개선 제안 — 근거(숫자)와 방법을 함께, 영향이 큰 순서로
-function statSuggestions(recs, byType, byDow, byPr, byProj, ord) {
+// 개선 제안 — 내 기록의 근거(숫자) + 연구 근거(src) + 방법, 영향이 큰 순서로
+function statSuggestions(G, ord) {
+  const { recs, byType, byDow, byPr, byProj, byCause, byLead } = G;
   const out = [], late = recs.filter((r) => r.d > 0), rate = recs.length ? late.length / recs.length : 0;
   const avg = late.length ? late.reduce((n, r) => n + r.d, 0) / late.length : 0;
-  const types = Object.entries(byType).filter(([, a]) => a.late >= 2).sort((a, b) => b[1].sum - a[1].sum);
-  types.slice(0, 2).forEach(([k, a], i) => out.push({ score: a.sum + (i ? 0 : 5), lv: a.rate >= 0.5 ? "hi" : "mid",
-    title: `'${(ST_TYPES.find((t) => t.k === k) || ST_OTHER).label}' 업무가 가장 많이 밀립니다`,
-    why: `${a.n}건 중 ${a.late}건 지연(${stPct(a.rate)}) · 평균 ${stDay(a.avg)}일, 최대 ${a.max}일`, how: ST_TYPE_TIPS[k] }));
+  const typeLabel = (k) => (ST_TYPES.find((t) => t.k === k) || ST_OTHER).label;
+  const w = byCause.wait, bg = byCause.big, dn = byCause.do;
+  const waitHit = w && w.late >= 2;
+  const bigHit = bg && bg.late >= 2 && bg.n >= 3 && (!dn || bg.rate >= Math.max(0.3, dn.rate * 1.5));
+  // ① 많이 밀리는 업무 유형 (+ 그 유형의 80% 여유일) — 원인 제안(②③)과 겹치는 유형은 그쪽으로
+  Object.entries(byType).filter(([k, a]) => a.late >= 2 && !(waitHit && k === "reply") && !(bigHit && k === "doc")).sort((a, b) => b[1].sum - a[1].sum).slice(0, 2).forEach(([k, a], i) => {
+    const p80 = stP80(a.recs);
+    out.push({ score: a.sum + (i ? 0 : 5), lv: a.rate >= 0.5 ? "hi" : "mid", src: ST_TYPE_SRC[k],
+      title: `'${typeLabel(k)}' 업무가 가장 많이 밀립니다`,
+      why: `${a.n}건 중 ${a.late}건 지연(${stPct(a.rate)}) · 평균 ${stDay(a.avg)}일, 최대 ${a.max}일${p80 ? ` · 내 기록상 80%를 지키려면 기한 +${p80}일` : ""}`,
+      how: ST_TYPE_TIPS[k] });
+  });
+  // ② 남의 회신·승인 대기
+  if (waitHit) out.push({ score: w.sum + 3, lv: w.rate >= 0.5 ? "hi" : "mid", src: ["knowles", "interrupt"],
+    title: "남의 회신·승인을 기다리는 일이 밀립니다",
+    why: `회신·승인 대기 ${w.n}건 중 ${w.late}건 지연(${stPct(w.rate)}) · 평균 ${stDay(w.avg)}일`,
+    how: "요청할 때 '○일(1주 이내)까지 회신 부탁드립니다'처럼 짧은 기한을 함께 보내세요 — 1개월 기한은 오히려 완료율이 가장 낮았습니다. 기한 전날 '확인 연락' 할 일을 같이 등록하고, 받은 요청은 수시로 끊기지 말고 정해진 시간에 모아서 처리하세요." });
+  // ③ 큰 작업이 바로 할 일보다 많이 밀림 → 쉬운 일 먼저 하는 경향
+  if (bigHit) out.push({ score: bg.sum + 2, lv: "mid", src: ["kc", "segment"],
+    title: "큰 작업이 짧은 일보다 더 자주 밀립니다",
+    why: `큰 작업 ${stPct(bg.rate)} 지연 (평균 ${stDay(bg.avg)}일)${dn ? ` vs 바로 할 일 ${stPct(dn.rate)}` : ""}`,
+    how: "바쁠수록 쉬운 일부터 끝내게 되는데, 실적 연구에선 이게 전체 성과를 떨어뜨렸습니다. 큰 작업은 '초안 → 검토 → 완성'처럼 단계로 나눠 각각 기한을 잡고(나눠 잡으면 더 현실적인 시간이 배정됨), 첫 단계는 오전 집중 시간에 먼저 하세요." });
+  // ④ 먼 기한일수록 밀림
+  const near = [0, 1].map((i) => byLead[i]).filter(Boolean).reduce((m, a) => ({ n: m.n + a.n, late: m.late + a.late }), { n: 0, late: 0 });
+  const far = byLead[3];
+  if (far && far.n >= 3 && far.late >= 2 && near.n >= 3 && far.rate >= (near.late / near.n) * 1.3 + 0.05) out.push({ score: far.sum + 2, lv: "mid", src: ["knowles", "steel"],
+    title: "기한을 멀리 잡은 일이 더 잘 밀립니다",
+    why: `준비 기간 15일 이상 ${stPct(far.rate)} 지연 vs 7일 이내 ${stPct(near.late / near.n)}`,
+    how: "기한이 멀면 미루거나 잊기 쉽습니다(1개월 기한의 완료율이 가장 낮았던 실험 결과와 같은 패턴). 먼 기한의 일은 1주 이내의 중간 기한(예: 자료 수집 완료일)을 따로 할 일로 등록하세요." });
+  // ⑤ 급하지 않은 중요한 일이 밀림 / 긴급 표시 남발
+  const urg = ["urgent", "high"].map((k) => byPr[k]).filter(Boolean).reduce((m, a) => ({ n: m.n + a.n, late: m.late + a.late }), { n: 0, late: 0 });
+  const nor = byPr.normal;
+  if (nor && nor.n >= 4 && nor.late >= 2 && urg.n >= 2 && nor.rate >= urg.late / urg.n + 0.15) out.push({ score: nor.sum, lv: "mid", src: ["urgency"],
+    title: "급하지 않은 일이 급한 일에 계속 밀립니다",
+    why: `'보통' ${stPct(nor.rate)} 지연 vs 긴급·높음 ${stPct(urg.late / urg.n)}`,
+    how: "사람은 성과보다 마감이 임박한 일을 고르는 경향이 있고, 바쁘다고 느낄수록 강해집니다. 하루 시작 때 '보통' 중 결과가 큰 일 1개를 오늘 할 일로 정하고, 급한 일을 고르는 순간 '이 일의 결과가 더 큰가?'를 한 번 떠올리세요(이 조건에서 효과가 줄었습니다)." });
+  else if (urg.n >= 3 && urg.late / urg.n >= 0.4) out.push({ score: urg.late * 2.5, lv: "hi", src: [],
+    title: `긴급·높음 업무의 ${stPct(urg.late / urg.n)}가 밀립니다`, why: `긴급·높음 ${urg.n}건 중 ${urg.late}건 지연`,
+    how: "긴급 표시가 많으면 우선순위가 의미를 잃습니다. 긴급은 하루 3개 이하로 제한하고, 출근 후 첫 30분을 긴급 처리 시간으로 고정하세요." });
+  // ⑥ 오래 밀린 일 / 모호한 제목
+  const stuck = recs.filter((r) => r.open && r.d >= 5);
+  if (stuck.length) out.push({ score: stuck.length * 3, lv: stuck.some((r) => r.d >= 10) ? "hi" : "mid", src: ["mcii", "segment"], title: `${stuck.length}건이 5일 넘게 밀려 있습니다`,
+    why: stuck.sort((a, b) => b.d - a.d).slice(0, 3).map((r) => `${r.t} D+${r.d}`).join(" · "),
+    how: "제목을 '다음 행동' 한 문장으로 바꾸세요 — '만약 ○시에 자리에 앉으면, ○○에게 △△ 메일을 보낸다'처럼 언제·무엇을 정하고, 막힐 만한 장애물 하나를 미리 적어 두면 실행률이 올라갑니다. 끝내 할 수 없는 일은 위임·취소로 정리하세요." });
+  const vg = byCause.vague;
+  if (vg && vg.late >= 2 && vg.rate >= 0.4) out.push({ score: vg.sum, lv: "mid", src: ["mcii", "steel"], title: "제목이 모호한 일이 밀립니다",
+    why: `짧고 분류되지 않는 제목 ${vg.n}건 중 ${vg.late}건 지연`,
+    how: "'무엇을 하면 끝'인지 동사로 적으세요(예: '단가' → '△△ 단가표 3곳 비교해 메일 발송'). 시작이 구체적일수록 하기 싫은 느낌이 줄어 미루기가 줄어듭니다." });
+  // ⑦ 계획 자체가 빠듯 → 참조집단 여유일
+  if (late.length >= 3 && rate >= 0.3 && avg >= 2) { const p80 = stP80(recs);
+    out.push({ score: late.length, lv: "mid", src: ["flyv", "aeon"], title: "계획이 실제보다 빠듯하게 잡히고 있습니다",
+      why: `지연된 ${late.length}건이 평균 ${stDay(avg)}일 늦게 끝남${p80 != null ? ` · 전체 기록상 80%를 지키려면 기한 +${p80}일` : ""}`,
+      how: "감으로 잡은 기한은 대부분 낙관적입니다. 위 '어떤 업무가 밀리나'의 유형별 '80% 여유일'만큼 기한을 늦춰 잡거나, 같은 날 마감을 3건 이하로 나눠 잡으세요. 기록이 쌓일수록 이 여유일이 정확해집니다." }); }
+  // ⑧ 요일 (연구 근거 없음 — 내 기록 패턴)
   const dows = Object.entries(byDow).filter(([, a]) => a.n >= 3).sort((a, b) => b[1].rate - a[1].rate);
-  if (dows.length && dows[0][1].rate >= Math.max(0.3, rate * 1.4)) {
-    const [d, a] = dows[0];
-    out.push({ score: a.late * 2, lv: "mid", title: `${ST_DOW[d]}요일 마감 업무가 자주 밀립니다`,
+  if (dows.length && dows[0][1].rate >= Math.max(0.3, rate * 1.4)) { const [d, a] = dows[0];
+    out.push({ score: a.late * 2, lv: "mid", src: [], title: `${ST_DOW[d]}요일 마감 업무가 자주 밀립니다`,
       why: `${ST_DOW[d]}요일 마감 ${a.n}건 중 ${a.late}건 지연(${stPct(a.rate)}) — 전체 평균 ${stPct(rate)}`,
       how: +d === 1 ? "월요일은 회의·메일 처리로 시간이 부족합니다. 월요일 마감 건은 전주 금요일 오후에 미리 끝내거나 화요일로 잡으세요."
         : +d === 5 ? "금요일 마감은 주말로 넘어가기 쉽습니다. 목요일 오후를 마감 기준으로 당겨 잡으세요."
-        : `${ST_DOW[d]}요일에 고정 업무(회의·보고)가 몰려 있는지 보고, 그날 마감 업무는 하루 앞당겨 잡으세요.` });
-  }
-  const urg = ["urgent", "high"].map((k) => byPr[k]).filter(Boolean).reduce((m, a) => ({ n: m.n + a.n, late: m.late + a.late }), { n: 0, late: 0 });
-  if (urg.n >= 3 && urg.late / urg.n >= 0.4) out.push({ score: urg.late * 2.5, lv: "hi", title: `긴급·높음 업무의 ${stPct(urg.late / urg.n)}가 밀립니다`,
-    why: `긴급·높음 ${urg.n}건 중 ${urg.late}건 지연(${stPct(urg.late / urg.n)})`,
-    how: "긴급 표시가 너무 많으면 우선순위가 무의미해집니다. 긴급은 하루 3개 이하로 제한하고, 출근 후 첫 30분을 긴급 처리 시간으로 고정하세요." });
-  const stuck = recs.filter((r) => r.open && r.d >= 5);
-  if (stuck.length) out.push({ score: stuck.length * 3, lv: stuck.some((r) => r.d >= 10) ? "hi" : "mid", title: `${stuck.length}건이 5일 넘게 밀려 있습니다`,
-    why: stuck.sort((a, b) => b.d - a.d).slice(0, 3).map((r) => `${r.t} D+${r.d}`).join(" · "),
-    how: "오래 밀린 일은 크기가 크거나 다른 사람 회신을 기다리는 경우입니다. 오늘 할 '첫 행동' 하나로 쪼개거나, 위임·취소를 결정해 목록에서 정리하세요." });
-  if (late.length >= 3 && rate >= 0.3 && avg >= 2) out.push({ score: late.length, lv: "mid", title: "계획 자체가 빠듯하게 잡히고 있습니다",
-    why: `지연된 ${late.length}건이 평균 ${stDay(avg)}일 늦게 끝남`,
-    how: `처음 기한을 잡을 때 평균 지연만큼(약 ${Math.ceil(avg)}일) 여유를 두거나, 같은 날 마감을 3건 이하로 나눠 잡으세요.` });
+        : `${ST_DOW[d]}요일에 고정 업무(회의·보고)가 몰려 있는지 보고, 그날 마감 업무는 하루 앞당겨 잡으세요.` }); }
+  // ⑨ 프로젝트
   const pj = Object.entries(byProj).filter(([id, a]) => id !== "-" && a.late >= 1).sort((a, b) => b[1].sum - a[1].sum)[0];
-  if (pj) { const pr = projectById(pj[0]); if (pr) out.push({ score: pj[1].sum, lv: "mid", title: `'${pr.name}' 프로젝트 단계가 밀립니다`,
+  if (pj) { const pr = projectById(pj[0]); if (pr) out.push({ score: pj[1].sum, lv: "mid", src: [], title: `'${pr.name}' 프로젝트 단계가 밀립니다`,
     why: `${pj[1].n}단계 중 ${pj[1].late}단계 지연 · 합계 ${pj[1].sum}일`,
     how: "프로젝트는 막힌 한 단계가 뒤 단계를 함께 밀어냅니다. 지금 D+N이 붙은 단계부터 해결하면 뒤 단계가 같이 당겨집니다." }); }
+  // ⑩ 출고 공정 — 내 실적으로 기본값 보정 (참조집단)
   const st = Object.entries(ord.steps).filter(([, a]) => a.late >= 1).sort((a, b) => b[1].sum - a[1].sum)[0];
-  if (st) out.push({ score: st[1].sum + 4, lv: st[1].avg >= 5 ? "hi" : "mid", title: `출고 공정 중 '${ST_STEP_LABEL[st[0]]}'에서 가장 많이 밀립니다`,
-    why: `${st[1].n}건 중 ${st[1].late}건 지연 · 평균 ${stDay(st[1].avg)}일, 최대 ${st[1].max}일 (최초 계획 대비)`,
-    how: (ST_STEP_TIPS[st[0]] || (() => ""))(Math.ceil(st[1].avg)) });
-  if (ord.fails) out.push({ score: ord.fails * 6, lv: "hi", title: `판정 부적합 ${ord.fails}회`,
+  if (st) { const tip = (ST_STEP_TIPS[st[0]] || (() => ""))(Math.ceil(st[1].avg));
+    out.push({ score: st[1].sum + 4, lv: st[1].avg >= 5 ? "hi" : "mid", src: ["flyv"], title: `출고 공정 중 '${ST_STEP_LABEL[st[0]]}'에서 가장 많이 밀립니다`,
+      why: `${st[1].n}건 중 ${st[1].late}건 지연 · 평균 ${stDay(st[1].avg)}일, 최대 ${st[1].max}일 (최초 계획 대비)`,
+      how: `${tip} 같은 공정의 지난 실적(평균 밀림)을 기본 일정에 반영하는 것이 가장 확실한 보정입니다.` }); }
+  if (ord.fails) out.push({ score: ord.fails * 6, lv: "hi", src: [], title: `판정 부적합 ${ord.fails}회`,
     why: "부적합 1회마다 칭량부터 다시 시작해 최소 판정 기간 + 2일이 밀립니다",
     how: "부적합 원인(원료·공정·설비)을 메모에 남기고, 같은 품목이 반복되면 시생산이나 원료 사전 검사를 넣으세요." });
   const cl = Object.entries(ord.clients).filter(([, a]) => a.late >= 2).sort((a, b) => b[1].late - a[1].late)[0];
-  if (cl) out.push({ score: cl[1].late * 2, lv: "mid", title: `'${cl[0]}' 출고 건이 자주 밀립니다`,
+  if (cl) out.push({ score: cl[1].late * 2, lv: "mid", src: [], title: `'${cl[0]}' 출고 건이 자주 밀립니다`,
     why: `${cl[1].n}건 중 ${cl[1].late}건 지연`,
     how: "해당 거래처는 자재·원료 공급이나 사양 확정이 늦는 경우가 많습니다. 발주 받을 때 확정일(사양·자재 입고)을 같이 받아 두세요." });
-  return out.sort((a, b) => b.score - a.score).slice(0, 6);
+  return out.sort((a, b) => b.score - a.score).slice(0, 8);
 }
+const stSrcHtml = (keys) => { const ks = stSrc(keys);
+  return `<div class="st-src">근거: ${ks.length ? ks.map((k) => `<a href="${ST_SOURCES[k].url}" target="_blank" rel="noopener" title="${esc(ST_SOURCES[k].title)}">${esc(ST_SOURCES[k].cite)}</a>`).join(" · ") + " + 내 기록" : "내 기록 패턴 (직접 연결되는 연구 없음)"}</div>`; };
 
 function renderStats() {
-  const days = ui.statDays, today = todayStr();
+  const days = ui.statDays;
   const recs = statCollect(days), late = recs.filter((r) => r.d > 0);
   const rate = recs.length ? late.length / recs.length : 0;
   const avg = late.length ? late.reduce((n, r) => n + r.d, 0) / late.length : 0;
   const stuck = recs.filter((r) => r.open && r.d > 0);
-  const byType = statGroup(recs, (r) => stTypeOf(r.t).k);
-  const byDow = statGroup(recs, (r) => parseYMD(r.orig).getDay());
-  const byPr = statGroup(recs, (r) => r.pr || "normal");
-  const byCat = statGroup(recs, (r) => r.cat);
-  const byKind = statGroup(recs, (r) => r.k);
-  const byProj = statGroup(recs, (r) => r.pj || "-");
+  const G = { recs,
+    byType: statGroup(recs, (r) => stTypeOf(r.t).k), byDow: statGroup(recs, (r) => parseYMD(r.orig).getDay()),
+    byPr: statGroup(recs, (r) => r.pr || "normal"), byProj: statGroup(recs, (r) => r.pj || "-"),
+    byCause: statGroup(recs, stCauseOf), byLead: statGroup(recs, stLeadOf) };
+  const byCat = statGroup(recs, (r) => r.cat), byKind = statGroup(recs, (r) => r.k);
   const ord = statOrders(days);
-  const sugg = statSuggestions(recs, byType, byDow, byPr, byProj, ord);
+  const sugg = statSuggestions(G, ord);
+  const onTime = recs.filter((r) => !r.open);
+  const acc = onTime.length ? onTime.filter((r) => r.d === 0).length / onTime.length : null;
 
-  let h = `<div class="view-head"><div><h2>통계 · 지연 분석</h2><div class="sub">원래 기한 대비 얼마나 밀렸는지로 업무 유형·요일·공정별 패턴을 찾고 개선 방법을 제안합니다</div></div>
+  let h = `<div class="view-head"><div><h2>통계 · 지연 분석</h2><div class="sub">원래 기한 대비 얼마나 밀렸는지로 업무 유형·원인·준비 기간·공정별 패턴을 찾고, 연구 근거가 있는 개선 방법을 제안합니다</div></div>
     <div class="seg">${stPeriods.map(([k, l]) => `<button type="button" class="${+k === days ? "active" : ""}" data-st-days="${k}">${l}</button>`).join("")}</div></div>`;
   h += `<div class="tt-kpis st-kpis">
     <div class="tt-kpi"><div class="k">기한 지난 업무</div><div class="v">${recs.length}건</div></div>
     <div class="tt-kpi ${rate >= 0.3 ? "warn" : ""}"><div class="k">지연 발생</div><div class="v">${late.length}건 <small>${stPct(rate)}</small></div></div>
     <div class="tt-kpi"><div class="k">평균 지연</div><div class="v">${stDay(avg)}일</div></div>
+    <div class="tt-kpi" title="끝난 일 중 원래 기한 안에 끝낸 비율 — 계획이 얼마나 현실적인지"><div class="k">계획 정확도</div><div class="v">${acc == null ? "—" : stPct(acc)}</div></div>
     <div class="tt-kpi ${stuck.length ? "bad" : ""}"><div class="k">지금 밀려 있는 것</div><div class="v">${stuck.length}건</div></div>
     <div class="tt-kpi ${ord.lateOrders ? "warn" : ""}"><div class="k">계획보다 밀린 출고 건</div><div class="v">${ord.lateOrders}/${ord.orders}</div></div></div>`;
   if (recs.length < 10) h += `<div class="st-note">분석할 기록이 아직 ${recs.length}건입니다. 2~3주 쓰면서 끝난 일을 체크하면 패턴이 더 정확해집니다. (완료 후 1주일 지나 자동 정리되는 항목도 통계용 기록은 남겨 둡니다)</div>`;
 
   // 제안
-  h += `<section class="st-sec"><h3>개선 제안</h3>`;
-  h += sugg.length ? `<div class="st-sugg">${sugg.map((s, i) => `<div class="st-s ${s.lv}"><div class="st-s-n">${i + 1}</div><div><b>${esc(s.title)}</b><div class="st-why">${esc(s.why)}</div><p>${esc(s.how)}</p></div></div>`).join("")}</div>`
+  h += `<section class="st-sec"><h3>개선 제안 <small>내 기록의 패턴 + 연구 근거 · 근거를 누르면 논문이 열립니다</small></h3>`;
+  h += sugg.length ? `<div class="st-sugg">${sugg.map((s, i) => `<div class="st-s ${s.lv}"><div class="st-s-n">${i + 1}</div><div><b>${esc(s.title)}</b><div class="st-why">${esc(s.why)}</div><p>${esc(s.how)}</p>${stSrcHtml(s.src)}</div></div>`).join("")}</div>`
     : `<div class="st-empty">${late.length ? "뚜렷한 지연 패턴이 아직 없습니다." : "이 기간에 밀린 업무가 없습니다. 지금처럼 끝난 일을 바로 체크해 주세요."}</div>`;
   h += `</section>`;
 
-  // 막대: 유형별 (지연 건수 · 평균·지연율 함께)
   const bars = (rows, fmt) => {
     const max = Math.max(1, ...rows.map((r) => r.v));
     return `<div class="st-bars">${rows.map((r) => `<div class="st-bar${r.a.n < 3 ? " few" : ""}" title="${esc(r.tip)}${r.a.n < 3 ? " (건수가 적어 참고용)" : ""}"><span class="st-bl">${esc(r.l)}</span><span class="st-bt">${r.v > 0 ? `<i style="width:${(r.v / max) * 100}%"></i>` : ""}</span><span class="st-bv">${fmt(r)}</span></div>`).join("")}</div>`;
   };
-  const typeRows = [...ST_TYPES, ST_OTHER].map((t) => ({ t, a: byType[t.k] })).filter((x) => x.a).sort((x, y) => y.a.sum - x.a.sum || y.a.late - x.a.late)
-    .map(({ t, a }) => ({ l: t.label, v: a.late, a, tip: `${t.label}: ${a.n}건 중 ${a.late}건 지연, 평균 ${stDay(a.avg)}일, 최대 ${a.max}일` }));
+  const p80Txt = (a) => { const p = stP80(a.recs); return p == null ? "" : p ? ` · 80%↑ +${p}일` : " · 여유 불필요"; };
   h += `<div class="st-grid">`;
-  h += `<section class="st-sec"><h3>어떤 업무가 밀리나 <small>업무 유형별 지연 건수 (제목 키워드로 분류)</small></h3>${typeRows.length ? bars(typeRows, (r) => `<b>${r.a.late}</b>/${r.a.n}건 · 평균 ${stDay(r.a.avg)}일`) : `<div class="st-empty">기록 없음</div>`}</section>`;
-  const dowRows = [1, 2, 3, 4, 5, 6, 0].filter((d) => byDow[d]).map((d) => { const a = byDow[d]; return { l: ST_DOW[d] + "요일", v: a.rate, a, tip: `${ST_DOW[d]}요일 마감 ${a.n}건 중 ${a.late}건 지연` }; });
+  const typeRows = [...ST_TYPES, ST_OTHER].map((t) => ({ t, a: G.byType[t.k] })).filter((x) => x.a).sort((x, y) => y.a.sum - x.a.sum || y.a.late - x.a.late)
+    .map(({ t, a }) => ({ l: t.label, v: a.late, a, tip: `${t.label}: ${a.n}건 중 ${a.late}건 지연, 평균 ${stDay(a.avg)}일, 최대 ${a.max}일${stP80(a.recs) != null ? ` · 기한을 +${stP80(a.recs)}일 잡으면 내 기록상 80%를 지킴` : ""}` }));
+  h += `<section class="st-sec"><h3>어떤 업무가 밀리나 <small>업무 유형별 지연 건수 · '80%↑ +N일' = 이만큼 여유를 두면 내 기록상 80%를 지킴</small></h3>${typeRows.length ? bars(typeRows, (r) => `<b>${r.a.late}</b>/${r.a.n}건 · 평균 ${stDay(r.a.avg)}일${p80Txt(r.a)}`) : `<div class="st-empty">기록 없음</div>`}</section>`;
+  const causeRows = ST_CAUSES.filter((c) => G.byCause[c.k]).map((c) => { const a = G.byCause[c.k]; return { l: c.label, v: a.rate, a, tip: `${c.label} — ${c.hint}: ${a.n}건 중 ${a.late}건 지연` }; });
+  h += `<section class="st-sec"><h3>왜 밀리나 <small>원인 유형별 지연율 (제목으로 추정 · Steel 2007의 미루기 요인 기준)</small></h3>${causeRows.length ? bars(causeRows, (r) => `<b>${stPct(r.a.rate)}</b> · ${r.a.late}/${r.a.n}건`) : `<div class="st-empty">기록 없음</div>`}</section>`;
+  const leadRows = ST_LEADS.map((x, i) => ({ x, a: G.byLead[i] })).filter((y) => y.a).map(({ x, a }) => ({ l: x[2], v: a.rate, a, tip: `등록부터 기한까지 ${x[2]}: ${a.n}건 중 ${a.late}건 지연` }));
+  h += `<section class="st-sec"><h3>기한을 얼마나 멀리 잡았나 <small>등록일 → 원래 기한(준비 기간)별 지연율 · 긴 기한일수록 미루기 쉬움(Knowles 외 2022)</small></h3>${leadRows.length ? bars(leadRows, (r) => `<b>${stPct(r.a.rate)}</b> · ${r.a.late}/${r.a.n}건`) : `<div class="st-empty">등록일이 기록된 항목이 아직 없습니다</div>`}</section>`;
+  const dowRows = [1, 2, 3, 4, 5, 6, 0].filter((d) => G.byDow[d]).map((d) => { const a = G.byDow[d]; return { l: ST_DOW[d] + "요일", v: a.rate, a, tip: `${ST_DOW[d]}요일 마감 ${a.n}건 중 ${a.late}건 지연` }; });
   h += `<section class="st-sec"><h3>언제 밀리나 <small>원래 마감 요일별 지연율 · 흐린 막대는 3건 미만(참고용)</small></h3>${dowRows.length ? bars(dowRows, (r) => `<b>${stPct(r.a.rate)}</b> · ${r.a.late}/${r.a.n}건`) : `<div class="st-empty">기록 없음</div>`}</section>`;
-  // 분류 표
   const row = (l, a) => a ? `<tr><th>${l}</th><td>${a.n}</td><td>${a.late}</td><td>${stPct(a.rate)}</td><td>${stDay(a.avg)}일</td></tr>` : "";
   h += `<section class="st-sec"><h3>구분별 <small>건수 · 지연 · 지연율 · 평균 지연</small></h3><table class="st-table"><thead><tr><th></th><th>건수</th><th>지연</th><th>지연율</th><th>평균</th></tr></thead><tbody>
-    ${row("긴급", byPr.urgent)}${row("높음", byPr.high)}${row("보통", byPr.normal)}${row("업무", byCat.work)}${row("개인", byCat.personal)}${row("할 일", byKind.todo)}${row("일정", byKind.event)}
-    ${Object.entries(byProj).filter(([id]) => id !== "-").map(([id, a]) => { const p = projectById(id); return p ? row(`📁 ${esc(p.name)}`, a) : ""; }).join("")}</tbody></table></section>`;
-  // 출고 공정별
+    ${row("긴급", G.byPr.urgent)}${row("높음", G.byPr.high)}${row("보통", G.byPr.normal)}${row("업무", byCat.work)}${row("개인", byCat.personal)}${row("할 일", byKind.todo)}${row("일정", byKind.event)}
+    ${Object.entries(G.byProj).filter(([id]) => id !== "-").map(([id, a]) => { const p = projectById(id); return p ? row(`📁 ${esc(p.name)}`, a) : ""; }).join("")}</tbody></table></section>`;
   const stepRows = ["weigh", "mfg", "judge", "mat", "setup", "move", "prod", "part", "ship"].filter((k) => ord.steps[k])
     .map((k) => { const a = ord.steps[k]; return { l: ST_STEP_LABEL[k], v: a.avg, a, tip: `${ST_STEP_LABEL[k]}: ${a.n}건 중 ${a.late}건이 최초 계획보다 밀림, 최대 ${a.max}일` }; });
   h += `<section class="st-sec"><h3>출고 공정별 <small>타임테이블 · 최초 계획 대비 평균 밀림(일)</small></h3>${stepRows.length ? bars(stepRows, (r) => `<b>${stDay(r.a.avg)}일</b> · ${r.a.late}/${r.a.n}건`) + (ord.fails ? `<div class="st-foot">판정 부적합 ${ord.fails}회</div>` : "") : `<div class="st-empty">출고 건이 없습니다</div>`}</section>`;
   h += `</div>`;
 
-  // 주별 추이 (원래 마감 주 기준 지연 건수)
+  // 주별 추이
   const nW = days ? Math.round(days / 7) : 12, w0 = startOfWeek(new Date());
   const weeks = [...Array(nW)].map((_, i) => ymd(addDays(w0, -7 * (nW - 1 - i))));
   const wk = weeks.map((ws, i) => { const we = i < nW - 1 ? weeks[i + 1] : "9999"; const rs = recs.filter((r) => r.orig >= ws && r.orig < we); return { ws, n: rs.length, late: rs.filter((r) => r.d > 0).length }; });
-  const wmax = Math.max(1, ...wk.map((w) => w.late));
-  h += `<section class="st-sec"><h3>주별 추이 <small>원래 마감 주 기준 지연 건수</small></h3><div class="st-cols">${wk.map((w) => `<div class="st-col" title="${fmtMD(w.ws)} 주: ${w.n}건 중 ${w.late}건 지연"><span class="st-cv">${w.late || ""}</span><span class="st-ct"><i style="height:${(w.late / wmax) * 100}%"></i></span><span class="st-cl">${fmtMD(w.ws)}</span></div>`).join("")}</div></section>`;
+  const wmax = Math.max(1, ...wk.map((x) => x.late));
+  h += `<section class="st-sec"><h3>주별 추이 <small>원래 마감 주 기준 지연 건수</small></h3><div class="st-cols">${wk.map((x) => `<div class="st-col" title="${fmtMD(x.ws)} 주: ${x.n}건 중 ${x.late}건 지연"><span class="st-cv">${x.late || ""}</span><span class="st-ct"><i style="height:${(x.late / wmax) * 100}%"></i></span><span class="st-cl">${fmtMD(x.ws)}</span></div>`).join("")}</div></section>`;
 
-  // 오래 밀린 항목
   const top = recs.filter((r) => r.d > 0 && !r.arch).sort((a, b) => b.d - a.d).slice(0, 8);
-  h += `<section class="st-sec"><h3>가장 오래 밀린 업무 <small>눌러서 열기</small></h3>${top.length ? `<div class="st-list">${top.map((r) => `<div class="st-li" ${r.k === "todo" ? `data-edit-todo="${r.id}"` : `data-edit-event="${r.id}"`}><em class="tt-dn${ttLateCls(r.d)}">D+${r.d}</em><span class="st-lt">${esc(r.t)}</span><span class="st-lm">${stTypeOf(r.t).label} · ${fmtMD(r.orig)} → ${r.open ? "진행 중" : fmtMD(r.end) + " 완료"}</span></div>`).join("")}</div>` : `<div class="st-empty">없음</div>`}</section>`;
+  h += `<section class="st-sec"><h3>가장 오래 밀린 업무 <small>눌러서 열기</small></h3>${top.length ? `<div class="st-list">${top.map((r) => `<div class="st-li" ${r.k === "todo" ? `data-edit-todo="${r.id}"` : `data-edit-event="${r.id}"`}><em class="tt-dn${ttLateCls(r.d)}">D+${r.d}</em><span class="st-lt">${esc(r.t)}</span><span class="st-lm">${(ST_CAUSES.find((c) => c.k === stCauseOf(r)) || {}).label} · ${fmtMD(r.orig)} → ${r.open ? "진행 중" : fmtMD(r.end) + " 완료"}</span></div>`).join("")}</div>` : `<div class="st-empty">없음</div>`}</section>`;
+
+  // 근거 연구
+  const srcRow = ([k, s]) => `<li><a href="${s.url}" target="_blank" rel="noopener"><b>${esc(s.cite)}</b> ${esc(s.title)}</a> <i>${esc(s.venue)}</i>${s.recent ? ` <span class="st-tag">최근 5년</span>` : ` <span class="st-tag old">기초·고인용</span>`}<div>${esc(s.key)}</div><div class="st-use">적용: ${esc(s.use)}</div></li>`;
+  h += `<details class="st-sec st-refs"><summary><h3>근거 연구 ${Object.keys(ST_SOURCES).length}편 <small>메타분석·고인용 연구 중 이 앱 기록으로 적용 가능한 것만</small></h3></summary>
+    <ol>${Object.entries(ST_SOURCES).sort((a, b) => b[1].recent - a[1].recent).map(srcRow).join("")}</ol>
+    <p class="st-refnote">업무 유형·원인 분류는 제목 키워드로 추정한 것이고, 연구 결과는 평균적인 경향입니다. 제안은 내 기록의 숫자와 함께 보시고, 맞지 않는 제안은 넘기셔도 됩니다. 요일별 패턴처럼 직접 연결되는 연구가 없는 항목은 '내 기록 패턴'으로 표시합니다.</p></details>`;
   return h;
 }
 function statClick(e) {
