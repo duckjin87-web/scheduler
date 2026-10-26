@@ -566,6 +566,53 @@
   .tt-srow.over .tt-ss{color:var(--late-crit);}
   @media (max-width:640px){ .tt-grid{--tt-gut:112px;} .tt-g .mt{display:none;}
     .tt-kpis{gap:6px;} .tt-kpi{flex:1 1 28%;padding:5px 8px;} .tt-kpi .v{font-size:15px;} .tt-kpi .k{font-size:10px;} }
+  /* ================= 통계 (지연 분석) ================= */
+  .st-kpis .v small{font-size:12px;font-weight:700;color:var(--text-faint);margin-left:2px;}
+  .st-note{font-size:12px;color:var(--text-soft);background:var(--surface-2);border:1px dashed var(--border-strong);border-radius:10px;padding:8px 12px;margin-bottom:12px;}
+  .st-sec{border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:12px 14px;margin-bottom:12px;min-width:0;}
+  .st-sec h3{margin:0 0 10px;font-size:13.5px;font-weight:800;}
+  .st-sec h3 small{font-size:11px;font-weight:600;color:var(--text-faint);margin-left:6px;}
+  .st-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px;}
+  @media (max-width:900px){ .st-grid{grid-template-columns:1fr;} }
+  .st-empty{font-size:12.5px;color:var(--text-faint);padding:4px 0;}
+  .st-sugg{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px;}
+  .st-s{display:flex;gap:10px;border:1px solid var(--border);border-left:4px solid var(--late-warn);border-radius:10px;padding:10px 12px;background:var(--surface-2);min-width:0;}
+  .st-s.hi{border-left-color:var(--late-crit);}
+  .st-s-n{flex:none;width:22px;height:22px;border-radius:50%;background:var(--surface-3);color:var(--text-soft);font-size:11.5px;font-weight:800;display:flex;align-items:center;justify-content:center;}
+  .st-s b{font-size:13px;line-height:1.4;display:block;}
+  .st-why{font-size:11.5px;color:var(--text-faint);margin:3px 0 5px;font-variant-numeric:tabular-nums;}
+  .st-s p{margin:0;font-size:12.5px;color:var(--text-soft);line-height:1.55;}
+  .st-bars{display:flex;flex-direction:column;gap:7px;}
+  .st-bar{display:grid;grid-template-columns:96px minmax(0,1fr) auto;align-items:center;gap:8px;font-size:12px;border-radius:6px;padding:1px 2px;}
+  .st-bar:hover{background:var(--surface-2);}
+  .st-bar.few .st-bt i{opacity:.4;}   /* 3건 미만: 참고용으로 흐리게 */
+  .st-bl{font-weight:700;color:var(--text-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .st-bt{height:12px;background:var(--surface-2);border-radius:4px;overflow:hidden;}
+  .st-bt i{display:block;height:100%;background:var(--late-warn);border-radius:0 4px 4px 0;min-width:3px;}
+  .st-bv{font-size:11.5px;color:var(--text-faint);white-space:nowrap;font-variant-numeric:tabular-nums;}
+  .st-bv b{color:var(--text);}
+  .st-foot{font-size:11.5px;font-weight:700;color:var(--late-crit);margin-top:8px;}
+  .st-table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums;}
+  .st-table th,.st-table td{padding:5px 6px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap;}
+  .st-table th:first-child{text-align:left;font-weight:700;color:var(--text-soft);max-width:160px;overflow:hidden;text-overflow:ellipsis;}
+  .st-table thead th{font-size:11px;color:var(--text-faint);font-weight:700;}
+  .st-table tr:last-child th,.st-table tr:last-child td{border-bottom:none;}
+  .st-cols{display:flex;align-items:flex-end;gap:6px;height:130px;}
+  .st-col{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;align-items:center;gap:3px;border-radius:6px;}
+  .st-col:hover{background:var(--surface-2);}
+  .st-ct{flex:1;width:100%;max-width:34px;display:flex;align-items:flex-end;}
+  .st-ct i{display:block;width:100%;background:var(--late-warn);border-radius:4px 4px 0 0;min-height:0;}
+  .st-cv{font-size:11px;font-weight:800;color:var(--text);min-height:14px;font-variant-numeric:tabular-nums;}
+  .st-cl{font-size:10px;color:var(--text-faint);font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .st-list{display:flex;flex-direction:column;}
+  .st-li{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 4px;border-bottom:1px solid var(--border);cursor:pointer;font-size:12.5px;}
+  .st-li:last-child{border-bottom:none;}
+  .st-li:hover{background:var(--surface-2);}
+  .st-li .tt-dn{margin:0;justify-self:start;font-size:10.5px;padding:2px 6px;background:color-mix(in srgb, var(--lc, var(--late-warn)) 15%, var(--surface));box-shadow:inset 0 0 0 var(--lw, 1px) var(--lc, var(--late-warn));}
+  .st-li .tt-dn:is(.tt-late-4,.tt-late-5){background:var(--lc);color:#fff;}
+  .st-lt{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .st-lm{font-size:11px;color:var(--text-faint);white-space:nowrap;font-variant-numeric:tabular-nums;}
+  @media (max-width:640px){ .st-li{grid-template-columns:44px minmax(0,1fr);} .st-lm{grid-column:2;} .st-bar{grid-template-columns:76px minmax(0,1fr);} .st-bv{grid-column:2;} .st-sugg{grid-template-columns:1fr;} }
   /* ---------- 공휴일: 빨간 날짜 + 파스텔 음영 ---------- */
   .week-grid .head.red{color:var(--hol);}
   .week-grid .head.red .num{color:var(--hol);}
@@ -1170,6 +1217,7 @@
       <button class="tab" data-view="calendar"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>캘린더</button>
       <button class="tab" data-view="projects"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="11" height="4" rx="1.5"/><rect x="7" y="10" width="13" height="4" rx="1.5"/><rect x="5" y="16" width="9" height="4" rx="1.5"/></svg>프로젝트</button>
       <button class="tab" data-view="timetable"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M3 4v16h18"/><rect x="6" y="6" width="7" height="3" rx="1"/><rect x="10" y="11" width="9" height="3" rx="1"/><rect x="8" y="16" width="5" height="2.5" rx="1"/></svg>타임테이블</button>
+      <button class="tab" data-view="stats"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M3 20h18"/><path d="M6 20v-6M11 20V8M16 20v-9M21 20V4" transform="translate(-1 0)"/></svg>통계</button>
     </div>
     <div class="tab-sep tb-desktop"></div>
     <div class="chip-row" data-chips></div>
@@ -1194,6 +1242,7 @@
     <button data-view="calendar"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>캘린더</button>
     <button data-view="projects"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="11" height="4" rx="1.5"/><rect x="7" y="10" width="13" height="4" rx="1.5"/><rect x="5" y="16" width="9" height="4" rx="1.5"/></svg>프로젝트</button>
     <button data-view="timetable"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M3 4v16h18"/><rect x="6" y="6" width="7" height="3" rx="1"/><rect x="10" y="11" width="9" height="3" rx="1"/><rect x="8" y="16" width="5" height="2.5" rx="1"/></svg>타임테이블</button>
+    <button data-view="stats"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M3 20h18"/><path d="M6 20v-6M11 20V8M16 20v-9M21 20V4" transform="translate(-1 0)"/></svg>통계</button>
     <button data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.34 1.87l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.7 1.7 0 00-1.87-.34 1.7 1.7 0 00-1 1.55V21a2 2 0 11-4 0v-.09a1.7 1.7 0 00-1-1.55 1.7 1.7 0 00-1.87.34l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.7 1.7 0 00.34-1.87 1.7 1.7 0 00-1.55-1H3a2 2 0 110-4h.09a1.7 1.7 0 001.55-1 1.7 1.7 0 00-.34-1.87l-.06-.06a2 2 0 112.83-2.83l.06.06a1.7 1.7 0 001.87.34H9a1.7 1.7 0 001-1.55V3a2 2 0 114 0v.09a1.7 1.7 0 001 1.55 1.7 1.7 0 001.87-.34l.06-.06a2 2 0 112.83 2.83l-.06.06a1.7 1.7 0 00-.34 1.87V9a1.7 1.7 0 001.55 1H21a2 2 0 110 4h-.09a1.7 1.7 0 00-1.55 1z"/></svg>설정</button>
   </nav>
 
@@ -1239,7 +1288,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-10-20 · 타임테이블 판정 D+1~5·지연 단계·입력창 정리";
+const APP_VERSION = "2026-10-26 · 통계(지연 분석·개선 제안)·알림 확인 버튼";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1486,10 +1535,12 @@ const REMIND_LABEL = { none: "없음", "0": "정시", "5": "5분 전", "10": "10
 const PROJECT_COLORS = ["#7C6FB0", "#9B5DE5", "#A0509A", "#D1478A", "#4B4FA6", "#3E77B5", "#2A95C5", "#1F8A9E", "#5D7186", "#454B55"];
 const PROJECT_COLOR_MIGRATE = { "#2F8F6B": "#2A95C5", "#C77F3A": "#A0509A", "#C25B7E": "#4B4FA6", "#5E7D2F": "#5D7186", "#8A6D3B": "#3E77B5" };
 
+const ST_ARCHIVE_MAX = 2000;                // 통계용 완료 기록 보관 개수
+
 /* ---------- Store (데이터 계층) ---------- */
 const Store = (() => {
   const KEY = "scheduler:v1";
-  let state = { version: 2, events: [], todos: [], projects: [], orders: [] };
+  let state = { version: 2, events: [], todos: [], projects: [], orders: [], archive: [] };
   const subs = [];
 
   function normalizeEvent(e) {
@@ -1582,7 +1633,8 @@ const Store = (() => {
       if (raw) { const p = JSON.parse(raw); if (p && Array.isArray(p.events) && Array.isArray(p.todos)) {
         state = { version: 2, events: p.events.map(normalizeEvent), todos: p.todos.map(normalizeTodo),
           projects: Array.isArray(p.projects) ? p.projects.map(normalizeProject) : [],
-          orders: Array.isArray(p.orders) ? p.orders.map(normalizeOrder) : [] }; return; } }
+          orders: Array.isArray(p.orders) ? p.orders.map(normalizeOrder) : [],
+          archive: Array.isArray(p.archive) ? p.archive.slice(-ST_ARCHIVE_MAX) : [] }; return; } }
     } catch (e) {}
     seed(); persist();
   }
@@ -1610,6 +1662,10 @@ const Store = (() => {
     toggleEvent(id) { const e = state.events.find((x) => x.id === id); if (e) { e.done = !e.done; e.doneAt = e.done ? Date.now() : null; } emit(); },
     purgeOld() {
       const cut = Date.now() - 7 * 86400000; let n = 0;
+      // 지우기 전에 통계용 기록(제목·분류·원래 날짜·지연일)만 남김
+      const arch = (list, kind) => list.forEach((x) => { if (!x.projectId && x.done && x.doneAt && x.doneAt < cut) { const r = statRecordOf(x, kind); if (r) { delete r.open; delete r.id; (state.archive = state.archive || []).push(r); } } });
+      arch(state.todos, "todo"); arch(state.events.filter((e) => !e.allDay), "event");
+      if (state.archive && state.archive.length > ST_ARCHIVE_MAX) state.archive = state.archive.slice(-ST_ARCHIVE_MAX);
       // 프로젝트 단계는 진행률 계산에 필요하므로 자동 삭제하지 않음
       const kt = state.todos.filter((t) => t.projectId || !(t.done && t.doneAt && t.doneAt < cut)); n += state.todos.length - kt.length; state.todos = kt;
       const ke = state.events.filter((e) => e.projectId || !(e.done && e.doneAt && e.doneAt < cut)); n += state.events.length - ke.length; state.events = ke;
@@ -1676,8 +1732,8 @@ const Store = (() => {
       if (n) emit(); return n;
     },
     rollover() { const today = todayStr(); let n = 0; state.todos.forEach((t) => { if (!t.done && !t.projectId && t.due && t.due < today) { t.rolledFrom = t.due; t.due = today; n++; } }); if (n) emit(); return n; },
-    replaceAll(next) { if (next && Array.isArray(next.events) && Array.isArray(next.todos)) { state = { version: 2, events: next.events.map(normalizeEvent), todos: next.todos.map(normalizeTodo), projects: Array.isArray(next.projects) ? next.projects.map(normalizeProject) : [], orders: Array.isArray(next.orders) ? next.orders.map(normalizeOrder) : [] }; emit(); return true; } return false; },
-    exportJSON() { return JSON.stringify({ version: 2, events: state.events, todos: state.todos, projects: state.projects, orders: state.orders }, null, 2); },
+    replaceAll(next) { if (next && Array.isArray(next.events) && Array.isArray(next.todos)) { state = { version: 2, events: next.events.map(normalizeEvent), todos: next.todos.map(normalizeTodo), projects: Array.isArray(next.projects) ? next.projects.map(normalizeProject) : [], orders: Array.isArray(next.orders) ? next.orders.map(normalizeOrder) : [], archive: Array.isArray(next.archive) ? next.archive.slice(-ST_ARCHIVE_MAX) : [] }; emit(); return true; } return false; },
+    exportJSON() { return JSON.stringify({ version: 2, events: state.events, todos: state.todos, projects: state.projects, orders: state.orders, archive: state.archive || [] }, null, 2); },
     // ---- 타임테이블 출고 건 ----
     normalizeOrder,
     addOrder(o) { const no = normalizeOrder({ ...o, plan0: {}, adj: {}, log: [] }); ttBaseline(no, false); state.orders.push(no); emit(); return no.id; },
@@ -1727,6 +1783,7 @@ const Store = (() => {
 const ui = { view: "today", cat: "all", search: "", todoFilter: "active", weekRef: startOfWeek(new Date()),
   calMode: "week", monthRef: startOfMonth(new Date()), workweek: false, bandOpen: {},
   ttRef: startOfWeek(new Date()), ttSpan: 14, ttRulesOpen: false, ttShowDone: false,   // 타임테이블
+  statDays: 28,                                                                        // 통계 기간 (0 = 전체)
   splitW: 300, dashCollapsed: false, dashExp: { summary: false, important: false } };
 function loadUI() {
   try {
@@ -1734,13 +1791,14 @@ function loadUI() {
     if (typeof p.workweek === "boolean") ui.workweek = p.workweek;
     if (p.calMode === "week" || p.calMode === "month") ui.calMode = p.calMode;
     if ([7, 14, 28].includes(p.ttSpan)) ui.ttSpan = p.ttSpan;
+    if ([0, 28, 84].includes(p.statDays)) ui.statDays = p.statDays;
     if (p.view && p.view !== "todo") ui.view = p.view; // 할일 탭 제거됨
     if (typeof p.splitW === "number") ui.splitW = Math.max(180, Math.min(560, p.splitW));
     if (typeof p.dashCollapsed === "boolean") ui.dashCollapsed = p.dashCollapsed;
     if (p.dashExp) ui.dashExp = { summary: !!p.dashExp.summary, important: !!p.dashExp.important };
   } catch (e) {}
 }
-function saveUI() { try { localStorage.setItem("scheduler:ui", JSON.stringify({ workweek: ui.workweek, calMode: ui.calMode, ttSpan: ui.ttSpan, view: ui.view, splitW: ui.splitW, dashCollapsed: ui.dashCollapsed, dashExp: ui.dashExp })); } catch (e) {} }
+function saveUI() { try { localStorage.setItem("scheduler:ui", JSON.stringify({ workweek: ui.workweek, calMode: ui.calMode, ttSpan: ui.ttSpan, statDays: ui.statDays, view: ui.view, splitW: ui.splitW, dashCollapsed: ui.dashCollapsed, dashExp: ui.dashExp })); } catch (e) {} }
 
 /* ---------- 필터 & 반복 전개 ---------- */
 function matchCat(x) { return ui.cat === "all" || x.cat === ui.cat; }
@@ -2524,6 +2582,217 @@ function renderOrderModal(id, copyFrom) {
 }
 
 
+/* ================= 통계 (지연 분석 · 개선 제안) ================= */
+// 업무 유형: 제목 키워드로 분류 (위에서부터 먼저 맞는 것)
+const ST_TYPES = [
+  { k: "reply", label: "회신·연락", re: /회신|연락|통화|전화|메일|답변|문의|요청|공유|전달/ },
+  { k: "quote", label: "견적·발주·계약", re: /견적|발주|구매|단가|계약|주문|정산|결제|청구/ },
+  { k: "doc", label: "문서·보고", re: /작성|보고|자료|정리|문서|기안|보고서|서류|스캔|등록|입력/ },
+  { k: "meet", label: "회의·방문", re: /회의|미팅|면담|방문|교육|세미나|출장/ },
+  { k: "quality", label: "품질·인증", re: /품질|인증|검사|시험|판정|성적서|coa|클레임|부적합|심사|감사/i },
+  { k: "ship", label: "샘플·출고", re: /샘플|발송|출고|납품|택배|배송|입고/ },
+  { k: "prod", label: "생산·자재", re: /생산|capa|자재|원료|제조|셋팅|라인|칭량|금형|칼선/i },
+  { k: "check", label: "확인·검토", re: /확인|검토|체크|점검|평가|분석/ },
+];
+const ST_OTHER = { k: "etc", label: "기타" };
+const stTypeOf = (title) => ST_TYPES.find((t) => t.re.test(title || "")) || ST_OTHER;
+// 유형별 개선 방법 (실무에서 흔히 쓰는 방식)
+const ST_TYPE_TIPS = {
+  reply: "받은 날 바로 처리하는 '회신 시간'(오전·오후 15분씩)을 고정하고, 자주 쓰는 답변은 템플릿으로 만들어 두세요. 상대 답을 기다리는 건이면 마감일에 '독촉'까지 포함해 잡으세요.",
+  quote: "견적·발주는 상대 회신 대기 시간이 길어 밀리기 쉽습니다. 요청한 날 '회신 기한'을 상대에게 같이 알리고, 기한 하루 전 확인 할 일을 함께 등록하세요.",
+  doc: "문서 작업은 한 번에 끝내려다 밀립니다. '초안 30분' → '완성'처럼 2단계로 쪼개고, 초안 단계를 마감 2일 전에 두세요.",
+  meet: "회의·방문 일정이 이월로 잡히는 건 대부분 끝난 뒤 체크를 안 해서입니다. 끝나면 바로 체크하고, 실제 미뤄진 경우엔 새 날짜로 옮겨 주세요.",
+  quality: "시험·판정은 외부 일정에 묶입니다. 의뢰를 제조 당일 접수하고, 실제 걸린 일수로 판정 기간(D+N)을 맞춰 두세요.",
+  ship: "출고·발송은 전날 서류·포장·차량 확인을 체크리스트로 묶어 두면 당일 지연이 줄어듭니다.",
+  prod: "생산·자재 일정은 입고 확인이 늦어 밀리는 경우가 많습니다. 셋팅 3영업일 전 '입고 확인' 할 일을 같이 등록하세요.",
+  check: "확인·검토 업무는 기준이 모호하면 미뤄집니다. '무엇을 보면 끝'인지 제목에 적고(예: 단가표 3개 비교), 15분 안에 끝낼 크기로 나누세요.",
+  etc: "자주 밀리는 일은 제목에 첫 행동(누구에게·무엇을)을 적어 두면 바로 시작하기 쉬워집니다.",
+};
+const ST_DOW = ["일", "월", "화", "수", "목", "금", "토"];
+const ST_STEP_LABEL = { weigh: "원료칭량", mfg: "제조·원료셋팅", judge: "판정", mat: "자재셋팅", setup: "추가 셋팅", move: "이동", prod: "생산", part: "파샬 출고", ship: "납품" };
+const ST_STEP_TIPS = {
+  judge: (avg) => `판정이 평균 ${avg}일 밀립니다. 판정 기간 기본값을 실제에 맞게 늘리거나, 시험 의뢰를 제조 당일 오전에 접수해 대기 시간을 줄이세요.`,
+  mat: () => "자재셋팅이 자주 밀립니다. 입고 예정일을 셋팅 3영업일 전으로 받고, 입고 확인을 할 일로 따로 잡아 두세요.",
+  setup: () => "칼선·금형 같은 추가 셋팅은 제작 기간이 깁니다. 발주가 확정되는 날 바로 의뢰하고 납기를 받아 두세요.",
+  weigh: () => "칭량이 밀리면 뒤 공정이 전부 밀립니다. 전날 원료 재고·입고를 확인하는 체크를 넣으세요.",
+  mfg: () => "제조(원료셋팅)일이 자주 밀립니다. 설비·인력 일정을 주 단위로 먼저 확정하고 출고 건을 배정하세요.",
+  move: () => "이동이 밀립니다. 셋팅이 확정되는 날 차량·이동 일정을 함께 예약하세요.",
+  prod: () => "생산 기간이 늘어납니다. 일별 CAPA를 실제 생산량(최근 실적)으로 고쳐 넣으면 계획이 현실에 가까워집니다.",
+  part: () => "파샬 출고가 밀립니다. 생산 진행률을 보고 출고일을 확정하고, 초기 생산분이 양품으로 확인된 뒤 약속하세요.",
+  ship: () => "납품이 밀립니다. 납품 전날 출하 서류·차량·포장 확인을 고정 체크로 두세요.",
+};
+const stPeriods = [[28, "최근 4주"], [84, "최근 12주"], [0, "전체"]];
+
+// 일정·할 일 1건 → 분석용 기록 (원래 날짜 orig, 실제/현재 end, 지연일 d)
+function statRecordOf(x, kind) {
+  const cur = kind === "todo" ? x.due : x.date;
+  if (!cur) return null;
+  if (kind === "event" && x.repeat && x.repeat !== "none") return null;
+  const cands = [x.planned, x.rolledFrom, cur].filter(Boolean).sort();
+  const orig = cands[0], today = todayStr();
+  let end;
+  if (x.done) end = x.doneAt ? ymd(new Date(x.doneAt)) : cur;
+  else end = cur < today ? today : cur;
+  return { k: kind, id: x.id, t: x.title, cat: x.cat, pr: x.priority, pj: x.projectId || null, orig, end,
+    d: Math.max(0, daysBetween(orig, end)), open: !x.done };
+}
+function statCollect(days) {
+  const today = todayStr(), from = days ? ymd(addDays(new Date(), -days + 1)) : "0000";
+  const recs = [];
+  Store.state.todos.forEach((t) => { const r = statRecordOf(t, "todo"); if (r) recs.push(r); });
+  Store.state.events.forEach((e) => { if (e.allDay) return; const r = statRecordOf(e, "event"); if (r) recs.push(r); });
+  (Store.state.archive || []).forEach((r) => recs.push({ ...r, open: false, arch: true }));
+  // 기한이 이미 지난(평가 가능한) 것만, 기간 안의 원래 날짜 기준
+  return recs.filter((r) => r.orig <= today && r.orig >= from);
+}
+function statGroup(recs, keyFn) {
+  const g = {};
+  recs.forEach((r) => { const k = keyFn(r); if (k == null) return; const a = (g[k] = g[k] || { n: 0, late: 0, sum: 0, max: 0, recs: [] });
+    a.n++; a.recs.push(r); if (r.d > 0) { a.late++; a.sum += r.d; a.max = Math.max(a.max, r.d); } });
+  Object.values(g).forEach((a) => { a.rate = a.n ? a.late / a.n : 0; a.avg = a.late ? a.sum / a.late : 0; });
+  return g;
+}
+// 출고 건 공정별 지연 (최초 계획 대비)
+function statOrders(days) {
+  const from = days ? ymd(addDays(new Date(), -days + 1)) : "0000";
+  const steps = {}, clients = {}; let fails = 0, orders = 0, lateOrders = 0;
+  Store.state.orders.forEach((o) => {
+    const ref = o.due || (o.plan0 && o.plan0.ship) || "";
+    if (ref && ref < from && o.done.ship) return;
+    orders++;
+    const pl = ttPlan(o); let worst = 0;
+    ttSteps(o, pl).forEach((st) => {
+      if (!o.plan0 || !o.plan0[st.key]) return;
+      const g = st.key.startsWith("s:") ? "setup" : st.key.startsWith("p:") ? "part" : st.key;
+      const d = ttDelay(o, st); const a = (steps[g] = steps[g] || { n: 0, late: 0, sum: 0, max: 0 });
+      a.n++; if (d > 0) { a.late++; a.sum += d; a.max = Math.max(a.max, d); } worst = Math.max(worst, d);
+    });
+    (o.log || []).forEach((l) => { if (/판정 부적합/.test(l.text)) fails++; });
+    if (worst > 0) lateOrders++;
+    if (o.client) { const c = (clients[o.client] = clients[o.client] || { n: 0, late: 0, sum: 0 }); c.n++; if (worst > 0) { c.late++; c.sum += worst; } }
+  });
+  Object.values(steps).forEach((a) => (a.avg = a.late ? a.sum / a.late : 0));
+  return { steps, clients, fails, orders, lateOrders };
+}
+const stPct = (x) => `${Math.round(x * 100)}%`;
+const stDay = (x) => (Math.round(x * 10) / 10).toString();
+
+// 개선 제안 — 근거(숫자)와 방법을 함께, 영향이 큰 순서로
+function statSuggestions(recs, byType, byDow, byPr, byProj, ord) {
+  const out = [], late = recs.filter((r) => r.d > 0), rate = recs.length ? late.length / recs.length : 0;
+  const avg = late.length ? late.reduce((n, r) => n + r.d, 0) / late.length : 0;
+  const types = Object.entries(byType).filter(([, a]) => a.late >= 2).sort((a, b) => b[1].sum - a[1].sum);
+  types.slice(0, 2).forEach(([k, a], i) => out.push({ score: a.sum + (i ? 0 : 5), lv: a.rate >= 0.5 ? "hi" : "mid",
+    title: `'${(ST_TYPES.find((t) => t.k === k) || ST_OTHER).label}' 업무가 가장 많이 밀립니다`,
+    why: `${a.n}건 중 ${a.late}건 지연(${stPct(a.rate)}) · 평균 ${stDay(a.avg)}일, 최대 ${a.max}일`, how: ST_TYPE_TIPS[k] }));
+  const dows = Object.entries(byDow).filter(([, a]) => a.n >= 3).sort((a, b) => b[1].rate - a[1].rate);
+  if (dows.length && dows[0][1].rate >= Math.max(0.3, rate * 1.4)) {
+    const [d, a] = dows[0];
+    out.push({ score: a.late * 2, lv: "mid", title: `${ST_DOW[d]}요일 마감 업무가 자주 밀립니다`,
+      why: `${ST_DOW[d]}요일 마감 ${a.n}건 중 ${a.late}건 지연(${stPct(a.rate)}) — 전체 평균 ${stPct(rate)}`,
+      how: +d === 1 ? "월요일은 회의·메일 처리로 시간이 부족합니다. 월요일 마감 건은 전주 금요일 오후에 미리 끝내거나 화요일로 잡으세요."
+        : +d === 5 ? "금요일 마감은 주말로 넘어가기 쉽습니다. 목요일 오후를 마감 기준으로 당겨 잡으세요."
+        : `${ST_DOW[d]}요일에 고정 업무(회의·보고)가 몰려 있는지 보고, 그날 마감 업무는 하루 앞당겨 잡으세요.` });
+  }
+  const urg = ["urgent", "high"].map((k) => byPr[k]).filter(Boolean).reduce((m, a) => ({ n: m.n + a.n, late: m.late + a.late }), { n: 0, late: 0 });
+  if (urg.n >= 3 && urg.late / urg.n >= 0.4) out.push({ score: urg.late * 2.5, lv: "hi", title: `긴급·높음 업무의 ${stPct(urg.late / urg.n)}가 밀립니다`,
+    why: `긴급·높음 ${urg.n}건 중 ${urg.late}건 지연(${stPct(urg.late / urg.n)})`,
+    how: "긴급 표시가 너무 많으면 우선순위가 무의미해집니다. 긴급은 하루 3개 이하로 제한하고, 출근 후 첫 30분을 긴급 처리 시간으로 고정하세요." });
+  const stuck = recs.filter((r) => r.open && r.d >= 5);
+  if (stuck.length) out.push({ score: stuck.length * 3, lv: stuck.some((r) => r.d >= 10) ? "hi" : "mid", title: `${stuck.length}건이 5일 넘게 밀려 있습니다`,
+    why: stuck.sort((a, b) => b.d - a.d).slice(0, 3).map((r) => `${r.t} D+${r.d}`).join(" · "),
+    how: "오래 밀린 일은 크기가 크거나 다른 사람 회신을 기다리는 경우입니다. 오늘 할 '첫 행동' 하나로 쪼개거나, 위임·취소를 결정해 목록에서 정리하세요." });
+  if (late.length >= 3 && rate >= 0.3 && avg >= 2) out.push({ score: late.length, lv: "mid", title: "계획 자체가 빠듯하게 잡히고 있습니다",
+    why: `지연된 ${late.length}건이 평균 ${stDay(avg)}일 늦게 끝남`,
+    how: `처음 기한을 잡을 때 평균 지연만큼(약 ${Math.ceil(avg)}일) 여유를 두거나, 같은 날 마감을 3건 이하로 나눠 잡으세요.` });
+  const pj = Object.entries(byProj).filter(([id, a]) => id !== "-" && a.late >= 1).sort((a, b) => b[1].sum - a[1].sum)[0];
+  if (pj) { const pr = projectById(pj[0]); if (pr) out.push({ score: pj[1].sum, lv: "mid", title: `'${pr.name}' 프로젝트 단계가 밀립니다`,
+    why: `${pj[1].n}단계 중 ${pj[1].late}단계 지연 · 합계 ${pj[1].sum}일`,
+    how: "프로젝트는 막힌 한 단계가 뒤 단계를 함께 밀어냅니다. 지금 D+N이 붙은 단계부터 해결하면 뒤 단계가 같이 당겨집니다." }); }
+  const st = Object.entries(ord.steps).filter(([, a]) => a.late >= 1).sort((a, b) => b[1].sum - a[1].sum)[0];
+  if (st) out.push({ score: st[1].sum + 4, lv: st[1].avg >= 5 ? "hi" : "mid", title: `출고 공정 중 '${ST_STEP_LABEL[st[0]]}'에서 가장 많이 밀립니다`,
+    why: `${st[1].n}건 중 ${st[1].late}건 지연 · 평균 ${stDay(st[1].avg)}일, 최대 ${st[1].max}일 (최초 계획 대비)`,
+    how: (ST_STEP_TIPS[st[0]] || (() => ""))(Math.ceil(st[1].avg)) });
+  if (ord.fails) out.push({ score: ord.fails * 6, lv: "hi", title: `판정 부적합 ${ord.fails}회`,
+    why: "부적합 1회마다 칭량부터 다시 시작해 최소 판정 기간 + 2일이 밀립니다",
+    how: "부적합 원인(원료·공정·설비)을 메모에 남기고, 같은 품목이 반복되면 시생산이나 원료 사전 검사를 넣으세요." });
+  const cl = Object.entries(ord.clients).filter(([, a]) => a.late >= 2).sort((a, b) => b[1].late - a[1].late)[0];
+  if (cl) out.push({ score: cl[1].late * 2, lv: "mid", title: `'${cl[0]}' 출고 건이 자주 밀립니다`,
+    why: `${cl[1].n}건 중 ${cl[1].late}건 지연`,
+    how: "해당 거래처는 자재·원료 공급이나 사양 확정이 늦는 경우가 많습니다. 발주 받을 때 확정일(사양·자재 입고)을 같이 받아 두세요." });
+  return out.sort((a, b) => b.score - a.score).slice(0, 6);
+}
+
+function renderStats() {
+  const days = ui.statDays, today = todayStr();
+  const recs = statCollect(days), late = recs.filter((r) => r.d > 0);
+  const rate = recs.length ? late.length / recs.length : 0;
+  const avg = late.length ? late.reduce((n, r) => n + r.d, 0) / late.length : 0;
+  const stuck = recs.filter((r) => r.open && r.d > 0);
+  const byType = statGroup(recs, (r) => stTypeOf(r.t).k);
+  const byDow = statGroup(recs, (r) => parseYMD(r.orig).getDay());
+  const byPr = statGroup(recs, (r) => r.pr || "normal");
+  const byCat = statGroup(recs, (r) => r.cat);
+  const byKind = statGroup(recs, (r) => r.k);
+  const byProj = statGroup(recs, (r) => r.pj || "-");
+  const ord = statOrders(days);
+  const sugg = statSuggestions(recs, byType, byDow, byPr, byProj, ord);
+
+  let h = `<div class="view-head"><div><h2>통계 · 지연 분석</h2><div class="sub">원래 기한 대비 얼마나 밀렸는지로 업무 유형·요일·공정별 패턴을 찾고 개선 방법을 제안합니다</div></div>
+    <div class="seg">${stPeriods.map(([k, l]) => `<button type="button" class="${+k === days ? "active" : ""}" data-st-days="${k}">${l}</button>`).join("")}</div></div>`;
+  h += `<div class="tt-kpis st-kpis">
+    <div class="tt-kpi"><div class="k">기한 지난 업무</div><div class="v">${recs.length}건</div></div>
+    <div class="tt-kpi ${rate >= 0.3 ? "warn" : ""}"><div class="k">지연 발생</div><div class="v">${late.length}건 <small>${stPct(rate)}</small></div></div>
+    <div class="tt-kpi"><div class="k">평균 지연</div><div class="v">${stDay(avg)}일</div></div>
+    <div class="tt-kpi ${stuck.length ? "bad" : ""}"><div class="k">지금 밀려 있는 것</div><div class="v">${stuck.length}건</div></div>
+    <div class="tt-kpi ${ord.lateOrders ? "warn" : ""}"><div class="k">계획보다 밀린 출고 건</div><div class="v">${ord.lateOrders}/${ord.orders}</div></div></div>`;
+  if (recs.length < 10) h += `<div class="st-note">분석할 기록이 아직 ${recs.length}건입니다. 2~3주 쓰면서 끝난 일을 체크하면 패턴이 더 정확해집니다. (완료 후 1주일 지나 자동 정리되는 항목도 통계용 기록은 남겨 둡니다)</div>`;
+
+  // 제안
+  h += `<section class="st-sec"><h3>개선 제안</h3>`;
+  h += sugg.length ? `<div class="st-sugg">${sugg.map((s, i) => `<div class="st-s ${s.lv}"><div class="st-s-n">${i + 1}</div><div><b>${esc(s.title)}</b><div class="st-why">${esc(s.why)}</div><p>${esc(s.how)}</p></div></div>`).join("")}</div>`
+    : `<div class="st-empty">${late.length ? "뚜렷한 지연 패턴이 아직 없습니다." : "이 기간에 밀린 업무가 없습니다. 지금처럼 끝난 일을 바로 체크해 주세요."}</div>`;
+  h += `</section>`;
+
+  // 막대: 유형별 (지연 건수 · 평균·지연율 함께)
+  const bars = (rows, fmt) => {
+    const max = Math.max(1, ...rows.map((r) => r.v));
+    return `<div class="st-bars">${rows.map((r) => `<div class="st-bar${r.a.n < 3 ? " few" : ""}" title="${esc(r.tip)}${r.a.n < 3 ? " (건수가 적어 참고용)" : ""}"><span class="st-bl">${esc(r.l)}</span><span class="st-bt">${r.v > 0 ? `<i style="width:${(r.v / max) * 100}%"></i>` : ""}</span><span class="st-bv">${fmt(r)}</span></div>`).join("")}</div>`;
+  };
+  const typeRows = [...ST_TYPES, ST_OTHER].map((t) => ({ t, a: byType[t.k] })).filter((x) => x.a).sort((x, y) => y.a.sum - x.a.sum || y.a.late - x.a.late)
+    .map(({ t, a }) => ({ l: t.label, v: a.late, a, tip: `${t.label}: ${a.n}건 중 ${a.late}건 지연, 평균 ${stDay(a.avg)}일, 최대 ${a.max}일` }));
+  h += `<div class="st-grid">`;
+  h += `<section class="st-sec"><h3>어떤 업무가 밀리나 <small>업무 유형별 지연 건수 (제목 키워드로 분류)</small></h3>${typeRows.length ? bars(typeRows, (r) => `<b>${r.a.late}</b>/${r.a.n}건 · 평균 ${stDay(r.a.avg)}일`) : `<div class="st-empty">기록 없음</div>`}</section>`;
+  const dowRows = [1, 2, 3, 4, 5, 6, 0].filter((d) => byDow[d]).map((d) => { const a = byDow[d]; return { l: ST_DOW[d] + "요일", v: a.rate, a, tip: `${ST_DOW[d]}요일 마감 ${a.n}건 중 ${a.late}건 지연` }; });
+  h += `<section class="st-sec"><h3>언제 밀리나 <small>원래 마감 요일별 지연율 · 흐린 막대는 3건 미만(참고용)</small></h3>${dowRows.length ? bars(dowRows, (r) => `<b>${stPct(r.a.rate)}</b> · ${r.a.late}/${r.a.n}건`) : `<div class="st-empty">기록 없음</div>`}</section>`;
+  // 분류 표
+  const row = (l, a) => a ? `<tr><th>${l}</th><td>${a.n}</td><td>${a.late}</td><td>${stPct(a.rate)}</td><td>${stDay(a.avg)}일</td></tr>` : "";
+  h += `<section class="st-sec"><h3>구분별 <small>건수 · 지연 · 지연율 · 평균 지연</small></h3><table class="st-table"><thead><tr><th></th><th>건수</th><th>지연</th><th>지연율</th><th>평균</th></tr></thead><tbody>
+    ${row("긴급", byPr.urgent)}${row("높음", byPr.high)}${row("보통", byPr.normal)}${row("업무", byCat.work)}${row("개인", byCat.personal)}${row("할 일", byKind.todo)}${row("일정", byKind.event)}
+    ${Object.entries(byProj).filter(([id]) => id !== "-").map(([id, a]) => { const p = projectById(id); return p ? row(`📁 ${esc(p.name)}`, a) : ""; }).join("")}</tbody></table></section>`;
+  // 출고 공정별
+  const stepRows = ["weigh", "mfg", "judge", "mat", "setup", "move", "prod", "part", "ship"].filter((k) => ord.steps[k])
+    .map((k) => { const a = ord.steps[k]; return { l: ST_STEP_LABEL[k], v: a.avg, a, tip: `${ST_STEP_LABEL[k]}: ${a.n}건 중 ${a.late}건이 최초 계획보다 밀림, 최대 ${a.max}일` }; });
+  h += `<section class="st-sec"><h3>출고 공정별 <small>타임테이블 · 최초 계획 대비 평균 밀림(일)</small></h3>${stepRows.length ? bars(stepRows, (r) => `<b>${stDay(r.a.avg)}일</b> · ${r.a.late}/${r.a.n}건`) + (ord.fails ? `<div class="st-foot">판정 부적합 ${ord.fails}회</div>` : "") : `<div class="st-empty">출고 건이 없습니다</div>`}</section>`;
+  h += `</div>`;
+
+  // 주별 추이 (원래 마감 주 기준 지연 건수)
+  const nW = days ? Math.round(days / 7) : 12, w0 = startOfWeek(new Date());
+  const weeks = [...Array(nW)].map((_, i) => ymd(addDays(w0, -7 * (nW - 1 - i))));
+  const wk = weeks.map((ws, i) => { const we = i < nW - 1 ? weeks[i + 1] : "9999"; const rs = recs.filter((r) => r.orig >= ws && r.orig < we); return { ws, n: rs.length, late: rs.filter((r) => r.d > 0).length }; });
+  const wmax = Math.max(1, ...wk.map((w) => w.late));
+  h += `<section class="st-sec"><h3>주별 추이 <small>원래 마감 주 기준 지연 건수</small></h3><div class="st-cols">${wk.map((w) => `<div class="st-col" title="${fmtMD(w.ws)} 주: ${w.n}건 중 ${w.late}건 지연"><span class="st-cv">${w.late || ""}</span><span class="st-ct"><i style="height:${(w.late / wmax) * 100}%"></i></span><span class="st-cl">${fmtMD(w.ws)}</span></div>`).join("")}</div></section>`;
+
+  // 오래 밀린 항목
+  const top = recs.filter((r) => r.d > 0 && !r.arch).sort((a, b) => b.d - a.d).slice(0, 8);
+  h += `<section class="st-sec"><h3>가장 오래 밀린 업무 <small>눌러서 열기</small></h3>${top.length ? `<div class="st-list">${top.map((r) => `<div class="st-li" ${r.k === "todo" ? `data-edit-todo="${r.id}"` : `data-edit-event="${r.id}"`}><em class="tt-dn${ttLateCls(r.d)}">D+${r.d}</em><span class="st-lt">${esc(r.t)}</span><span class="st-lm">${stTypeOf(r.t).label} · ${fmtMD(r.orig)} → ${r.open ? "진행 중" : fmtMD(r.end) + " 완료"}</span></div>`).join("")}</div>` : `<div class="st-empty">없음</div>`}</section>`;
+  return h;
+}
+function statClick(e) {
+  const b = e.target.closest("[data-st-days]"); if (!b) return;
+  ui.statDays = +b.dataset.stDays; saveUI(); render();
+}
+
 /* ---------- 렌더: 할 일 ---------- */
 function renderTodo() {
   let list = visibleTodos();
@@ -2726,6 +2995,7 @@ function render() {
   else if (ui.view === "todo") content.innerHTML = renderTodo();
   else if (ui.view === "settings") content.innerHTML = renderSettings();
   else if (ui.view === "projects") content.innerHTML = renderProjects();
+  else if (ui.view === "stats") content.innerHTML = renderStats();
   else if (ui.view === "timetable") {
     const old = lastRenderedView === "timetable" && content.querySelector(".tt-scroll");
     const keep = old ? { top: old.scrollTop, left: old.scrollLeft } : null;
@@ -3328,7 +3598,9 @@ function osNotify(title, body, key) {
     navigator.serviceWorker.ready.then((reg) => {
       reg.showNotification(title, {
         body, tag: key, requireInteraction: true, icon: "icon-192.png",
-        actions: [{ action: "s30", title: "30분 뒤" }, { action: "s60", title: "1시간 뒤" }],
+        // 확인(닫기)을 맨 앞에 — 크롬 등은 버튼을 2개까지만 보여 주므로 그 경우 '확인 · 30분 뒤'
+        actions: [{ action: "ok", title: "확인" }, { action: "s30", title: "30분 뒤" }, { action: "s60", title: "1시간 뒤" }]
+          .slice(0, Math.max(2, Notification.maxActions || 2)),
         data: { key, title, body },
       });
     }).catch(() => {});
@@ -3901,6 +4173,7 @@ function wireGlobal() {
   document.addEventListener("click", (e) => { if (Date.now() < suppressClickUntil) { e.stopPropagation(); e.preventDefault(); suppressClickUntil = 0; } }, true);
   document.querySelectorAll(".tab[data-view], .bottom-nav button[data-view]").forEach((b) => b.addEventListener("click", () => setView(b.dataset.view)));
   document.addEventListener("click", ttClick);   // 타임테이블 화면
+  document.addEventListener("click", statClick); // 통계 화면
   document.getElementById("add-btn").addEventListener("click", () => {
     if (ui.view === "projects") { openModal("project", { cat: ui.cat === "personal" ? "personal" : "work" }); return; }
     if (ui.view === "timetable") { openOrder(null); return; }

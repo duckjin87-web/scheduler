@@ -1,7 +1,7 @@
 /* 스케줄러 서비스 워커
    전략: 네트워크 우선(network-first). 온라인이면 항상 최신을 보여주고,
    오프라인일 때만 캐시로 대체 → 업데이트가 즉시 반영되면서 오프라인도 지원. */
-const CACHE = "scheduler-cache-v47";
+const CACHE = "scheduler-cache-v48";
 const ASSETS = [
   "./",
   "./index.html",
@@ -23,9 +23,10 @@ self.addEventListener("activate", (e) => {
   );
 });
 
-// 알림(윈도우 팝업) 클릭/액션 처리 — 확인은 닫기, 30분/1시간은 페이지에 스누즈 요청
+// 알림(윈도우 팝업) 클릭/액션 처리 — 확인은 닫기만, 30분/1시간은 페이지에 스누즈 요청, 본문 클릭은 앱 열기
 self.addEventListener("notificationclick", (e) => {
   const n = e.notification; const act = e.action; n.close();
+  if (act === "ok") return;
   e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((cs) => {
     if (act === "s30" || act === "s60") {
       const minutes = act === "s30" ? 30 : 60;
