@@ -353,8 +353,14 @@
   body.design-night .month-grid{grid-auto-rows:minmax(84px,1fr);}
   body.design-night .month-grid .m-item{height:15px;min-height:15px;}
   /* 현재 시각 선 (오늘 열) */
-  .now-line{position:absolute;left:0;right:0;height:0;border-top:1.5px solid var(--urgent);z-index:3;pointer-events:none;}
-  .now-line::before{content:"";position:absolute;left:-3px;top:-4px;width:7px;height:7px;border-radius:50%;background:var(--urgent);}
+  .now-line{position:absolute;left:0;right:0;height:0;border-top:2px solid var(--urgent);z-index:3;pointer-events:none;}
+  .now-line::before{content:"";position:absolute;left:-7px;top:-7px;width:12px;height:12px;border-radius:50%;background:var(--urgent);
+    border:2px solid var(--surface);box-shadow:0 0 0 3px color-mix(in srgb, var(--urgent) 28%, transparent);}
+  /* 지금 시각이 있는 시간 행 전체 음영 + 왼쪽 시간 칸에 현재 시각 */
+  .week-grid .cell.now-row::after{content:"";position:absolute;inset:0;background:color-mix(in srgb, var(--urgent) 8%, transparent);pointer-events:none;z-index:0;}
+  .week-grid .hourlabel.now-row{color:var(--urgent);font-weight:800;background:color-mix(in srgb, var(--urgent) 9%, transparent);}
+  .week-grid .hourlabel.now-row::after{content:attr(data-now);display:block;margin-top:2px;font-size:10px;font-weight:800;color:#fff;background:var(--urgent);
+    border-radius:999px;padding:0 5px;width:max-content;margin-left:auto;font-variant-numeric:tabular-nums;}
   /* ---------- 지연 경고 테두리 (캘린더 · 고정 창) ---------- */
   /* D+5 이상: 주황 점선 / D+10 이상: 빨간 실선 */
   .week-grid :is(.evt,.cal-chip,.m-item,.pj-chip).late-warn,
@@ -449,6 +455,23 @@
   .tt-chip:is(.tt-late-4,.tt-late-5) .tt-dn, .tt-sd .tt-dn:is(.tt-late-4,.tt-late-5){background:var(--lc);color:#fff;}
   .tt-chip.s-part .tt-dn{background:color-mix(in srgb, var(--lc) 16%, var(--surface));}
   .tt-sd .tt-dn{margin-left:4px;background:color-mix(in srgb, var(--lc) 15%, var(--surface));vertical-align:1px;box-shadow:inset 0 0 0 var(--lw) var(--lc);}
+  /* 목표일 역산 대비 늦은 셋팅·이동 — 붉은 음영 + 늦은 영업일 */
+  .tt-gap{grid-row:1 / -1;margin:-5px 0;background:repeating-linear-gradient(135deg, color-mix(in srgb, var(--late-crit) 16%, transparent) 0 6px, color-mix(in srgb, var(--late-crit) 8%, transparent) 6px 12px);
+    border-left:2px dashed var(--late-crit);pointer-events:none;position:relative;z-index:1;}
+  .tt-lane.has-due .tt-gap{margin-top:-19px;}
+  .tt-gap::after{content:attr(data-label);position:absolute;left:3px;top:3px;font-size:9.5px;font-weight:800;line-height:1;color:#fff;background:var(--late-crit);padding:2px 6px;border-radius:999px;white-space:nowrap;}
+  .tt-chip.need-late{box-shadow:inset 0 -3px 0 var(--late-crit), 0 1px 1px rgba(0,0,0,.08);}
+  .tt-chip.need-late:is(.tt-late-1,.tt-late-2,.tt-late-3,.tt-late-4,.tt-late-5){box-shadow:inset 0 -3px 0 var(--late-crit), 0 0 0 var(--lw) var(--lc);}
+  .tt-nl{flex:none;font-size:9px;font-weight:800;line-height:1;padding:2px 4px;border-radius:999px;background:var(--late-crit);color:#fff;margin-left:auto;}
+  .tt-nl + .tt-dn{margin-left:2px;}
+  .tt-need{font-size:10.5px;color:var(--text-faint);margin-top:3px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tt-need:empty{display:none;}
+  .tt-modal .field.need-late input{background:color-mix(in srgb, var(--late-crit) 12%, var(--surface));border-color:var(--late-crit);color:var(--late-crit);font-weight:700;}
+  .tt-modal .field.need-late > label, .tt-modal .field.need-late .tt-need{color:var(--late-crit);}
+  .tt-modal .field.need-late .tt-need b{background:var(--late-crit);color:#fff;border-radius:999px;padding:0 5px;}
+  .tt-chain .c.need-late{border-color:var(--late-crit);background:color-mix(in srgb, var(--late-crit) 12%, var(--surface));}
+  .tt-pv-need{background:color-mix(in srgb, var(--late-crit) 9%, var(--surface));border-radius:8px;padding:6px 8px;}
+  .tt-need-card{font-size:11.5px;font-weight:700;color:var(--late-crit);background:color-mix(in srgb, var(--late-crit) 9%, var(--surface));border-left:3px solid var(--late-crit);border-radius:6px;padding:5px 8px;line-height:1.5;}
   .tt-chip.s-part{background:var(--surface);color:var(--c);border:1.5px solid var(--c);}
   .tt-chip.s-part .tt-ck{border-color:var(--c);}
   .tt-chip.s-part.warn{outline:2px dashed var(--late-warn);outline-offset:-2px;}
@@ -597,6 +620,14 @@
   .st-tag{display:inline-block;font-size:10px;font-weight:800;padding:0 6px;border-radius:999px;background:color-mix(in srgb, var(--done) 16%, var(--surface));color:var(--done);vertical-align:1px;}
   .st-tag.old{background:var(--surface-3);color:var(--text-faint);}
   .st-refnote{font-size:11.5px;color:var(--text-faint);margin:10px 0 0;}
+  .st-kpi-btn{text-align:left;font:inherit;color:inherit;cursor:pointer;}
+  .st-kpi-btn:hover{border-color:var(--border-strong);background:var(--surface-2);}
+  .st-kpi-sub{font-size:10.5px;color:var(--text-faint);font-weight:700;white-space:nowrap;}
+  .modal.st-modal{max-width:560px;}
+  .st-stuck{max-height:62vh;overflow:auto;margin:0 -4px;padding:0 4px;}
+  .st-gh{font-size:12px;font-weight:800;color:var(--text-soft);margin:12px 0 4px;display:flex;align-items:center;gap:6px;}
+  .st-gh:first-child{margin-top:0;}
+  .st-gh small{font-weight:600;color:var(--text-faint);}
   .st-bars{display:flex;flex-direction:column;gap:7px;}
   .st-bar{display:grid;grid-template-columns:118px minmax(0,1fr) auto;align-items:center;gap:8px;font-size:12px;border-radius:6px;padding:1px 2px;}
   .st-bar:hover{background:var(--surface-2);}
@@ -1303,7 +1334,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-10-26 · 통계 연구 근거 적용(원인·준비 기간·80% 여유일)";
+const APP_VERSION = "2026-10-27 · 현재 시각 행 강조·고정창 간소화·밀린 일 목록·이동 필요일 역산";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1394,14 +1425,22 @@ function ttPlan(o) {
   const setupDates = (o.setups || []).map((s) => s.date).filter(Boolean);
   // 역산: 목표일을 맞추려면 각 셋팅이 늦어도 언제까지
   const tail = R.gapMove + R.gapProd + (baseDays - 1) + R.gapShip;
-  const latestMat = o.due ? subBiz(o.due, tail) : null;
-  const latestMfg = o.due ? subBiz(o.due, tail + judgeDays) : null;
-  const common = { own, prodDays, baseDays, goodPerDay, judgeDays, judgeEnd, weigh, latestMat, latestMfg, tail };
+  //   납품 ← 생산 끝(+gapShip) ← 생산 시작(+일수) ← 이동(+gapProd) ← 모든 셋팅·판정 끝(+gapMove) ← 제조/원료셋팅(+판정)
+  const latestMove = o.due ? subBiz(o.due, R.gapProd + (baseDays - 1) + R.gapShip) : null;   // 이동 필요일
+  const latestMat = o.due ? subBiz(o.due, tail) : null;                                       // 자재·추가 셋팅 늦어도
+  const latestMfg = o.due ? subBiz(o.due, tail + judgeDays) : null;                           // 제조·원료셋팅 늦어도 (판정 감안)
+  const latestWeigh = latestMfg && own ? subBiz(latestMfg, 1) : null;
+  // 입력한 셋팅일이 역산한 날보다 늦으면 그 영업일 수 (목표일을 못 맞추는 원인)
+  const over = (d, lim) => (d && lim && d > lim ? Math.max(1, bizDiff(lim, d)) : 0);
+  const need = { weigh: over(own ? o.weighDate : null, latestWeigh), mfg: over(o.mfgDate, latestMfg), mat: over(o.matDate, latestMat), s: {} };
+  (o.setups || []).forEach((x) => { const n = over(x.date, latestMat); if (n) need.s[x.id] = n; });
+  const common = { own, prodDays, baseDays, goodPerDay, judgeDays, judgeEnd, weigh, latestMat, latestMfg, latestMove, latestWeigh, need, tail };
   const cands = [rawReady, o.matDate, ...setupDates].filter(Boolean);
   if (!cands.length) return { ok: false, ...common };
   const base = cands.slice().sort().pop();
   const by = base === rawReady ? "judge" : base === o.matDate ? "mat" : "setup";   // 이동을 정한 공정(병목)
   const move = addBiz(base, R.gapMove + (adj.move || 0));
+  need.move = over(move, latestMove);
   const prodStart = addBiz(move, R.gapProd);
   const prodList = [prodStart]; while (prodList.length < prodDays) prodList.push(addBiz(prodList[prodList.length - 1], 1));
   const prodEnd = prodList[prodList.length - 1];
@@ -1437,7 +1476,9 @@ function ttSteps(o, pl) {
     : k.startsWith("s:") ? !!(o.setups.find((s) => "s:" + s.id === k) || {}).done : !!o.done[k];
   return st.map((x) => ({ ...x, done: doneOf(x.key) }));
 }
-const ttRef = (st) => st.end || st.date;                                   // 공정이 끝나는 날
+const ttRef = (st) => st.end || st.date;
+// 목표일 역산 대비 늦은 영업일 (셋팅·이동 공정만)
+const ttNeedOf = (pl, st) => !pl.need || st.done ? 0 : st.key.startsWith("s:") ? pl.need.s[st.key.slice(2)] || 0 : ["weigh", "mfg", "mat", "move"].includes(st.key) ? pl.need[st.key] || 0 : 0;                                   // 공정이 끝나는 날
 // 최초 계획일 기록 (onlyMissing: 이미 있는 기준은 그대로 두고 새 공정만 추가)
 function ttBaseline(o, onlyMissing) {
   if (!onlyMissing || !o.plan0 || typeof o.plan0 !== "object") o.plan0 = {};
@@ -2098,7 +2139,7 @@ function renderWeek() {
     dayLayout[ds] = lay;
   });
   for (let h = 8; h <= 20; h++) {
-    grid += `<div class="hourlabel">${h}:00</div>`;
+    grid += `<div class="hourlabel" data-hour="${pad(h)}:00">${h}:00</div>`;
     week.forEach((d) => {
       const ds = ymd(d);
       const isToday = ds === today;
@@ -2112,11 +2153,7 @@ function renderWeek() {
         const left = (L.col / L.n) * 100, w = (L.span / L.n) * 100;
         return `<div class="evt timed pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}${projCls(e)}${lateCls(e)}" style="${inProject(e) ? `--pc:${projectById(e.projectId).color};` : ""}top:${top.toFixed(1)}px;left:calc(${left}% + 1px);width:calc(${w}% - 3px);height:${height.toFixed(1)}px;" title="${esc(evTimeText(e))} ${esc(e.title)}${lateTitle(e)}" draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="rz rz-top" data-rz="top" title="위로 끌어 시작 시간 변경"></span><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span><span class="t">${esc(evTimeText(e))}</span><span class="ci">${catIcon(e.cat)}</span>${e.rolledFrom ? `<span class="evt-d">D+${daysBetween(e.rolledFrom, e.date)}</span>` : ""}${projDot(e.projectId)}${esc(e.title)}${e.repeat !== "none" ? " ↻" : ""}<span class="rz rz-bot" data-rz="bot" title="아래로 끌어 종료 시간 변경"></span></div>`;
       }).join("");
-      // 오늘 열의 현재 시각 선 (지금 시간이 이 칸 안에 있을 때)
-      const nowM = nowMin();
-      const nl = isToday && nowM >= h * 60 && nowM < (h + 1) * 60
-        ? `<div class="now-line" style="top:${(((nowM - h * 60) / 60) * CELL_H).toFixed(1)}px" title="지금 ${minToHM(nowM)}"></div>` : "";
-      grid += `<div class="cell ${starts.length ? "has-evt" : ""} ${isToday ? "today-col" : ""} ${isHoliday(ds) ? "holiday-col" : ""}" data-date="${ds}" data-hour="${pad(h)}:00">${inner}${nl}</div>`;
+      grid += `<div class="cell ${starts.length ? "has-evt" : ""} ${isToday ? "today-col" : ""} ${isHoliday(ds) ? "holiday-col" : ""}" data-date="${ds}" data-hour="${pad(h)}:00">${inner}</div>`;
     });
   }
   grid += `</div></div>`;
@@ -2286,14 +2323,19 @@ function renderTimetable() {
     });
     const sa = idx(spanA < first ? first : spanA), sb = idx(spanB > last ? last : spanB);
     lane += `<span class="tt-span-bar" style="grid-column:${sa + 1} / ${sb + 2}"></span>`;
+    // 이동 필요일(목표 역산) ~ 계산 이동일 사이를 붉게 — 그만큼 늦음
+    if (pl.ok && pl.need.move) {
+      const g0 = ymd(addDays(parseYMD(pl.latestMove), 1)), a = g0 < first ? first : g0, b = pl.move > last ? last : pl.move;
+      if (a <= b) lane += `<span class="tt-gap" style="grid-column:${idx(a) + 1} / ${idx(b) + 2}" data-label="이동 ${pl.need.move}일 늦음" title="이동 필요일 ${fmtMD(pl.latestMove)}(목표일 역산) → 계산 이동일 ${fmtMD(pl.move)} · ${pl.need.move}영업일 늦음"></span>`;
+    }
     if (hasDue) {
       const bad = pl.ok && pl.slack < 0;
       lane += `<span class="tt-due ${bad ? "bad" : ""}" style="grid-column:${idx(o.due) + 1}" data-label="목표 ${fmtMD(o.due)}" title="출고 목표일 ${fmtKDate(o.due)}${pl.ok && pl.slack != null ? ` · ${S.txt}` : ""}"></span>`;
     }
     items.forEach(({ st, cs, ce, r }) => {
-      const od = ttStepOverdue(st, today), warn = st.partOk === false, dn = st.done ? 0 : ttDelay(o, st);
+      const od = ttStepOverdue(st, today), warn = st.partOk === false, dn = st.done ? 0 : ttDelay(o, st), nd = ttNeedOf(pl, st);
       const range = st.end && st.end !== st.date ? `${fmtMD(st.date)}–${fmtMD(st.end)}` : fmtMD(st.date);
-      lane += `<div class="tt-chip ${st.cls}${st.done ? " done" : ""}${od ? " over" : ""}${warn ? " warn" : ""}${ttLateCls(dn)}" style="grid-column:${cs + 1} / ${ce + 2};grid-row:${r + 1}" data-tt-open="${o.id}" title="${esc(o.item)} · ${esc(st.label)} ${range}${st.done ? " (완료)" : ""}${dn ? ` — 최초 ${fmtMD(o.plan0[st.key])}보다 ${dn}일 밀림` : ""}${od ? ` — ${od}일 지남` : ""}${warn ? " — 그날까지 생산량이 부족합니다" : ""}"><span class="tt-ck" data-tt-step="${o.id}|${st.key}" title="완료 표시">${st.done ? "✓" : ""}</span><span class="tt-cl">${st.key === "ship" ? "▼ " : ""}${esc(st.short)}</span>${dn ? `<span class="tt-dn">D+${dn}</span>` : ""}</div>`;
+      lane += `<div class="tt-chip ${st.cls}${st.done ? " done" : ""}${od ? " over" : ""}${warn ? " warn" : ""}${nd ? " need-late" : ""}${ttLateCls(dn)}" style="grid-column:${cs + 1} / ${ce + 2};grid-row:${r + 1}" data-tt-open="${o.id}" title="${esc(o.item)} · ${esc(st.label)} ${range}${st.done ? " (완료)" : ""}${dn ? ` — 최초 ${fmtMD(o.plan0[st.key])}보다 ${dn}일 밀림` : ""}${od ? ` — ${od}일 지남` : ""}${warn ? " — 그날까지 생산량이 부족합니다" : ""}${nd ? ` — 목표일 역산보다 ${nd}영업일 늦음` : ""}"><span class="tt-ck" data-tt-step="${o.id}|${st.key}" title="완료 표시">${st.done ? "✓" : ""}</span><span class="tt-cl">${st.key === "ship" ? "▼ " : ""}${esc(st.short)}</span>${nd ? `<span class="tt-nl">늦음 ${nd}</span>` : ""}${dn ? `<span class="tt-dn">D+${dn}</span>` : ""}</div>`;
     });
     g += lane + `</div>`;
   });
@@ -2311,7 +2353,10 @@ function renderTimetable() {
       : "칭량·제조·자재셋팅일을 넣으면 일정이 계산됩니다";
     const warns = ttWarnings(o, pl, conf[o.id]);
     const worst = ttWorstDelay(o, steps);
-    const back = pl.ok && pl.slack < 0 && pl.latestMat ? `<div class="tt-warn soft">목표일을 맞추려면 ${mfgL} ${fmtMD(pl.latestMfg)} · 자재 ${fmtMD(pl.latestMat)}까지 끝나야 합니다</div>` : "";
+    const lateIn = !pl.ok ? [] : [[pl.need.weigh, "칭량"], [pl.need.mfg, mfgL], [pl.need.mat, "자재"]].concat((o.setups || []).map((x) => [pl.need.s[x.id], x.name])).filter(([n]) => n);
+    const back = pl.ok && pl.need.move && pl.latestMove
+      ? `<div class="tt-need-card">이동 필요일 <b>${fmtMD(pl.latestMove)}</b> → 계산 ${fmtMD(pl.move)} · <b>${pl.need.move}영업일 늦음</b>${lateIn.length ? `<br>늦은 셋팅: ${lateIn.map(([n, l]) => `${esc(l)} +${n}일`).join(" · ")} (늦어도 ${mfgL} ${fmtMD(pl.latestMfg)} · 자재 ${fmtMD(pl.latestMat)})` : ""}</div>`
+      : pl.ok && pl.slack < 0 && pl.latestMat ? `<div class="tt-warn soft">목표일을 맞추려면 ${mfgL} ${fmtMD(pl.latestMfg)} · 자재 ${fmtMD(pl.latestMat)}까지 끝나야 합니다</div>` : "";
     return `<div class="tt-card ${o.done.ship ? "is-done" : ""}" data-tt-open="${o.id}">
       <div class="tt-card-h"><b>${esc(o.item)}</b><span class="tt-pill ${S.cls}">${S.txt}</span></div>
       <div class="tt-card-m">${esc(o.client || "거래처 없음")} · 발주 ${o.qty.toLocaleString()}ea · CAPA ${o.capa.toLocaleString()}/일${o.line ? ` · ${esc(o.line)}` : ""}${o.due ? ` · 목표 ${fmtMD(o.due)}` : ""}${pl.own ? "" : " · 업체 제조"} · 판정 D+${o.judgeDays}${o.partial && pl.partSum ? ` · 파샬 ${pl.partChecks.length}회` : ""}${o.lot ? ` · LOT ${esc(o.lot)}` : ""}</div>
@@ -2386,15 +2431,15 @@ function renderOrderModal(id, copyFrom) {
         </section>
         <section class="tt-box s-mfg"><div class="tt-box-h"><i>2</i>원료<div class="seg tt-type"><button type="button" data-v="own">자사 제조</button><button type="button" data-v="vendor">업체 제조</button></div></div>
           <div class="tt-r tt-r-2">
-            <div class="field" id="tt-weigh-f"><label for="tt-weigh">원료칭량일 <small class="lab-hint">비우면 제조 전날</small></label><input id="tt-weigh" type="date" value="${o.weighDate || ""}" /></div>
-            <div class="field"><label for="tt-mfg" id="tt-mfg-lab">제조예정일</label><input id="tt-mfg" type="date" value="${o.mfgDate || ""}" /></div>
+            <div class="field" id="tt-weigh-f"><label for="tt-weigh">원료칭량일 <small class="lab-hint">비우면 제조 전날</small></label><input id="tt-weigh" type="date" value="${o.weighDate || ""}" /><div class="tt-need" data-need="weigh"></div></div>
+            <div class="field"><label for="tt-mfg" id="tt-mfg-lab">제조예정일</label><input id="tt-mfg" type="date" value="${o.mfgDate || ""}" /><div class="tt-need" data-need="mfg"></div></div>
           </div>
           <div class="field"><label>판정 기간 <small class="lab-hint" id="tt-type-hint"></small></label>
             <div class="seg tt-judge">${[1, 2, 3, 4, 5].map((n) => `<button type="button" data-d="${n}">D+${n}</button>`).join("")}</div></div>
         </section>
         <section class="tt-box s-mat"><div class="tt-box-h"><i>3</i>자재 · 추가 셋팅<button type="button" class="tt-hbtn" id="tt-sadd" title="칼선·금형 등 따로 셋팅해야 할 것">＋ 셋팅 추가</button></div>
           <div class="tt-r tt-r-2">
-            <div class="field"><label for="tt-mat">자재셋팅일</label><input id="tt-mat" type="date" value="${o.matDate || ""}" /></div>
+            <div class="field"><label for="tt-mat">자재셋팅일</label><input id="tt-mat" type="date" value="${o.matDate || ""}" /><div class="tt-need" data-need="mat"></div></div>
             <div id="tt-setups"></div>
           </div>
           <datalist id="tt-setup-names">${TT_SETUP_NAMES.map((n) => `<option value="${esc(n)}"></option>`).join("")}</datalist>
@@ -2436,8 +2481,19 @@ function renderOrderModal(id, copyFrom) {
     lot: val("tt-lot"), note: val("tt-note") });
   const draft = () => { const d = Store.normalizeOrder(readForm()); if (saved) { d.plan0 = saved.plan0; d.adj = saved.adj; } return d; };
 
+  // 셋팅일 칸마다 '늦어도 MM/DD'(목표일 역산) — 넘으면 붉게 + 늦은 영업일
+  const paintNeed = (pl) => {
+    form.querySelectorAll("[data-need]").forEach((el) => {
+      const k = el.dataset.need, f = el.closest(".field");
+      const lim = !pl ? null : k === "weigh" ? pl.latestWeigh : k === "mfg" ? pl.latestMfg : pl.latestMat;
+      const n = !pl ? 0 : k.startsWith("s:") ? pl.need.s[k.slice(2)] || 0 : pl.need[k] || 0;
+      el.innerHTML = lim ? (n ? `늦어도 ${fmtMD(lim)} · <b>${n}영업일 늦음</b>` : `늦어도 ${fmtMD(lim)}`) : "";
+      f.classList.toggle("need-late", !!n);
+    });
+  };
   const preview = () => {
     const box = $("tt-preview");
+    paintNeed(hasQty() && val("tt-due") ? ttPlan(draft()) : null);
     if (!hasQty()) { box.innerHTML = `<div class="tt-pv-empty">발주량과 일별 CAPA를 넣으면 생산 기간이 계산됩니다.</div>`; return; }
     const d = draft(), pl = ttPlan(d), mfgL = pl.own ? "제조" : "원료셋팅";
     let x = `<div class="tt-pv-line">생산 <b>${pl.baseDays}일</b> = ${d.qty.toLocaleString()}ea ÷ ${d.capa.toLocaleString()}ea/일, 올림${pl.prodDays > pl.baseDays ? ` · 체크가 늦어 <b>${pl.prodDays - pl.baseDays}일</b> 늘어남` : ""}</div>`;
@@ -2447,9 +2503,12 @@ function renderOrderModal(id, copyFrom) {
     } else {
       const c = (cls, l, v) => `<span class="c ${cls}"><i></i>${l} <b>${v}</b></span>`, ar = `<span class="ar">→</span>`;
       const setupC = (d.setups || []).filter((s) => s.date).map((s) => c("s-setup", esc(s.name), fmtMD(s.date))).join("");
-      x += `<div class="tt-chain">${pl.weigh ? c("s-weigh", "칭량", fmtMD(pl.weigh)) : ""}${c("s-mfg", mfgL, fmtMD(d.mfgDate) || "—")}${pl.judgeEnd ? c("s-judge", `판정 D+${d.judgeDays}`, "~" + fmtMD(pl.judgeEnd)) : ""}<span class="ar">+</span>${c("s-mat", "자재", fmtMD(d.matDate) || "—")}${setupC}${ar}${c("s-move", "이동", fmtMD(pl.move))}${ar}${c("s-prod", "생산", fmtMD(pl.prodStart) + (pl.prodDays > 1 ? "–" + fmtMD(pl.prodEnd) : ""))}${ar}${c("s-ship", "납품", fmtMD(pl.ship))}</div>`;
+      x += `<div class="tt-chain">${pl.weigh ? c("s-weigh", "칭량", fmtMD(pl.weigh)) : ""}${c("s-mfg", mfgL, fmtMD(d.mfgDate) || "—")}${pl.judgeEnd ? c("s-judge", `판정 D+${d.judgeDays}`, "~" + fmtMD(pl.judgeEnd)) : ""}<span class="ar">+</span>${c("s-mat", "자재", fmtMD(d.matDate) || "—")}${setupC}${ar}${c("s-move" + (pl.need.move ? " need-late" : ""), "이동", fmtMD(pl.move))}${ar}${c("s-prod", "생산", fmtMD(pl.prodStart) + (pl.prodDays > 1 ? "–" + fmtMD(pl.prodEnd) : ""))}${ar}${c("s-ship", "납품", fmtMD(pl.ship))}</div>`;
       const byL = { judge: `판정 완료(${fmtMD(pl.judgeEnd)})`, mat: `자재셋팅(${fmtMD(d.matDate)})`, setup: `추가 셋팅(${fmtMD(pl.base)})` }[pl.by];
       x += `<div class="tt-pv-line">이동은 가장 늦게 끝나는 <b>${byL}</b> 기준 +${ttRules().gapMove}영업일입니다.</div>`;
+      if (pl.latestMove) x += pl.need.move
+        ? `<div class="tt-pv-line bad tt-pv-need">이동 필요일 <b>${fmtMD(pl.latestMove)}</b>(목표일 역산) → 계산 이동일 ${fmtMD(pl.move)} · <b>${pl.need.move}영업일 늦음</b> — 붉게 표시된 셋팅일을 당겨야 합니다.</div>`
+        : `<div class="tt-pv-line ok">이동 필요일 <b>${fmtMD(pl.latestMove)}</b>(목표일 역산) — 계산 이동일 ${fmtMD(pl.move)}로 맞습니다.</div>`;
       if (d.due) {
         x += pl.slack < 0
           ? `<div class="tt-pv-line bad">출고 목표 ${fmtMD(d.due)}보다 <b>${-pl.slack}영업일 늦습니다</b> — ${mfgL} ${fmtMD(pl.latestMfg)} · 자재 ${fmtMD(pl.latestMat)}까지 끝나야 맞출 수 있습니다.</div>`
@@ -2462,7 +2521,7 @@ function renderOrderModal(id, copyFrom) {
   const drawSetups = () => {
     $("tt-setups").innerHTML = setups.map((s, i) => `<div class="field tt-srow2"><div class="tt-su-h"><input class="tt-sn" data-i="${i}" list="tt-setup-names" value="${esc(s.name)}" placeholder="셋팅 이름 (예: 칼선)" aria-label="추가 셋팅 이름" />
       <button type="button" class="tt-px" data-si="${i}" title="이 셋팅 삭제">×</button></div>
-      <input type="date" class="tt-sd2" data-i="${i}" value="${s.date || ""}" aria-label="${esc(s.name)} 셋팅일" /></div>`).join("");
+      <input type="date" class="tt-sd2" data-i="${i}" value="${s.date || ""}" aria-label="${esc(s.name)} 셋팅일" /><div class="tt-need" data-need="s:${s.id}"></div></div>`).join("");
   };
   const drawParts = () => {
     const box = $("tt-parts"); if (box.hidden) return;
@@ -2702,10 +2761,39 @@ function statCollect(days) {
   const today = todayStr(), from = days ? ymd(addDays(new Date(), -days + 1)) : "0000";
   const recs = [];
   Store.state.todos.forEach((t) => { const r = statRecordOf(t, "todo"); if (r) recs.push(r); });
-  Store.state.events.forEach((e) => { if (e.allDay) return; const r = statRecordOf(e, "event"); if (r) recs.push(r); });
+  Store.state.events.forEach((e) => { if (e.allDay && !e.projectId) return; const r = statRecordOf(e, "event"); if (r) recs.push(r); });   // 종일 일정은 이월되지 않음(프로젝트 단계는 이월됨)
   (Store.state.archive || []).forEach((r) => recs.push({ ...r, open: false, arch: true }));
   // 기한이 이미 지난(평가 가능한) 것만, 기간 안의 원래 날짜 기준
   return recs.filter((r) => r.orig <= today && r.orig >= from);
+}
+// 지금 밀려 있는 것 전부 — 기간과 무관: 일반 할 일·일정 + 프로젝트 단계 + 출고 건 공정
+function statStuckAll() {
+  const items = statCollect(0).filter((r) => r.open && r.d > 0)
+    .map((r) => ({ ...r, grp: r.pj && projectById(r.pj) ? "proj" : "plain" }));
+  Store.state.orders.forEach((o) => {
+    if (o.done.ship) return;
+    ttSteps(o, ttPlan(o)).forEach((st) => { if (st.done) return; const d = ttDelay(o, st);
+      if (d > 0) items.push({ k: "order", oid: o.id, t: `${o.item} · ${st.label}`, d, grp: "order", orig: o.plan0[st.key], end: ttRef(st), open: true }); });
+  });
+  return items.sort((a, b) => b.d - a.d);
+}
+function openStuckList() {
+  const items = statStuckAll();
+  const li = (r) => `<div class="st-li" ${r.k === "order" ? `data-st-order="${r.oid}"` : r.k === "todo" ? `data-edit-todo="${r.id}"` : `data-edit-event="${r.id}"`}><em class="tt-dn${ttLateCls(r.d)}">D+${r.d}</em><span class="st-lt">${esc(r.t)}</span><span class="st-lm">${fmtMD(r.orig)} → ${fmtMD(r.end)}</span></div>`;
+  const plain = items.filter((r) => r.grp === "plain"), order = items.filter((r) => r.grp === "order");
+  const byP = {}; items.filter((r) => r.grp === "proj").forEach((r) => (byP[r.pj] = byP[r.pj] || []).push(r));
+  let h = `<h3>지금 밀려 있는 것 ${items.length}건</h3><div class="st-stuck">`;
+  if (!items.length) h += `<div class="st-empty">밀려 있는 일이 없습니다.</div>`;
+  if (plain.length) h += `<div class="st-gh">할 일·일정 ${plain.length}</div><div class="st-list">${plain.map(li).join("")}</div>`;
+  Object.entries(byP).forEach(([pid, rs]) => { const p = projectById(pid);
+    h += `<div class="st-gh"><span class="ptag" style="--pc:${p.color}">${esc(p.name)}</span> 프로젝트 ${rs.length}</div><div class="st-list">${rs.map(li).join("")}</div>`; });
+  if (order.length) h += `<div class="st-gh">출고 건 공정 ${order.length} <small>최초 계획 대비</small></div><div class="st-list">${order.map(li).join("")}</div>`;
+  h += `</div><div class="modal-actions"><button type="button" class="btn-sub" id="st-close" style="margin-left:auto">닫기</button></div>`;
+  modalState = { kind: "stuck" };
+  const m = document.getElementById("modal"); m.className = "modal st-modal"; m.innerHTML = h;
+  document.getElementById("st-close").addEventListener("click", closeModal);
+  m.querySelector(".st-stuck").addEventListener("click", (e) => { const o = e.target.closest("[data-st-order]"); if (o) openOrder(o.dataset.stOrder); });
+  document.getElementById("modal-backdrop").classList.add("open");
 }
 function statGroup(recs, keyFn) {
   const g = {};
@@ -2833,7 +2921,8 @@ function renderStats() {
   const recs = statCollect(days), late = recs.filter((r) => r.d > 0);
   const rate = recs.length ? late.length / recs.length : 0;
   const avg = late.length ? late.reduce((n, r) => n + r.d, 0) / late.length : 0;
-  const stuck = recs.filter((r) => r.open && r.d > 0);
+  const stuckAll = statStuckAll();
+  const stN = (g) => stuckAll.filter((r) => r.grp === g).length;
   const G = { recs,
     byType: statGroup(recs, (r) => stTypeOf(r.t).k), byDow: statGroup(recs, (r) => parseYMD(r.orig).getDay()),
     byPr: statGroup(recs, (r) => r.pr || "normal"), byProj: statGroup(recs, (r) => r.pj || "-"),
@@ -2851,7 +2940,7 @@ function renderStats() {
     <div class="tt-kpi ${rate >= 0.3 ? "warn" : ""}"><div class="k">지연 발생</div><div class="v">${late.length}건 <small>${stPct(rate)}</small></div></div>
     <div class="tt-kpi"><div class="k">평균 지연</div><div class="v">${stDay(avg)}일</div></div>
     <div class="tt-kpi" title="끝난 일 중 원래 기한 안에 끝낸 비율 — 계획이 얼마나 현실적인지"><div class="k">계획 정확도</div><div class="v">${acc == null ? "—" : stPct(acc)}</div></div>
-    <div class="tt-kpi ${stuck.length ? "bad" : ""}"><div class="k">지금 밀려 있는 것</div><div class="v">${stuck.length}건</div></div>
+    <button type="button" class="tt-kpi st-kpi-btn ${stuckAll.length ? "bad" : ""}" data-st-stuck title="기간과 관계없이 지금 밀려 있는 전부 — 눌러서 목록 보기"><div class="k">지금 밀려 있는 것 ›</div><div class="v">${stuckAll.length}건</div><div class="st-kpi-sub">일반 ${stN("plain")} · 프로젝트 ${stN("proj")} · 출고 ${stN("order")}</div></button>
     <div class="tt-kpi ${ord.lateOrders ? "warn" : ""}"><div class="k">계획보다 밀린 출고 건</div><div class="v">${ord.lateOrders}/${ord.orders}</div></div></div>`;
   if (recs.length < 10) h += `<div class="st-note">분석할 기록이 아직 ${recs.length}건입니다. 2~3주 쓰면서 끝난 일을 체크하면 패턴이 더 정확해집니다. (완료 후 1주일 지나 자동 정리되는 항목도 통계용 기록은 남겨 둡니다)</div>`;
 
@@ -2903,6 +2992,7 @@ function renderStats() {
   return h;
 }
 function statClick(e) {
+  if (e.target.closest("[data-st-stuck]")) { openStuckList(); return; }
   const b = e.target.closest("[data-st-days]"); if (!b) return;
   ui.statDays = +b.dataset.stDays; saveUI(); render();
 }
@@ -3090,6 +3180,25 @@ function notifyProjectCompletion() {
   });
   knownDoneProjects = now;
 }
+// 주간 캘린더의 현재 시각: 오늘 열에 빨간 점·선, 그 시간 행 전체 음영 (30초마다 위치만 갱신)
+function refreshNowMarker() {
+  const g = document.querySelector(".week-grid:not(.month-grid)");
+  document.querySelectorAll(".week-grid .now-row").forEach((el) => { el.classList.remove("now-row"); el.removeAttribute("data-now"); });
+  document.querySelectorAll(".week-grid .now-line").forEach((el) => el.remove());
+  if (!g) return;
+  const today = todayStr(), nowM = nowMin(), hh = `${pad(Math.floor(nowM / 60))}:00`;
+  if (!g.querySelector(`.cell[data-date="${today}"]`)) return;                 // 이번 주가 아니면 표시 안 함
+  const row = g.querySelectorAll(`.cell[data-hour="${hh}"]`);
+  if (!row.length) return;                                                     // 표시 시간(8~20시) 밖
+  row.forEach((c) => c.classList.add("now-row"));
+  const lab = g.querySelector(`.hourlabel[data-hour="${hh}"]`);
+  if (lab) { lab.classList.add("now-row"); lab.dataset.now = minToHM(nowM); }
+  const cell = g.querySelector(`.cell[data-date="${today}"][data-hour="${hh}"]`);
+  const line = document.createElement("div");
+  line.className = "now-line"; line.title = "지금 " + minToHM(nowM);
+  line.style.top = (((nowM % 60) / 60) * cell.offsetHeight).toFixed(1) + "px";
+  cell.appendChild(line);
+}
 function render() {
   notifyProjectCompletion();
   document.getElementById("c-today").textContent = eventsOn(todayStr()).length || "";
@@ -3129,7 +3238,7 @@ function render() {
   document.getElementById("dash-reopen").style.display = "none";
   document.getElementById("dash").innerHTML = "";
 
-  if (ui.view === "calendar") wireCalendarDnD();
+  if (ui.view === "calendar") { wireCalendarDnD(); refreshNowMarker(); }
   renderPin();
   scheduleReminders();
 }
@@ -3787,7 +3896,7 @@ function pinItemsHtml() {
     const late = t.rolledFrom ? `<span class="dd">D+${daysBetween(t.rolledFrom, today)}</span>` : (t.due && t.due < today ? `<span class="dd">D+${daysBetween(t.due, today)}</span>` : "");
     return `<div class="pin-todo pri-${t.priority}${lateCls(t)}" title="${esc(t.title)}${lateTitle(t)}">
       <div class="box" data-pin-toggle="${t.id}"></div>
-      <div class="pin-tx" data-pin-edit-todo="${t.id}"><div class="t">${late}${esc(t.title)}</div><div class="m">${t.due ? fmtDueMeta(t.due) : "기한 없음"} · ${PRIO[t.priority].label}${projTag(t.projectId)}</div></div>
+      <div class="pin-tx" data-pin-edit-todo="${t.id}"><div class="t">${late}${esc(t.title)}</div>${t.projectId ? `<div class="m">${projTag(t.projectId)}</div>` : ""}</div>
     </div>`;
   }).join("") : `<div class="pin-empty">${IC.check} 할 일 없음</div>`;
   h += `<div class="pin-divider">오늘 일정</div>`;
@@ -3809,9 +3918,9 @@ function pinItemsHtml() {
   h += `<div class="pin-divider pin-fold" data-pin-donetoggle style="cursor:pointer">완료 · ${doneItems.length} ${pinState.doneOpen ? "▲" : "▼"}</div>`;
   if (pinState.doneOpen) {
     h += doneItems.length ? doneItems.map((d) => `
-      <div class="pin-todo done pri-${d.pri}">
+      <div class="pin-todo done pri-${d.pri}" title="완료 · 체크 해제 시 복원">
         <div class="box done" data-pin-${d.kind === "todo" ? "toggle" : "ev-toggle"}="${d.id}">${IC.check}</div>
-        <div><div class="t">${d.kind === "event" ? catIcon(d.cat) + " " : ""}${esc(d.title)}</div><div class="m">완료 · 체크 해제 시 복원</div></div>
+        <div><div class="t">${d.kind === "event" ? catIcon(d.cat) + " " : ""}${esc(d.title)}</div></div>
       </div>`).join("") : `<div class="pin-empty">완료된 항목 없음</div>`;
   }
   return h;
@@ -4428,7 +4537,7 @@ function wireGlobal() {
       Store.ttAutoShift();
       Store.purgeOld();
       render();
-    }
+    } else if (ui.view === "calendar") refreshNowMarker();
   }
   setInterval(dayTick, 30 * 1000);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) dayTick(); });
