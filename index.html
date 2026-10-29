@@ -636,6 +636,39 @@
   .tt-srow.over .tt-ss{color:var(--late-crit);}
   @media (max-width:640px){ .tt-grid{--tt-gut:112px;} .tt-g .mt{display:none;}
     .tt-kpis{gap:6px;} .tt-kpi{flex:1 1 28%;padding:5px 8px;} .tt-kpi .v{font-size:15px;} .tt-kpi .k{font-size:10px;} }
+  /* 휴대폰: 상단 줄이 화면 밖으로 넘치지 않게 (테마 전환은 설정에서) */
+  @media (max-width:640px){
+    .topbar{gap:6px;padding:8px 10px;}
+    .topbar .search{min-width:72px;}
+    .topbar .chip-row{gap:4px;}
+    .topbar .chip-row .chip{padding:5px 8px;font-size:11.5px;}
+    #theme-btn{display:none;}
+    .topbar-right{gap:6px;}
+  }
+  /* 클라우드 동기화 */
+  .sync-btn{position:relative;}
+  .sync-btn i{position:absolute;right:4px;bottom:4px;width:7px;height:7px;border-radius:50%;background:var(--text-faint);border:1.5px solid var(--surface);}
+  .sync-btn[data-st="ok"] i{background:var(--done);}
+  .sync-btn[data-st="pending"] i,.sync-btn[data-st="syncing"] i{background:var(--late-warn);}
+  .sync-btn[data-st="syncing"] i{animation:sync-blink .8s ease-in-out infinite;}
+  .sync-btn[data-st="offline"] i{background:var(--text-faint);}
+  .sync-btn[data-st="error"] i{background:var(--late-crit);}
+  .sync-btn[data-st="off"] svg{opacity:.55;}
+  @keyframes sync-blink{50%{opacity:.25;}}
+  .sync-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:var(--text-faint);vertical-align:0;}
+  .sync-dot[data-st="ok"]{background:var(--done);} .sync-dot[data-st="pending"],.sync-dot[data-st="syncing"]{background:var(--late-warn);} .sync-dot[data-st="error"]{background:var(--late-crit);}
+  .sync-form{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+  .sync-form input{flex:1 1 180px;min-width:0;border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:8px;padding:9px 11px;font-size:13px;}
+  .sync-msg{font-size:12px;color:var(--late-crit);margin-top:6px;min-height:0;}
+  .sync-msg:empty{display:none;}
+  .sync-adv{display:block;}
+  .sync-adv summary{cursor:pointer;font-size:12px;color:var(--text-faint);font-weight:700;}
+  .sync-list{display:flex;flex-direction:column;gap:4px;margin-top:8px;max-height:260px;overflow:auto;}
+  .sync-li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);font-size:12.5px;}
+  .sync-li span{min-width:0;}
+  .sync-li small{display:block;font-size:11px;color:var(--text-faint);}
+  .sync-li.warn{border-color:var(--late-warn);margin-top:8px;}
+  .sync-li .btn-sub{padding:5px 12px;font-size:12px;flex:none;}
   /* ================= 통계 (지연 분석) ================= */
   .st-kpis .v small{font-size:12px;font-weight:700;color:var(--text-faint);margin-left:2px;}
   .st-note{font-size:12px;color:var(--text-soft);background:var(--surface-2);border:1px dashed var(--border-strong);border-radius:10px;padding:8px 12px;margin-bottom:12px;}
@@ -1325,6 +1358,7 @@
     <div class="tab-sep tb-desktop"></div>
     <div class="chip-row" data-chips></div>
     <div class="topbar-right">
+      <button class="icon-btn sync-btn" id="sync-btn" data-st="off" title="클라우드 동기화"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18h10a4 4 0 00.6-7.96A6 6 0 006.2 9.1 4.5 4.5 0 007 18z"/></svg><i></i></button>
       <button class="icon-btn" id="pin-btn" title="오늘 할 일 고정"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M9 4h6l-1 6 3 3v2H7v-2l3-3-1-6z"/><path d="M12 15v5"/></svg></button>
       <button class="icon-btn" id="theme-btn" title="테마 전환"><svg id="theme-icon" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg></button>
       <button class="tab tb-desktop" data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.34 1.87l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.7 1.7 0 00-1.87-.34 1.7 1.7 0 00-1 1.55V21a2 2 0 11-4 0v-.09a1.7 1.7 0 00-1-1.55 1.7 1.7 0 00-1.87.34l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.7 1.7 0 00.34-1.87 1.7 1.7 0 00-1.55-1H3a2 2 0 110-4h.09a1.7 1.7 0 001.55-1 1.7 1.7 0 00-.34-1.87l-.06-.06a2 2 0 112.83-2.83l.06.06a1.7 1.7 0 001.87.34H9a1.7 1.7 0 001-1.55V3a2 2 0 114 0v.09a1.7 1.7 0 001 1.55 1.7 1.7 0 001.87-.34l.06-.06a2 2 0 112.83 2.83l-.06.06a1.7 1.7 0 00-.34 1.87V9a1.7 1.7 0 001.55 1H21a2 2 0 110 4h-.09a1.7 1.7 0 00-1.55 1z"/></svg>설정</button>
@@ -1392,7 +1426,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-10-28 · 출고 건 창 정리(원료&제조·최종 자재셋팅·역산 비교표)·고정창 줄임 순환";
+const APP_VERSION = "2026-10-29 · 클라우드 동기화(Supabase)·자동 백업·읽기 오류 보호";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1669,6 +1703,7 @@ const ST_ARCHIVE_MAX = 2000;                // 통계용 완료 기록 보관 �
 const Store = (() => {
   const KEY = "scheduler:v1";
   let state = { version: 2, events: [], todos: [], projects: [], orders: [], archive: [] };
+  let loadBroken = false;
   const subs = [];
 
   function normalizeEvent(e) {
@@ -1759,14 +1794,17 @@ const Store = (() => {
     state.orders = [normalizeOrder(ttSampleOrder())];
   }
   function load() {
+    let raw = null;
     try {
-      const raw = localStorage.getItem(KEY);
+      raw = localStorage.getItem(KEY);
       if (raw) { const p = JSON.parse(raw); if (p && Array.isArray(p.events) && Array.isArray(p.todos)) {
         state = { version: 2, events: p.events.map(normalizeEvent), todos: p.todos.map(normalizeTodo),
           projects: Array.isArray(p.projects) ? p.projects.map(normalizeProject) : [],
           orders: Array.isArray(p.orders) ? p.orders.map(normalizeOrder) : [],
           archive: Array.isArray(p.archive) ? p.archive.slice(-ST_ARCHIVE_MAX) : [] }; return; } }
     } catch (e) {}
+    // 저장된 내용이 있는데 읽지 못했으면 예시로 덮어쓰기 전에 원본을 따로 보관 (설정 → 이 기기 자동 백업에서 복원 시도)
+    if (raw) { try { localStorage.setItem(KEY + ":broken", raw); loadBroken = true; } catch (_) {} }
     seed(); persist();
   }
   function persist() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
@@ -1774,7 +1812,7 @@ const Store = (() => {
 
   return {
     get state() { return state; },
-    subscribe(fn) { subs.push(fn); }, load, normalizeEvent, normalizeTodo,
+    subscribe(fn) { subs.push(fn); }, load, normalizeEvent, normalizeTodo, get loadBroken() { return loadBroken; },
     addProject(pr) { const np = normalizeProject(pr); state.projects.push(np); emit(); return np.id; },
     updateProject(id, patch) { const pr = state.projects.find((x) => x.id === id); if (pr) Object.assign(pr, normalizeProject({ ...pr, ...patch })); emit(); },
     // 프로젝트 삭제: 소속 일정·할 일은 남기고 연결만 해제
@@ -3184,14 +3222,15 @@ function renderSettings() {
         <div class="seg"><button class="${!ui.workweek ? "active" : ""}" data-ww="0">월~일</button><button class="${ui.workweek ? "active" : ""}" data-ww="1">월~금</button></div></div>
     </div>
 
-    <p class="panel-title" style="margin-top:20px">데이터 (이 기기에 저장됨)</p>
+    ${syncSettingsHtml()}
+    <p class="panel-title" style="margin-top:20px">데이터 (이 기기)</p>
     <div class="set-group">
       <div class="set-row"><div><div class="lab">백업 내보내기</div><div class="desc">일정·할 일을 JSON 파일로 저장</div></div><button class="btn-sub" id="set-export">내보내기</button></div>
       <div class="set-row"><div><div class="lab">백업 가져오기</div><div class="desc">JSON 파일에서 복원 (현재 데이터 대체)</div></div><button class="btn-sub" id="set-import">가져오기</button></div>
       <div class="set-row"><div><div class="lab">전체 삭제</div><div class="desc">이 기기의 모든 데이터 삭제</div></div><button class="btn-danger" id="set-clear">삭제</button></div>
     </div>
     <p class="sub" style="color:var(--text-faint);font-size:11.5px;margin-top:16px;line-height:1.6">
-      데이터는 이 브라우저에만 저장됩니다. 다른 기기와의 자동 동기화는 다음 단계에서 추가됩니다.<br>
+      ${sync.session ? "일정은 이 기기와 클라우드(Supabase)에 함께 저장됩니다." : "로그인하기 전에는 이 브라우저에만 저장됩니다 — 위 클라우드 동기화에 로그인하면 서버에도 저장됩니다."}<br>
       <span style="opacity:.8">버전: ${esc(APP_VERSION)}</span></p>`;
 }
 
@@ -3957,6 +3996,279 @@ function showAlertCard(e, key) {
   }
 }
 
+/* ---------- 이 기기 자동 백업 (스냅샷) ----------
+   매일 처음 열 때 · 서버 데이터로 바꾸기 전 · 충돌 때 이 기기에 사본을 남김 (최근 8개) */
+const SNAP_KEY = "scheduler:snaps", SNAP_MAX = 8, SNAP_BYTES = 2500000;
+function snapList() { try { const a = JSON.parse(localStorage.getItem(SNAP_KEY) || "[]"); return Array.isArray(a) ? a : []; } catch (_) { return []; } }
+function snapCount(d) { return { e: (d.events || []).length, t: (d.todos || []).length, p: (d.projects || []).length, o: (d.orders || []).length }; }
+function snapTake(label, dataObj) {
+  try {
+    const data = dataObj || JSON.parse(Store.exportJSON());
+    const n = snapCount(data);
+    if (!n.e && !n.t && !n.p && !n.o) return false;                     // 빈 데이터는 남기지 않음
+    let list = snapList().concat([{ at: Date.now(), label, n, data: JSON.stringify(data) }]);
+    while (list.length > SNAP_MAX || (list.length > 1 && JSON.stringify(list).length > SNAP_BYTES)) list.shift();
+    localStorage.setItem(SNAP_KEY, JSON.stringify(list));
+    return true;
+  } catch (_) { return false; }
+}
+function snapDaily() {
+  const today = todayStr();
+  if (!snapList().some((s) => s.label === "매일 자동" && ymd(new Date(s.at)) === today)) snapTake("매일 자동");
+}
+function snapRestore(at) {
+  const s = snapList().find((x) => String(x.at) === String(at)); if (!s) return false;
+  snapTake("복원 전 이 기기");
+  return Store.replaceAll(JSON.parse(s.data));
+}
+
+/* ---------- 클라우드 동기화 (Supabase) ----------
+   · 테이블 schedules: 사용자당 1줄(data = 일정 전체 JSON), RLS로 본인 줄만
+   · 바꿀 때마다 2초 뒤 저장, 1분마다·창으로 돌아올 때 다른 기기 변경 확인
+   · 서버가 그사이 바뀌었으면(다른 기기) 덮어쓰지 않고 조건부 저장 → 충돌 시 이 기기 내용을 저장하고 서버 내용은 스냅샷으로 보관
+   · 인터넷이 끊기면 이 기기에 저장해 두었다가 연결되면 올림 */
+const SUPA_DEFAULT = { url: "https://gmavpmckcvpiabvznnmq.supabase.co", key: "sb_publishable_f3lZ5Q9CK2HLnEpzy3R4pw_ZwaoGWqh" };
+const SYNC_KEY = "scheduler:sync";
+const sync = { url: SUPA_DEFAULT.url, key: SUPA_DEFAULT.key, session: null, lastServerAt: null, dirty: false, lastOkAt: 0,
+  status: "off", msg: "", busy: null, again: false, applying: false, timer: null };
+function syncLoad() {
+  try { const s = JSON.parse(localStorage.getItem(SYNC_KEY) || "{}");
+    ["url", "key", "session", "lastServerAt", "dirty", "lastOkAt"].forEach((k) => { if (s[k] != null) sync[k] = s[k]; }); } catch (_) {}
+  sync.status = sync.session ? (sync.dirty ? "pending" : "ok") : "off";
+}
+function syncSave() {
+  try { localStorage.setItem(SYNC_KEY, JSON.stringify({ url: sync.url, key: sync.key, session: sync.session, lastServerAt: sync.lastServerAt, dirty: sync.dirty, lastOkAt: sync.lastOkAt })); } catch (_) {}
+}
+function syncSetStatus(st, msg) { sync.status = st; sync.msg = msg || ""; syncPaint(); }
+function syncPaint() {
+  const b = document.getElementById("sync-btn"); if (!b) return;
+  b.dataset.st = sync.status;
+  b.title = { off: "클라우드 동기화 꺼짐 — 설정에서 로그인", ok: `동기화됨${sync.lastOkAt ? " · " + new Date(sync.lastOkAt).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" }) : ""}`,
+    pending: "저장 대기 중", syncing: "동기화 중…", offline: "인터넷 연결 없음 — 연결되면 올립니다", error: "동기화 오류: " + sync.msg }[sync.status] || "";
+  const s = document.getElementById("sync-state"); if (s) s.innerHTML = syncStateHtml();
+}
+function syncStateHtml() {
+  const t = sync.lastOkAt ? new Date(sync.lastOkAt).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
+  const lab = { off: "꺼짐", ok: "동기화됨", pending: "저장 대기", syncing: "동기화 중", offline: "오프라인", error: "오류" }[sync.status];
+  return `<span class="sync-dot" data-st="${sync.status}"></span>${lab} · 마지막 동기화 ${t}${sync.status === "error" && sync.msg ? ` · ${esc(sync.msg)}` : ""}`;
+}
+
+async function supaFetch(path, { method = "GET", body, auth = true, prefer, retried } = {}) {
+  const h = { apikey: sync.key, "Content-Type": "application/json" };
+  if (auth) { await syncEnsureToken(); h.Authorization = "Bearer " + sync.session.access_token; }
+  if (prefer) h.Prefer = prefer;
+  const r = await fetch(sync.url.replace(/\/+$/, "") + path, { method, headers: h, body: body ? JSON.stringify(body) : undefined, cache: "no-store" });
+  const txt = await r.text(); let j = null; try { j = txt ? JSON.parse(txt) : null; } catch (_) {}
+  if (r.status === 401 && auth && !retried && sync.session) {             // 토큰이 일찍 만료됨 → 한 번 갱신 후 다시
+    sync.session.expires_at = 0;
+    return supaFetch(path, { method, body, auth, prefer, retried: true });
+  }
+  if (!r.ok) {
+    const e = new Error((j && (j.msg || j.message || j.error_description || j.error)) || `HTTP ${r.status}`);
+    e.status = r.status; e.code = j && (j.code || j.error_code); throw e;
+  }
+  return j;
+}
+function syncSetSession(j) {
+  sync.session = { access_token: j.access_token, refresh_token: j.refresh_token,
+    expires_at: j.expires_at || Math.floor(Date.now() / 1000) + (j.expires_in || 3600),
+    user: { id: j.user ? j.user.id : sync.session && sync.session.user.id, email: j.user ? j.user.email : sync.session && sync.session.user.email } };
+  syncSave();
+}
+async function syncEnsureToken() {
+  const s = sync.session;
+  if (!s) { const e = new Error("로그인이 필요합니다"); e.status = 401; throw e; }
+  if (s.expires_at - 60 > Date.now() / 1000) return;
+  try { syncSetSession(await supaFetch("/auth/v1/token?grant_type=refresh_token", { method: "POST", body: { refresh_token: s.refresh_token }, auth: false })); }
+  catch (e) { if (e.status === 400 || e.status === 401) { sync.session = null; syncSave(); } throw e; }
+}
+const syncErrText = (e) => e instanceof TypeError ? "인터넷 연결 없음"
+  : /invalid login|invalid_credentials/i.test(e.message) ? "이메일 또는 비밀번호가 맞지 않습니다"
+  : e.code === "PGRST205" || /could not find the table/i.test(e.message) ? "서버에 schedules 테이블이 없습니다 (SQL을 실행해 주세요)"
+  : e.status === 401 ? "로그인이 만료되었습니다 — 다시 로그인해 주세요" : e.message;
+
+async function syncLogin(email, password) {
+  const j = await supaFetch("/auth/v1/token?grant_type=password", { method: "POST", body: { email, password }, auth: false });
+  syncSetSession(j); sync.lastServerAt = null; syncSave();               // 이 기기에선 처음 연결 → 서버 내용 기준으로 맞춤
+  await syncNow({ first: true });
+}
+async function syncLogout() {
+  try { if (sync.session) await supaFetch("/auth/v1/logout", { method: "POST" }); } catch (_) {}
+  sync.session = null; sync.lastServerAt = null; sync.dirty = false; syncSave(); syncSetStatus("off");
+}
+const rowUrl = () => `/rest/v1/schedules?user_id=eq.${sync.session.user.id}`;
+// 마지막으로 서버와 맞춘 내용(기준본) — 두 기기가 동시에 바꿨을 때 항목 단위로 합치는 데 씀
+const SYNC_BASE_KEY = "scheduler:sync:base";
+function syncBaseSet(data) { try { localStorage.setItem(SYNC_BASE_KEY, JSON.stringify(data)); } catch (_) {} }
+function syncBaseGet() { try { return JSON.parse(localStorage.getItem(SYNC_BASE_KEY) || "null"); } catch (_) { return null; } }
+// 3방향 합치기: 한쪽만 바꾼 항목은 바꾼 쪽(삭제 포함), 둘 다 바꾼 항목은 이 기기 쪽
+function syncMerge3(base, local, server) {
+  const out = { ...server };
+  ["events", "todos", "projects", "orders"].forEach((k) => {
+    const B = new Map((base[k] || []).map((x) => [x.id, JSON.stringify(x)]));
+    const L = new Map((local[k] || []).map((x) => [x.id, x])), S = new Map((server[k] || []).map((x) => [x.id, x]));
+    const res = [];
+    new Set([...S.keys(), ...L.keys()]).forEach((id) => {
+      const b = B.get(id), l = L.get(id), s = S.get(id);
+      const lj = l ? JSON.stringify(l) : undefined, sj = s ? JSON.stringify(s) : undefined;
+      const pick = lj === b ? s : sj === b ? l : l || s;
+      if (pick) res.push(pick);
+    });
+    out[k] = res;
+  });
+  const seen = new Set();
+  out.archive = [...(server.archive || []), ...(local.archive || [])].filter((r) => { const j = JSON.stringify(r); if (seen.has(j)) return false; seen.add(j); return true; }).slice(-ST_ARCHIVE_MAX);
+  return out;
+}
+// 서버 데이터를 이 기기에 적용 (처음 연결할 때는 이 기기 사본을 먼저 스냅샷으로)
+function syncApply(row, label) {
+  if (label) snapTake(label);                                             // 평소 받아오기는 서버에 이미 있는 내용이라 보관 안 함
+  sync.applying = true;
+  try { Store.replaceAll(row.data); } finally { sync.applying = false; }
+  sync.lastServerAt = row.updated_at; sync.dirty = false; syncSave(); syncBaseSet(row.data);
+  Store.autoCarry(); Store.ttAutoShift();                                 // 그사이 날짜가 바뀌었으면 이월
+}
+async function syncPushTo(lastAt) {
+  const data = JSON.parse(Store.exportJSON()), was = sync.dirtyAt;
+  let rows;
+  if (lastAt) rows = await supaFetch(`${rowUrl()}&updated_at=eq.${encodeURIComponent(lastAt)}`, { method: "PATCH", body: { data }, prefer: "return=representation" });
+  else rows = await supaFetch("/rest/v1/schedules?on_conflict=user_id", { method: "POST", body: { user_id: sync.session.user.id, data }, prefer: "resolution=merge-duplicates,return=representation" });
+  if (!rows || !rows.length) return false;                                // 그사이 다른 기기가 저장함
+  sync.lastServerAt = rows[0].updated_at; syncBaseSet(data);
+  if (sync.dirtyAt === was) sync.dirty = false;                           // 올리는 동안 또 바뀌었으면 한 번 더
+  return true;
+}
+async function syncRun({ first } = {}) {
+  if (!sync.session) { syncSetStatus("off"); return; }
+  syncSetStatus("syncing");
+  try {
+    const head = await supaFetch(`${rowUrl()}&select=updated_at`);
+    const srvAt = head && head[0] ? head[0].updated_at : null;
+    if (!srvAt) {                                                         // 서버에 아직 없음 → 이 기기 내용을 처음 올림
+      await syncPushTo(null);
+    } else if (srvAt !== sync.lastServerAt) {                              // 다른 기기(또는 처음 연결)에서 바뀜
+      const full = (await supaFetch(`${rowUrl()}&select=data,updated_at`))[0];
+      if (first || !sync.dirty) {
+        syncApply(full, first ? "연결 전 이 기기" : null);
+        if (first) toast("서버에 저장된 일정을 불러왔습니다 (이 기기의 이전 내용은 설정 → 이 기기 자동 백업에 보관)");
+      } else {                                                            // 양쪽 다 바뀜 → 항목 단위로 합쳐서 저장
+        const base = syncBaseGet();
+        if (base) {
+          snapTake("합치기 전 이 기기");
+          const merged = syncMerge3(base, JSON.parse(Store.exportJSON()), full.data);
+          sync.applying = true; try { Store.replaceAll(merged); } finally { sync.applying = false; }
+          sync.dirty = true; sync.dirtyAt = Date.now();
+        } else snapTake("충돌 시 서버 내용", full.data);                      // 기준본이 없으면 이 기기 내용 우선, 서버 내용은 보관
+        if (await syncPushTo(srvAt)) toast(base ? "다른 기기에서 바뀐 내용을 합쳐 저장했습니다" : "다른 기기 내용과 겹쳐 이 기기 내용으로 저장했습니다 (서버 내용은 설정 → 이 기기 자동 백업에 보관)");
+        else sync.again = true;                                           // 또 바뀜 → 한 번 더
+      }
+    } else if (sync.dirty) {
+      if (!(await syncPushTo(srvAt))) { sync.lastServerAt = null; sync.again = true; }   // 그 사이 바뀜 → 다시 확인
+    }
+    sync.lastOkAt = Date.now(); syncSave();
+    syncSetStatus(sync.dirty ? "pending" : "ok");
+  } catch (e) {
+    syncSave();
+    syncSetStatus(e instanceof TypeError ? "offline" : sync.session ? "error" : "off", syncErrText(e));
+    if (!(e instanceof TypeError)) throw e;
+  }
+}
+// 한 번에 하나씩만 — 도는 중에 또 요청되면 끝난 뒤 한 번 더
+function syncNow(opt) {
+  if (sync.busy) { sync.again = true; return sync.busy; }
+  sync.busy = syncRun(opt).catch((e) => { if (opt && opt.first) throw e; })
+    .finally(() => { sync.busy = null; if (sync.again) { sync.again = false; syncNow(); } });
+  return sync.busy;
+}
+function syncOnLocalChange() {
+  if (sync.applying || !sync.session) return;
+  sync.dirty = true; sync.dirtyAt = Date.now(); syncSave();
+  if (sync.status !== "syncing") syncSetStatus("pending");
+  clearTimeout(sync.timer); sync.timer = setTimeout(() => syncNow(), 2000);
+}
+async function syncServerBackups() {
+  return supaFetch(`/rest/v1/schedule_backups?user_id=eq.${sync.session.user.id}&select=id,saved_at&order=saved_at.desc&limit=60`);
+}
+async function syncRestoreServerBackup(id) {
+  const r = await supaFetch(`/rest/v1/schedule_backups?id=eq.${id}&select=data,saved_at`);
+  if (!r || !r[0]) throw new Error("백업을 찾을 수 없습니다");
+  snapTake("복원 전 이 기기");
+  Store.replaceAll(r[0].data);                                            // → 변경으로 잡혀 서버에도 저장됨
+  return r[0].saved_at;
+}
+function syncInit() {
+  syncLoad(); syncPaint();
+  Store.subscribe(syncOnLocalChange);
+  if (sync.session) syncNow();
+  setInterval(() => { if (sync.session && !document.hidden) syncNow(); }, 60 * 1000);
+  window.addEventListener("online", () => { if (sync.session) syncNow(); });
+  window.addEventListener("focus", () => { if (sync.session) syncNow(); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && sync.session) syncNow(); });
+}
+
+// 설정 화면: 클라우드 동기화 + 복원
+function syncSettingsHtml() {
+  const snaps = snapList().slice().reverse();
+  const fmt = (t) => new Date(t).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  const cnt = (n) => `일정 ${n.e} · 할 일 ${n.t} · 프로젝트 ${n.p} · 출고 ${n.o}`;
+  let h = `<p class="panel-title" style="margin-top:20px">클라우드 동기화 (Supabase)</p><div class="set-group">`;
+  if (!sync.session) {
+    h += `<div class="set-row sync-login"><div style="flex:1;min-width:0"><div class="lab">로그인하면 일정이 서버에 저장되고 다른 PC·휴대폰과 같이 쓸 수 있습니다</div>
+        <div class="desc">Supabase에서 만든 계정(이메일·비밀번호)으로 로그인 · 기기마다 한 번</div>
+        <form class="sync-form" id="sync-form" autocomplete="on">
+          <input id="sync-email" type="email" placeholder="이메일" autocomplete="username" required />
+          <input id="sync-pw" type="password" placeholder="비밀번호" autocomplete="current-password" required />
+          <button class="btn-primary" id="sync-login" type="submit">로그인</button>
+        </form>
+        <div class="sync-msg" id="sync-msg">${sync.status === "error" ? esc(sync.msg) : ""}</div></div></div>
+      <details class="set-row sync-adv"><summary>연결 정보</summary><div class="sync-form">
+        <input id="sync-url" value="${esc(sync.url)}" placeholder="Project URL" /><input id="sync-key" value="${esc(sync.key)}" placeholder="Publishable key" />
+        <button class="btn-sub" id="sync-save-cfg" type="button">저장</button></div></details>`;
+  } else {
+    h += `<div class="set-row"><div><div class="lab">${esc(sync.session.user.email || "")}</div><div class="desc" id="sync-state">${syncStateHtml()}</div></div>
+        <div style="display:flex;gap:6px"><button class="btn-sub" id="sync-now" type="button">지금 동기화</button><button class="btn-sub" id="sync-logout" type="button">로그아웃</button></div></div>
+      <div class="set-row" style="align-items:flex-start"><div style="flex:1;min-width:0"><div class="lab">서버 백업에서 복원</div><div class="desc">서버가 하루 1번 이전 상태를 보관합니다 (최근 60일)</div>
+        <div class="sync-list" id="sync-backups"><button class="btn-sub" id="sync-load-backups" type="button">백업 목록 보기</button></div></div></div>`;
+  }
+  h += `</div>`;
+  h += `<p class="panel-title" style="margin-top:20px">이 기기 자동 백업</p><div class="set-group"><div class="set-row" style="align-items:flex-start"><div style="flex:1;min-width:0">
+      <div class="desc">매일 처음 열 때, 서버 데이터로 바꾸기 전, 충돌 때 이 기기에 사본을 남깁니다 (최근 ${SNAP_MAX}개)</div>
+      <div class="sync-list">${snaps.length ? snaps.map((s) => `<div class="sync-li"><span><b>${fmt(s.at)}</b> ${esc(s.label)}<small>${cnt(s.n)}</small></span><button class="btn-sub" data-snap="${s.at}" type="button">복원</button></div>`).join("") : `<div class="desc">아직 없음</div>`}</div>
+      ${localStorage.getItem("scheduler:v1:broken") ? `<div class="sync-li warn"><span><b>읽지 못한 원본</b><small>앱을 열 때 읽기 오류가 나서 따로 보관한 데이터</small></span><button class="btn-sub" id="snap-broken" type="button">복원 시도</button></div>` : ""}
+    </div></div></div>`;
+  return h;
+}
+async function syncSettingsClick(e) {
+  const t = e.target.closest("#sync-login,#sync-now,#sync-logout,#sync-load-backups,#sync-save-cfg,[data-snap],[data-srv-backup],#snap-broken");
+  if (!t || ui.view !== "settings") return;
+  e.preventDefault();
+  const msg = (x) => { const m = document.getElementById("sync-msg"); if (m) m.textContent = x; };
+  try {
+    if (t.id === "sync-login") {
+      const em = document.getElementById("sync-email").value.trim(), pw = document.getElementById("sync-pw").value;
+      if (!em || !pw) { msg("이메일과 비밀번호를 넣어 주세요"); return; }
+      t.disabled = true; msg("로그인 중…");
+      await syncLogin(em, pw); toast("로그인했습니다 — 이제 일정이 서버에 저장됩니다"); render();
+    } else if (t.id === "sync-now") { await syncNow(); toast(sync.status === "ok" ? "동기화했습니다" : syncStateHtml().replace(/<[^>]+>/g, "")); render(); }
+    else if (t.id === "sync-logout") { if (!confirm("로그아웃할까요? 이 기기의 데이터는 그대로 남고, 서버와 동기화만 멈춥니다.")) return; await syncLogout(); render(); }
+    else if (t.id === "sync-save-cfg") { sync.url = document.getElementById("sync-url").value.trim(); sync.key = document.getElementById("sync-key").value.trim(); syncSave(); toast("연결 정보를 저장했습니다"); }
+    else if (t.id === "sync-load-backups") {
+      const box = document.getElementById("sync-backups"); box.textContent = "불러오는 중…";
+      const list = await syncServerBackups();
+      box.innerHTML = list.length ? list.map((b) => `<div class="sync-li"><span><b>${new Date(b.saved_at).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}</b> 서버 백업</span><button class="btn-sub" data-srv-backup="${b.id}" type="button">복원</button></div>`).join("") : `<div class="desc">아직 백업이 없습니다 (하루가 지나 처음 저장할 때 생깁니다)</div>`;
+    } else if (t.dataset.srvBackup) {
+      if (!confirm("이 서버 백업으로 되돌릴까요?\n지금 내용은 이 기기 자동 백업에 먼저 보관합니다.")) return;
+      const at = await syncRestoreServerBackup(t.dataset.srvBackup); toast(`${new Date(at).toLocaleString("ko-KR")} 백업으로 복원했습니다`); render();
+    } else if (t.dataset.snap) {
+      if (!confirm("이 자동 백업으로 되돌릴까요?\n지금 내용은 자동 백업에 먼저 보관합니다." + (sync.session ? "\n복원한 내용은 서버에도 저장됩니다." : ""))) return;
+      toast(snapRestore(t.dataset.snap) ? "자동 백업으로 복원했습니다" : "복원할 수 없는 백업입니다"); render();
+    } else if (t.id === "snap-broken") {
+      try { const d = JSON.parse(localStorage.getItem("scheduler:v1:broken")); snapTake("복원 전 이 기기"); toast(Store.replaceAll(d) ? "보관한 원본으로 복원했습니다" : "원본 형식이 맞지 않아 복원할 수 없습니다"); render(); }
+      catch (_) { toast("원본이 손상되어 복원할 수 없습니다"); }
+    }
+  } catch (err) { const m = syncErrText(err); msg(m); toast(m); t.disabled = false; }
+}
+
 /* ---------- 백업 ---------- */
 function exportData() {
   const blob = new Blob([Store.exportJSON()], { type: "application/json" });
@@ -4539,6 +4851,8 @@ function wireGlobal() {
   document.querySelectorAll(".tab[data-view], .bottom-nav button[data-view]").forEach((b) => b.addEventListener("click", () => setView(b.dataset.view)));
   document.addEventListener("click", ttClick);   // 타임테이블 화면
   document.addEventListener("click", statClick); // 통계 화면
+  document.addEventListener("click", syncSettingsClick);   // 설정: 클라우드 동기화·복원
+  document.getElementById("sync-btn").addEventListener("click", () => setView("settings"));
   document.getElementById("add-btn").addEventListener("click", () => {
     if (ui.view === "projects") { openModal("project", { cat: ui.cat === "personal" ? "personal" : "work" }); return; }
     if (ui.view === "timetable") { openOrder(null); return; }
@@ -4660,12 +4974,15 @@ function wireGlobal() {
   loadUI(); loadPin(); loadFS(); applyFontSize(fontSize);
   loadPrefs(); applyPrefs();                           // 위젯 설정(테마/투명도/대비/세부 글자/알림)
   Store.subscribe(render); Store.load();
+  snapDaily();                                        // 이 기기 자동 백업: 하루 한 번, 이월·정리 전에
   Store.purgeOld();                                   // 완료 후 1주일 지난 항목 자동 삭제
   Store.autoCarry();                                  // 어제까지 미완료 항목을 오늘로 이월(D+N)
   Store.ttAutoShift();                                // 타임테이블: 체크 안 된 지난 공정을 지난 일수만큼 밀기
   setInterval(() => Store.purgeOld(), 60 * 60 * 1000); // 1시간마다 정리
   wireGlobal(); wirePin();
   render();
+  syncInit();                                         // 클라우드 동기화 (로그인돼 있으면 서버와 맞춤)
+  if (Store.loadBroken) toast("저장된 데이터를 읽지 못해 원본을 따로 보관했습니다 — 설정 → 이 기기 자동 백업에서 복원할 수 있습니다");
 
   // 날짜(자정) 변경 감지 → 캘린더를 오늘 주간으로 이동 + 이월/정리/재렌더
   let _curDay = todayStr();
