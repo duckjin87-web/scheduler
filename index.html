@@ -645,6 +645,14 @@
     #theme-btn{display:none;}
     .topbar-right{gap:6px;}
   }
+  /* 자동 백업 파일 */
+  .set-row.fb-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-start;}
+  .set-row.fb-actions .seg{margin-left:auto;}
+  .fb-err{color:var(--late-crit);}
+  .fb-banner{position:fixed;left:50%;bottom:calc(16px + var(--safe-b));transform:translateX(-50%);z-index:120;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+    max-width:calc(100vw - 24px);background:var(--surface);border:1px solid var(--border-strong);border-left:4px solid var(--late-warn);border-radius:12px;box-shadow:var(--shadow-lg);padding:10px 12px;font-size:12.5px;}
+  .fb-banner .btn-primary,.fb-banner .btn-sub{padding:7px 12px;font-size:12px;}
+  @media (max-width:900px){ .fb-banner{bottom:calc(78px + var(--safe-b));} }
   /* 클라우드 동기화 */
   .sync-btn{position:relative;}
   .sync-btn i{position:absolute;right:4px;bottom:4px;width:7px;height:7px;border-radius:50%;background:var(--text-faint);border:1.5px solid var(--surface);}
@@ -1426,7 +1434,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-10-29 · 클라우드 동기화(Supabase)·자동 백업·읽기 오류 보호";
+const APP_VERSION = "2026-10-30 · 자동 백업 파일(폴더 매일 저장·다운로드 대신)";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -3222,6 +3230,7 @@ function renderSettings() {
         <div class="seg"><button class="${!ui.workweek ? "active" : ""}" data-ww="0">월~일</button><button class="${ui.workweek ? "active" : ""}" data-ww="1">월~금</button></div></div>
     </div>
 
+    ${fbSettingsHtml()}
     ${syncSettingsHtml()}
     <p class="panel-title" style="margin-top:20px">데이터 (이 기기)</p>
     <div class="set-group">
@@ -4269,6 +4278,153 @@ async function syncSettingsClick(e) {
   } catch (err) { const m = syncErrText(err); msg(m); toast(m); t.disabled = false; }
 }
 
+/* ---------- 자동 백업 파일 (브라우저 밖) ----------
+   ① 고른 폴더에 매일 scheduler-backup-YYYY-MM-DD.json (바꿀 때마다 그날 파일을 30초 뒤 갱신, 30일 지난 파일 정리)
+   ② 폴더를 못 쓰면(미지정·미지원·권한 없음) 하루 한 번 다운로드 폴더로 내려받기
+   · 그날 파일을 덮어쓸 때 항목 수가 절반 아래로 줄면 덮어쓰지 않고 새 이름으로 따로 저장 (지워진 상태로 덮어쓰기 방지) */
+const FB_KEY = "scheduler:fbak", FB_KEEP_DAYS = 30, FB_PREFIX = "scheduler-backup-";
+const fb = { mode: "auto", dirName: "", lastDay: "", lastAt: 0, lastFile: "", lastVia: "", err: "", pruneDay: "",
+  dir: null, perm: "", timer: null, fallbackTimer: null, persisted: null };
+const fbSupported = () => typeof window.showDirectoryPicker === "function";
+function fbLoad() { try { Object.assign(fb, JSON.parse(localStorage.getItem(FB_KEY) || "{}")); } catch (_) {} }
+function fbSave() {
+  try { const { mode, dirName, lastDay, lastAt, lastFile, lastVia, err, pruneDay } = fb;
+    localStorage.setItem(FB_KEY, JSON.stringify({ mode, dirName, lastDay, lastAt, lastFile, lastVia, err, pruneDay })); } catch (_) {}
+}
+// 폴더 핸들은 IndexedDB에 보관 (다음에 열어도 같은 폴더)
+function fbIdb(mode, fn) {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open("scheduler-fs", 1);
+    r.onupgradeneeded = () => r.result.createObjectStore("h");
+    r.onerror = () => rej(r.error);
+    r.onsuccess = () => { const tx = r.result.transaction("h", mode); const q = fn(tx.objectStore("h"));
+      tx.oncomplete = () => { r.result.close(); res(q && q.result); }; tx.onerror = () => rej(tx.error); };
+  });
+}
+async function fbGetDir() { if (fb.dir) return fb.dir; try { fb.dir = (await fbIdb("readonly", (s) => s.get("dir"))) || null; } catch (_) {} return fb.dir; }
+async function fbSetDir(h) { fb.dir = h; try { await fbIdb("readwrite", (s) => (h ? s.put(h, "dir") : s.delete("dir"))); } catch (_) {} }
+const fbCount = (d) => (d.events || []).length + (d.todos || []).length + (d.projects || []).length + (d.orders || []).length;
+const fbHHMM = () => { const d = new Date(); return pad(d.getHours()) + pad(d.getMinutes()); };
+
+async function fbWriteFolder(dir, text) {
+  const today = todayStr(); let name = `${FB_PREFIX}${today}.json`;
+  try {                                                                   // 오늘 파일보다 크게 줄었으면 새 이름으로
+    const old = JSON.parse(await (await (await dir.getFileHandle(name)).getFile()).text());
+    const was = fbCount(old), now = fbCount(JSON.parse(text));
+    if (was >= 10 && now < was * 0.5) name = `${FB_PREFIX}${today}-${fbHHMM()}-reduced.json`;   // 파일 이름은 영문만 (일부 환경에서 한글 파일명 실패)
+  } catch (_) {}
+  const fh = await dir.getFileHandle(name, { create: true });
+  const w = await fh.createWritable(); await w.write(text); await w.close();
+  if (fb.pruneDay !== today) {                                             // 하루 한 번 30일 지난 파일 정리
+    const cut = ymd(addDays(new Date(), -FB_KEEP_DAYS));
+    try { for await (const [n] of dir.entries()) { const m = /^scheduler-backup-(\d{4}-\d{2}-\d{2})/.exec(n); if (m && m[1] < cut) await dir.removeEntry(n); } } catch (_) {}
+    fb.pruneDay = today;
+  }
+  return name;
+}
+function fbDownload(text) {
+  const name = `${FB_PREFIX}${todayStr()}.json`;
+  const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+  const a = document.createElement("a"); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  return name;
+}
+function fbDone(via, file) { fb.lastDay = todayStr(); fb.lastAt = Date.now(); fb.lastVia = via; fb.lastFile = file; fb.err = ""; fbSave(); fbBanner(false); fbPaint(); }
+// reason: "daily"(열 때·날짜 바뀔 때) · "change"(일정 바뀜) · "now"(지금 백업 버튼)
+async function fbRun(reason) {
+  if (fb.mode === "off") return null;
+  const today = todayStr(), text = Store.exportJSON();
+  if (fb.mode !== "download" && fbSupported()) {
+    const dir = await fbGetDir();
+    if (dir) {
+      try {
+        fb.perm = await dir.queryPermission({ mode: "readwrite" });
+        if (fb.perm === "granted") { const f = await fbWriteFolder(dir, text); fbDone("folder", f); return "folder"; }
+        // 권한을 다시 받아야 함 (사용자 클릭 필요) → 안내 띄우고, 1분 안에 허용 안 하면 오늘은 다운로드로
+        if (reason !== "change" && fb.lastDay !== today) {
+          fbBanner(true);
+          clearTimeout(fb.fallbackTimer);
+          fb.fallbackTimer = setTimeout(() => { if (fb.lastDay !== todayStr()) { fbDone("download", fbDownload(Store.exportJSON())); toast("백업 폴더 허용이 없어 오늘 백업을 다운로드 폴더에 저장했습니다"); } }, 60 * 1000);
+        }
+        return null;
+      } catch (e) { fb.err = "폴더에 쓰지 못했습니다: " + e.message; fbSave(); fbPaint(); }
+    }
+  }
+  if (reason === "change") return null;                                    // 다운로드는 하루 한 번만
+  if (reason === "now" || fb.lastDay !== today) {
+    fbDone("download", fbDownload(text));
+    if (reason === "daily") toast(fbSupported() && fb.mode === "auto" ? "오늘 백업을 다운로드 폴더에 저장했습니다 — 설정에서 백업 폴더를 고르면 다운로드 없이 자동 저장됩니다" : "오늘 백업을 다운로드 폴더에 저장했습니다");
+    return "download";
+  }
+  return null;
+}
+async function fbAllow() {
+  const dir = await fbGetDir(); if (!dir) return;
+  try { fb.perm = await dir.requestPermission({ mode: "readwrite" }); } catch (_) {}
+  if (fb.perm === "granted") { clearTimeout(fb.fallbackTimer); await fbRun("daily"); toast("백업 폴더에 오늘 백업을 저장했습니다"); }
+}
+async function fbPick() {
+  const dir = await window.showDirectoryPicker({ id: "scheduler-backup", mode: "readwrite", startIn: "documents" });
+  await fbSetDir(dir); fb.dirName = dir.name; fb.mode = "auto"; fbSave();
+  fb.perm = "granted"; clearTimeout(fb.fallbackTimer);
+  await fbRun("now");
+}
+function fbOnChange() {
+  if (fb.mode === "off") return;
+  clearTimeout(fb.timer); fb.timer = setTimeout(() => fbRun("change"), 30 * 1000);
+}
+// 권한 다시 허용 안내 (화면 아래)
+function fbBanner(on) {
+  let el = document.getElementById("fb-banner");
+  if (!on) { if (el) el.remove(); return; }
+  if (el) return;
+  el = document.createElement("div"); el.id = "fb-banner"; el.className = "fb-banner";
+  el.innerHTML = `<span>오늘 일정을 백업 폴더(<b>${esc(fb.dirName || "선택한 폴더")}</b>)에 저장하려면 접근을 허용해 주세요</span>
+    <button type="button" class="btn-primary" data-fb="allow">허용</button><button type="button" class="btn-sub" data-fb="dl">다운로드로 저장</button>`;
+  el.addEventListener("click", async (e) => { const b = e.target.closest("[data-fb]"); if (!b) return;
+    if (b.dataset.fb === "allow") await fbAllow(); else { clearTimeout(fb.fallbackTimer); fbDone("download", fbDownload(Store.exportJSON())); toast("다운로드 폴더에 백업했습니다"); } });
+  document.body.appendChild(el);
+}
+async function fbInit() {
+  fbLoad();
+  try { if (navigator.storage && navigator.storage.persist) fb.persisted = (await navigator.storage.persisted()) || (await navigator.storage.persist()); } catch (_) {}
+  Store.subscribe(fbOnChange);
+  await fbRun("daily");
+}
+function fbPaint() { const s = document.getElementById("fb-state"); if (s) s.innerHTML = fbStateHtml(); }
+function fbStateHtml() {
+  const when = fb.lastAt ? new Date(fb.lastAt).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
+  const last = fb.lastAt ? `마지막 백업 ${when} · ${fb.lastVia === "folder" ? "폴더" : "다운로드"} · ${esc(fb.lastFile)}` : "아직 백업 없음";
+  return `${last}${fb.err ? `<br><span class="fb-err">${esc(fb.err)}</span>` : ""}`;
+}
+function fbSettingsHtml() {
+  const where = fb.mode === "off" ? "꺼짐"
+    : fb.mode === "download" || !fbSupported() ? "매일 다운로드 폴더로 내려받기"
+    : fb.dirName ? `폴더 <b>${esc(fb.dirName)}</b>에 매일 저장 (바꿀 때마다 그날 파일 갱신 · 30일 보관)` : "폴더 미지정 — 지금은 매일 다운로드 폴더로 내려받기";
+  return `<p class="panel-title" style="margin-top:20px">자동 백업 파일 (브라우저 밖에 저장)</p><div class="set-group">
+    <div class="set-row" style="align-items:flex-start"><div style="flex:1;min-width:0"><div class="lab">${where}</div>
+      <div class="desc" id="fb-state">${fbStateHtml()}</div>
+      ${fbSupported() ? "" : `<div class="desc">이 브라우저는 폴더 저장을 지원하지 않습니다 (PC용 크롬·엣지에서 가능)</div>`}
+      <div class="desc">브라우저 데이터 보호(영구 저장): ${fb.persisted ? "켜짐" : fb.persisted === false ? "브라우저가 허용하지 않음 — 앱을 설치해 쓰면 켜질 수 있습니다" : "확인 중"}</div></div></div>
+    <div class="set-row fb-actions">
+      ${fbSupported() ? `<button class="btn-primary" type="button" data-fbs="pick">${fb.dirName ? "백업 폴더 바꾸기" : "백업 폴더 선택"}</button>` : ""}
+      <button class="btn-sub" type="button" data-fbs="now">지금 백업</button>
+      <div class="seg"><button type="button" class="${fb.mode === "auto" ? "active" : ""}" data-fbs="auto">자동</button><button type="button" class="${fb.mode === "download" ? "active" : ""}" data-fbs="download">다운로드만</button><button type="button" class="${fb.mode === "off" ? "active" : ""}" data-fbs="off">끄기</button></div>
+    </div>
+    <div class="set-row"><div class="desc">복원: 아래 '백업 가져오기'에서 원하는 날짜의 <b>scheduler-backup-날짜.json</b> 파일을 고르면 됩니다. 백업 폴더는 OneDrive·Google Drive 폴더 안을 고르면 PC가 고장 나도 파일이 남습니다.</div></div>
+  </div>`;
+}
+async function fbSettingsClick(e) {
+  const b = e.target.closest("[data-fbs]"); if (!b || ui.view !== "settings") return;
+  const a = b.dataset.fbs;
+  try {
+    if (a === "pick") { await fbPick(); toast(`'${fb.dirName}' 폴더에 백업을 저장했습니다`); }
+    else if (a === "now") { const v = await fbRun("now"); toast(v === "folder" ? "백업 폴더에 저장했습니다" : v === "download" ? "다운로드 폴더에 저장했습니다" : "백업 폴더 접근을 허용해 주세요"); }
+    else { fb.mode = a; fbSave(); if (a !== "off") await fbRun("daily"); toast(a === "off" ? "자동 백업 파일을 껐습니다" : a === "download" ? "매일 다운로드 폴더로 백업합니다" : "자동 백업을 켰습니다"); }
+  } catch (err) { if (err && err.name === "AbortError") return; toast("백업하지 못했습니다: " + (err && err.message)); }
+  render();
+}
+
 /* ---------- 백업 ---------- */
 function exportData() {
   const blob = new Blob([Store.exportJSON()], { type: "application/json" });
@@ -4852,6 +5008,7 @@ function wireGlobal() {
   document.addEventListener("click", ttClick);   // 타임테이블 화면
   document.addEventListener("click", statClick); // 통계 화면
   document.addEventListener("click", syncSettingsClick);   // 설정: 클라우드 동기화·복원
+  document.addEventListener("click", fbSettingsClick);     // 설정: 자동 백업 파일
   document.getElementById("sync-btn").addEventListener("click", () => setView("settings"));
   document.getElementById("add-btn").addEventListener("click", () => {
     if (ui.view === "projects") { openModal("project", { cat: ui.cat === "personal" ? "personal" : "work" }); return; }
@@ -4982,6 +5139,7 @@ function wireGlobal() {
   wireGlobal(); wirePin();
   render();
   syncInit();                                         // 클라우드 동기화 (로그인돼 있으면 서버와 맞춤)
+  fbInit();                                           // 자동 백업 파일: 고른 폴더에 매일(없으면 다운로드)
   if (Store.loadBroken) toast("저장된 데이터를 읽지 못해 원본을 따로 보관했습니다 — 설정 → 이 기기 자동 백업에서 복원할 수 있습니다");
 
   // 날짜(자정) 변경 감지 → 캘린더를 오늘 주간으로 이동 + 이월/정리/재렌더
@@ -4996,6 +5154,7 @@ function wireGlobal() {
       Store.ttAutoShift();
       Store.purgeOld();
       render();
+      fbRun("daily");                                 // 날짜가 바뀌면 새 날짜 백업 파일
     } else if (ui.view === "calendar") refreshNowMarker();
   }
   setInterval(dayTick, 30 * 1000);
