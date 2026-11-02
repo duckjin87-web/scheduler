@@ -1526,7 +1526,7 @@
     <div class="tab-sep tb-desktop"></div>
     <div class="chip-row" data-chips></div>
     <div class="topbar-right">
-      <button class="icon-btn sync-btn" id="sync-btn" data-st="off" title="클라우드 동기화"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18h10a4 4 0 00.6-7.96A6 6 0 006.2 9.1 4.5 4.5 0 007 18z"/></svg><i></i></button>
+      <button class="icon-btn sync-btn" id="sync-btn" data-st="off" title="백업"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18h10a4 4 0 00.6-7.96A6 6 0 006.2 9.1 4.5 4.5 0 007 18z"/></svg><i></i></button>
       <button class="icon-btn" id="pin-btn" title="오늘 할 일 고정"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M9 4h6l-1 6 3 3v2H7v-2l3-3-1-6z"/><path d="M12 15v5"/></svg></button>
       <button class="icon-btn" id="theme-btn" title="테마 전환"><svg id="theme-icon" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg></button>
       <button class="tab tb-desktop" data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.34 1.87l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.7 1.7 0 00-1.87-.34 1.7 1.7 0 00-1 1.55V21a2 2 0 11-4 0v-.09a1.7 1.7 0 00-1-1.55 1.7 1.7 0 00-1.87.34l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.7 1.7 0 00.34-1.87 1.7 1.7 0 00-1.55-1H3a2 2 0 110-4h.09a1.7 1.7 0 001.55-1 1.7 1.7 0 00-.34-1.87l-.06-.06a2 2 0 112.83-2.83l.06.06a1.7 1.7 0 001.87.34H9a1.7 1.7 0 001-1.55V3a2 2 0 114 0v.09a1.7 1.7 0 001 1.55 1.7 1.7 0 001.87-.34l.06-.06a2 2 0 112.83 2.83l-.06.06a1.7 1.7 0 00-.34 1.87V9a1.7 1.7 0 001.55 1H21a2 2 0 110 4h-.09a1.7 1.7 0 00-1.55 1z"/></svg>설정</button>
@@ -1594,7 +1594,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-11-02 · 전체 테마 소프트 클레이(블루)·자재 업체턴키";
+const APP_VERSION = "2026-11-02 · 상단 구름 버튼 = 백업 화면, 설정에서 클라우드 항목 제거";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -3483,6 +3483,20 @@ function renderTodo() {
   return html;
 }
 
+/* ---------- 렌더: 백업 (상단 구름 버튼) ---------- */
+function renderBackup() {
+  return `<div class="view-head" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><h2>백업</h2><button class="btn-sub" id="set-close">닫기</button></div>
+    ${fbSettingsHtml().replace('style="margin-top:20px"', "")}
+    ${snapSettingsHtml()}
+    <p class="panel-title" style="margin-top:20px">직접 백업 · 복원</p>
+    <div class="set-group">
+      <div class="set-row"><div><div class="lab">백업 내보내기</div><div class="desc">일정·할 일·프로젝트·출고 건을 JSON 파일로 저장</div></div><button class="btn-sub" id="set-export">내보내기</button></div>
+      <div class="set-row"><div><div class="lab">백업 가져오기</div><div class="desc">JSON 파일에서 복원 (현재 데이터 대체)</div></div><button class="btn-sub" id="set-import">가져오기</button></div>
+    </div>
+    ${sync.session ? `<p class="panel-title" style="margin-top:20px">예전 클라우드 연결</p><div class="set-group">
+      <div class="set-row"><div><div class="lab">${esc(sync.session.user.email || "")} 로 서버 동기화가 아직 켜져 있습니다</div><div class="desc">더 쓰지 않으시면 연결을 해제하세요 (이 기기 데이터는 그대로)</div></div>
+        <button class="btn-sub" id="sync-logout" type="button">연결 해제</button></div></div>` : ""}`;
+}
 /* ---------- 렌더: 설정 ---------- */
 function renderSettings() {
   const dark = currentDark();
@@ -3562,16 +3576,12 @@ function renderSettings() {
         <div class="seg"><button class="${!ui.workweek ? "active" : ""}" data-ww="0">월~일</button><button class="${ui.workweek ? "active" : ""}" data-ww="1">월~금</button></div></div>
     </div>
 
-    ${fbSettingsHtml()}
-    ${syncSettingsHtml()}
     <p class="panel-title" style="margin-top:20px">데이터 (이 기기)</p>
     <div class="set-group">
-      <div class="set-row"><div><div class="lab">백업 내보내기</div><div class="desc">일정·할 일을 JSON 파일로 저장</div></div><button class="btn-sub" id="set-export">내보내기</button></div>
-      <div class="set-row"><div><div class="lab">백업 가져오기</div><div class="desc">JSON 파일에서 복원 (현재 데이터 대체)</div></div><button class="btn-sub" id="set-import">가져오기</button></div>
       <div class="set-row"><div><div class="lab">전체 삭제</div><div class="desc">이 기기의 모든 데이터 삭제</div></div><button class="btn-danger" id="set-clear">삭제</button></div>
     </div>
     <p class="sub" style="color:var(--text-faint);font-size:11.5px;margin-top:16px;line-height:1.6">
-      ${sync.session ? "일정은 이 기기와 클라우드(Supabase)에 함께 저장됩니다." : "로그인하기 전에는 이 브라우저에만 저장됩니다 — 위 클라우드 동기화에 로그인하면 서버에도 저장됩니다."}<br>
+      일정은 이 브라우저에 저장됩니다 — 백업 파일·복원·내보내기는 상단 <b>백업</b> 버튼(구름 모양)에서 관리합니다.<br>
       <span style="opacity:.8">버전: ${esc(APP_VERSION)}</span></p>`;
 }
 
@@ -3696,6 +3706,7 @@ function render() {
   }
   else if (ui.view === "todo") content.innerHTML = renderTodo();
   else if (ui.view === "settings") content.innerHTML = renderSettings();
+  else if (ui.view === "backup") content.innerHTML = renderBackup();
   else if (ui.view === "projects") content.innerHTML = renderProjects();
   else if (ui.view === "stats") content.innerHTML = renderStats();
   else if (ui.view === "timetable") {
@@ -3714,6 +3725,7 @@ function render() {
   app.classList.remove("has-dash", "dash-collapsed");
   app.classList.toggle("cal-view", ui.view === "calendar");
   document.body.classList.toggle("settings-only", ui.view === "settings");
+  bkPaint();
   document.getElementById("dash-reopen").style.display = "none";
   document.getElementById("dash").innerHTML = "";
 
@@ -4401,10 +4413,6 @@ function syncSave() {
 }
 function syncSetStatus(st, msg) { sync.status = st; sync.msg = msg || ""; syncPaint(); }
 function syncPaint() {
-  const b = document.getElementById("sync-btn"); if (!b) return;
-  b.dataset.st = sync.status;
-  b.title = { off: "클라우드 동기화 꺼짐 — 설정에서 로그인", ok: `동기화됨${sync.lastOkAt ? " · " + new Date(sync.lastOkAt).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" }) : ""}`,
-    pending: "저장 대기 중", syncing: "동기화 중…", offline: "인터넷 연결 없음 — 연결되면 올립니다", error: "동기화 오류: " + sync.msg }[sync.status] || "";
   const s = document.getElementById("sync-state"); if (s) s.innerHTML = syncStateHtml();
 }
 function syncStateHtml() {
@@ -4591,8 +4599,15 @@ function syncSettingsHtml() {
         <div class="sync-list" id="sync-backups"><button class="btn-sub" id="sync-load-backups" type="button">백업 목록 보기</button></div></div></div>`;
   }
   h += `</div>`;
-  h += `<p class="panel-title" style="margin-top:20px">이 기기 자동 백업</p><div class="set-group"><div class="set-row" style="align-items:flex-start"><div style="flex:1;min-width:0">
-      <div class="desc">매일 처음 열 때, 서버 데이터로 바꾸기 전, 충돌 때 이 기기에 사본을 남깁니다 (최근 ${SNAP_MAX}개)</div>
+  return h + snapSettingsHtml();
+}
+// 이 기기(브라우저) 안 자동 사본 목록
+function snapSettingsHtml() {
+  const snaps = snapList().slice().reverse();
+  const fmt = (t) => new Date(t).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  const cnt = (n) => `일정 ${n.e} · 할 일 ${n.t} · 프로젝트 ${n.p} · 출고 ${n.o}`;
+  let h = `<p class="panel-title" style="margin-top:20px">이 기기 자동 백업</p><div class="set-group"><div class="set-row" style="align-items:flex-start"><div style="flex:1;min-width:0">
+      <div class="desc">매일 처음 열 때와 복원하기 전에 이 브라우저 안에 사본을 남깁니다 (최근 ${SNAP_MAX}개)</div>
       <div class="sync-list">${snaps.length ? snaps.map((s) => `<div class="sync-li"><span><b>${fmt(s.at)}</b> ${esc(s.label)}<small>${cnt(s.n)}</small></span><button class="btn-sub" data-snap="${s.at}" type="button">복원</button></div>`).join("") : `<div class="desc">아직 없음</div>`}</div>
       ${localStorage.getItem("scheduler:v1:broken") ? `<div class="sync-li warn"><span><b>읽지 못한 원본</b><small>앱을 열 때 읽기 오류가 나서 따로 보관한 데이터</small></span><button class="btn-sub" id="snap-broken" type="button">복원 시도</button></div>` : ""}
     </div></div></div>`;
@@ -4600,7 +4615,7 @@ function syncSettingsHtml() {
 }
 async function syncSettingsClick(e) {
   const t = e.target.closest("#sync-login,#sync-now,#sync-logout,#sync-load-backups,#sync-save-cfg,[data-snap],[data-srv-backup],#snap-broken");
-  if (!t || ui.view !== "settings") return;
+  if (!t || (ui.view !== "settings" && ui.view !== "backup")) return;
   e.preventDefault();
   const msg = (x) => { const m = document.getElementById("sync-msg"); if (m) m.textContent = x; };
   try {
@@ -4610,7 +4625,7 @@ async function syncSettingsClick(e) {
       t.disabled = true; msg("로그인 중…");
       await syncLogin(em, pw); toast("로그인했습니다 — 이제 일정이 서버에 저장됩니다"); render();
     } else if (t.id === "sync-now") { await syncNow(); toast(sync.status === "ok" ? "동기화했습니다" : syncStateHtml().replace(/<[^>]+>/g, "")); render(); }
-    else if (t.id === "sync-logout") { if (!confirm("로그아웃할까요? 이 기기의 데이터는 그대로 남고, 서버와 동기화만 멈춥니다.")) return; await syncLogout(); render(); }
+    else if (t.id === "sync-logout") { if (!confirm("클라우드 연결을 해제할까요? 이 기기의 데이터는 그대로 남고, 서버와 동기화만 멈춥니다.")) return; await syncLogout(); render(); toast("클라우드 연결을 해제했습니다"); }
     else if (t.id === "sync-save-cfg") { sync.url = document.getElementById("sync-url").value.trim(); sync.key = document.getElementById("sync-key").value.trim(); syncSave(); toast("연결 정보를 저장했습니다"); }
     else if (t.id === "sync-load-backups") {
       const box = document.getElementById("sync-backups"); box.textContent = "불러오는 중…";
@@ -4704,7 +4719,7 @@ async function fbRun(reason) {
   if (reason === "change") return null;                                    // 다운로드는 하루 한 번만
   if (reason === "now" || fb.lastDay !== today) {
     fbDone("download", fbDownload(text));
-    if (reason === "daily") toast(fbSupported() && fb.mode === "auto" ? "오늘 백업을 다운로드 폴더에 저장했습니다 — 설정에서 백업 폴더를 고르면 다운로드 없이 자동 저장됩니다" : "오늘 백업을 다운로드 폴더에 저장했습니다");
+    if (reason === "daily") toast(fbSupported() && fb.mode === "auto" ? "오늘 백업을 다운로드 폴더에 저장했습니다 — 상단 백업 버튼에서 백업 폴더를 고르면 다운로드 없이 자동 저장됩니다" : "오늘 백업을 다운로드 폴더에 저장했습니다");
     return "download";
   }
   return null;
@@ -4742,7 +4757,15 @@ async function fbInit() {
   Store.subscribe(fbOnChange);
   await fbRun("daily");
 }
-function fbPaint() { const s = document.getElementById("fb-state"); if (s) s.innerHTML = fbStateHtml(); }
+function fbPaint() { const s = document.getElementById("fb-state"); if (s) s.innerHTML = fbStateHtml(); bkPaint(); }
+// 상단 백업 버튼 점: 초록 = 오늘 백업됨 · 주황 = 오늘 아직 · 빨강 = 오류 · 흐림 = 꺼짐
+function bkPaint() {
+  const b = document.getElementById("sync-btn"); if (!b) return;
+  const st = fb.mode === "off" ? "off" : fb.err ? "error" : fb.lastDay === todayStr() ? "ok" : "pending";
+  const when = fb.lastAt ? new Date(fb.lastAt).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
+  b.dataset.st = st; b.classList.toggle("on", ui.view === "backup");
+  b.title = { off: "백업 — 자동 백업 꺼짐", error: "백업 — 오류: " + fb.err, ok: `백업 — 오늘 백업됨 (${when})`, pending: "백업 — 오늘 백업 아직" }[st];
+}
 function fbStateHtml() {
   const when = fb.lastAt ? new Date(fb.lastAt).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
   const last = fb.lastAt ? `마지막 백업 ${when} · ${fb.lastVia === "folder" ? "폴더" : "다운로드"} · ${esc(fb.lastFile)}` : "아직 백업 없음";
@@ -4766,7 +4789,7 @@ function fbSettingsHtml() {
   </div>`;
 }
 async function fbSettingsClick(e) {
-  const b = e.target.closest("[data-fbs]"); if (!b || ui.view !== "settings") return;
+  const b = e.target.closest("[data-fbs]"); if (!b || ui.view !== "backup") return;
   const a = b.dataset.fbs;
   try {
     if (a === "pick") { await fbPick(); toast(`'${fb.dirName}' 폴더에 백업을 저장했습니다`); }
@@ -5352,7 +5375,7 @@ function setCalMode(mode) {
   }
   ui.calMode = mode; saveUI(); render();
 }
-function setView(v) { if (v === "settings" && ui.view !== "settings") ui.prevView = ui.view; ui.view = v; saveUI(); render(); window.scrollTo(0, 0); }
+function setView(v) { if ((v === "settings" || v === "backup") && ui.view !== "settings" && ui.view !== "backup") ui.prevView = ui.view; ui.view = v; saveUI(); render(); window.scrollTo(0, 0); }
 function wireGlobal() {
   document.addEventListener("click", (e) => { if (Date.now() < suppressClickUntil) { e.stopPropagation(); e.preventDefault(); suppressClickUntil = 0; } }, true);
   document.querySelectorAll(".tab[data-view], .bottom-nav button[data-view]").forEach((b) => b.addEventListener("click", () => setView(b.dataset.view)));
@@ -5360,7 +5383,8 @@ function wireGlobal() {
   document.addEventListener("click", statClick); // 통계 화면
   document.addEventListener("click", syncSettingsClick);   // 설정: 클라우드 동기화·복원
   document.addEventListener("click", fbSettingsClick);     // 설정: 자동 백업 파일
-  document.getElementById("sync-btn").addEventListener("click", () => setView("settings"));
+  document.getElementById("sync-btn").addEventListener("click", () => {          // 백업 화면 열기/닫기
+    if (ui.view === "backup") setView(ui.prevView && ui.prevView !== "settings" && ui.prevView !== "backup" ? ui.prevView : "today"); else setView("backup"); });
   document.getElementById("add-btn").addEventListener("click", () => {
     if (ui.view === "projects") { openModal("project", { cat: ui.cat === "personal" ? "personal" : "work" }); return; }
     if (ui.view === "timetable") { openOrder(null); return; }
@@ -5396,7 +5420,7 @@ function wireGlobal() {
     if (t.dataset.evToggle) { Store.toggleEvent(t.dataset.evToggle); return; }
     if (t.dataset.dashToggle) { ui.dashExp[t.dataset.dashToggle] = !ui.dashExp[t.dataset.dashToggle]; saveUI(); render(); return; }
     if (t.id === "dash-collapse") { ui.dashCollapsed = true; saveUI(); render(); return; }
-    if (t.id === "set-close") { setView(ui.prevView && ui.prevView !== "settings" ? ui.prevView : "today"); return; }
+    if (t.id === "set-close") { setView(ui.prevView && ui.prevView !== "settings" && ui.prevView !== "backup" ? ui.prevView : "today"); return; }
     if (t.id === "set-alert-demo") { showAlertCard({ title: "○○업체 방문 (예시 알림)", time: "14:00", endTime: "16:00", location: "세종 공장", allDay: false }, "demo-" + Date.now()); toast("알림 팝업 예시를 띄웠습니다"); return; }
     if (t.dataset.cat != null) { ui.cat = t.dataset.cat; render(); return; }
     if (t.dataset.todoFilter != null) { ui.todoFilter = t.dataset.todoFilter; render(); return; }
