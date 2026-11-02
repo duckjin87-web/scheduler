@@ -502,6 +502,28 @@
   .tt-warn{font-size:11.5px;font-weight:700;color:var(--late-crit);}
   .tt-warn.soft{color:var(--late-warn);}
   /* 출고 건 입력창 */
+  /* 출고 건 창 v4: 왼쪽 ①②③ 세로, 오른쪽 ④ 파샬 출고(세로로 늘어남) · 창 높이 제한 + 제목·버튼 고정 */
+  .tt-q{grid-template-areas:"basic part" "raw part" "mat part";grid-template-rows:auto auto 1fr;align-items:start;}
+  .tt-a-basic{grid-area:basic;} .tt-a-raw{grid-area:raw;} .tt-a-mat{grid-area:mat;} .tt-a-part{grid-area:part;align-self:stretch;}
+  @media (max-width:760px){ .tt-q{grid-template-areas:"basic" "raw" "mat" "part";grid-template-rows:none;} .tt-a-part{align-self:start;} }
+  #modal.modal.tt-modal{max-height:min(84vh, 820px);}
+  .tt-modal .tt-mhead{position:sticky;top:-16px;z-index:6;background:var(--surface);margin:-16px -18px 10px;padding:14px 18px 8px;border-bottom:1px solid var(--border);}
+  .tt-modal .modal-actions{position:sticky;bottom:calc(-14px - var(--safe-b));z-index:6;background:var(--surface);margin:12px -18px calc(-14px - var(--safe-b));padding:10px 18px calc(10px + var(--safe-b));border-top:1px solid var(--border);}
+  details.tt-short > summary{cursor:pointer;list-style:none;}
+  details.tt-short > summary::-webkit-details-marker{display:none;}
+  details.tt-short > summary::before{content:"▸ ";}
+  details.tt-short[open] > summary::before{content:"▾ ";}
+  details.tt-short > summary small{font-weight:600;color:var(--text-faint);margin-left:4px;}
+  details.tt-short[open] > summary small{display:none;}
+  details.tt-short ul{margin-top:4px;}
+  /* 고스트(역산 자리) · 칩 글자 보이게 */
+  .tt-ghost{z-index:1;height:20px;margin:0 2px;border-radius:4px;border:1.5px dashed var(--late-crit);background:color-mix(in srgb, var(--late-crit) 6%, transparent);
+    display:flex;align-items:center;gap:3px;padding:0 4px;min-width:0;font-size:10px;font-weight:700;color:var(--late-crit);white-space:nowrap;overflow:hidden;cursor:pointer;}
+  .tt-ghost span{overflow:hidden;text-overflow:ellipsis;min-width:0;}
+  .tt-ghost b{flex:none;margin-left:auto;font-size:9px;background:var(--late-crit);color:#fff;border-radius:999px;padding:1px 4px;line-height:1.1;}
+  .tt-chip .tt-cl{flex:1 1 auto;min-width:18px;}
+  .tt-chip .tt-dn{flex:0 1 auto;min-width:0;overflow:hidden;}
+  .tt-lg-ghost i{width:12px !important;height:10px !important;border:1.5px dashed var(--late-crit);background:transparent !important;border-radius:3px;}
   /* 주간 분할 출고 */
   .tt-hbtns{margin-left:auto;display:flex;gap:6px;}
   .tt-box-h > .tt-hbtns .tt-hbtn{margin-left:0;}
@@ -1470,7 +1492,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-11-02 · 주간 분할 출고(주당 최소·요일 고정/변동)";
+const APP_VERSION = "2026-11-02 · 업체 제조 판정 즉시 셋팅·출고 건 창 배치·역산 고스트·3주 보기";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1586,19 +1608,25 @@ function ttPlan(o) {
   const latestBy = latestMovePart && (!latestMoveDue || latestMovePart < latestMoveDue) ? "partial" : "due";
   const latestMove = latestBy === "partial" ? latestMovePart : latestMoveDue;                    // 이동 필요일
   const latestMat = latestMove ? subBiz(latestMove, R.gapMove) : null;                            // 자재·추가 셋팅 늦어도
-  const latestMfg = latestMat ? subBiz(latestMat, judgeDays) : null;                              // 제조 늦어도 (판정 감안)
+  // 판정 끝 늦어도: 자사는 판정 후 +gapMove일 이동, 업체 제조는 판정 끝나면 바로 셋팅(보관품 즉시 사용) → 이동일 당일까지
+  const latestJudge = latestMove ? (own ? latestMat : subBiz(latestMove, 0)) : null;
+  const latestMfg = latestJudge ? subBiz(latestJudge, judgeDays) : null;                          // 제조 늦어도 (판정 감안)
   const latestWeigh = latestMfg ? subBiz(latestMfg, 1) : null;
   const latestProdEnd = latestMove ? addBiz(addBiz(latestMove, R.gapProd), baseDays - 1) : null;
   // 입력한 셋팅일이 역산한 날보다 늦으면 그 영업일 수 (목표일을 못 맞추는 원인)
   const over = (d, lim) => (d && lim && d > lim ? Math.max(1, bizDiff(lim, d)) : 0);
-  const need = { weigh: over(o.weighDate, latestWeigh), mfg: over(o.mfgDate, latestMfg), mat: over(o.matDate, latestMat), matFinal: over(matFinal, latestMat), judge: over(judgeEnd, latestMat), s: {} };
+  const need = { weigh: over(o.weighDate, latestWeigh), mfg: over(o.mfgDate, latestMfg), mat: over(o.matDate, latestMat), matFinal: over(matFinal, latestMat), judge: over(judgeEnd, latestJudge), s: {} };
   (o.setups || []).forEach((x) => { const n = over(x.date, latestMat); if (n) need.s[x.id] = n; });
-  const common = { own, prodDays, baseDays, goodPerDay, judgeDays, judgeEnd, weigh, matFinal, matFirst, matBy, latestMat, latestMfg, latestMove, latestWeigh, latestProdEnd, latestBy, partBind, need, tail };
-  const cands = [rawReady, matFinal].filter(Boolean);
-  if (!cands.length) return { ok: false, ...common };
-  const base = cands.slice().sort().pop();
-  const by = base === rawReady ? "judge" : matFinal === o.matDate ? "mat" : "setup";   // 이동을 정한 공정(병목)
-  const move = addBiz(base, R.gapMove + (adj.move || 0));
+  const common = { own, prodDays, baseDays, goodPerDay, judgeDays, judgeEnd, weigh, matFinal, matFirst, matBy, latestMat, latestMfg, latestMove, latestWeigh, latestProdEnd, latestJudge, latestBy, partBind, need, tail };
+  // 이동 가능일: 원료 쪽 — 자사는 판정 끝 + gapMove, 업체 제조는 판정 끝난 날 바로 / 자재 쪽 — 최종 자재셋팅 + gapMove
+  const rawMoveFrom = rawReady ? addBiz(rawReady, own ? R.gapMove : 0) : null;
+  const matMoveFrom = matFinal ? addBiz(matFinal, R.gapMove) : null;
+  const froms = [rawMoveFrom, matMoveFrom].filter(Boolean);
+  if (!froms.length) return { ok: false, ...common };
+  const move0 = froms.slice().sort().pop();
+  const by = rawMoveFrom === move0 ? "judge" : matFinal === o.matDate ? "mat" : "setup";   // 이동을 정한 공정(병목)
+  const base = by === "judge" ? rawReady : matFinal;
+  const move = addBiz(move0, adj.move || 0);
   need.move = over(move, latestMove);
   const prodStart = addBiz(move, R.gapProd);
   const prodList = [prodStart]; while (prodList.length < prodDays) prodList.push(addBiz(prodList[prodList.length - 1], 1));
@@ -1616,7 +1644,7 @@ function ttPlan(o) {
   const allByPart = !!o.partial && parts.length > 0 && remain === 0;
   const shipF = allByPart ? parts[parts.length - 1].date : ship;
   const slack = o.due ? bizDiff(shipF, o.due) : null;                     // + 여유 / − 지연 (영업일)
-  return { ok: true, ...common, base, by, move, prodStart, prodEnd, prodList, ship: shipF, allByPart, slack, matGap, matOk,
+  return { ok: true, ...common, base, by, rawMoveFrom, matMoveFrom, move, prodStart, prodEnd, prodList, ship: shipF, allByPart, slack, matGap, matOk,
     partChecks, partSum, remain, over: partSum > o.qty, partial: !!o.partial,
     missing: !o.mfgDate ? "mfg" : !matFinal ? "mat" : null };
 }
@@ -1686,7 +1714,7 @@ function ttWeeklyFill(o, pl) {
 const ttQtyShort = (n) => (n >= 10000 ? `${Math.round((n / 10000) * 10) / 10}만` : n.toLocaleString());   // 50000 → 5만
 const ttWeighLabel = (o) => (o.mfgType === "vendor" ? "원료셋팅" : "원료칭량");
 // 목표일 역산 대비 늦은 영업일 (셋팅·이동 공정만)
-const ttNeedOf = (pl, st) => !pl.need || st.done ? 0 : st.key.startsWith("s:") ? pl.need.s[st.key.slice(2)] || 0 : st.key === "mat" ? pl.need.matFinal || 0 : ["weigh", "mfg", "move"].includes(st.key) ? pl.need[st.key] || 0 : 0;                                   // 공정이 끝나는 날
+const ttNeedOf = (pl, st) => !pl.need || st.done ? 0 : st.key.startsWith("s:") ? pl.need.s[st.key.slice(2)] || 0 : st.key === "mat" ? pl.need.matFinal || 0 : ["weigh", "mfg", "judge", "move"].includes(st.key) ? pl.need[st.key] || 0 : 0;                                   // 공정이 끝나는 날
 // 최초 계획일 기록 (onlyMissing: 이미 있는 기준은 그대로 두고 새 공정만 추가)
 function ttBaseline(o, onlyMissing) {
   if (!onlyMissing || !o.plan0 || typeof o.plan0 !== "object") o.plan0 = {};
@@ -2073,7 +2101,7 @@ function loadUI() {
     const p = JSON.parse(localStorage.getItem("scheduler:ui") || "{}");
     if (typeof p.workweek === "boolean") ui.workweek = p.workweek;
     if (p.calMode === "week" || p.calMode === "month") ui.calMode = p.calMode;
-    if ([7, 14, 28].includes(p.ttSpan)) ui.ttSpan = p.ttSpan;
+    if ([7, 14, 21, 28].includes(p.ttSpan)) ui.ttSpan = p.ttSpan;
     if ([0, 28, 84].includes(p.statDays)) ui.statDays = p.statDays;
     if (p.view && p.view !== "todo") ui.view = p.view; // 할일 탭 제거됨
     if (typeof p.splitW === "number") ui.splitW = Math.max(180, Math.min(560, p.splitW));
@@ -2514,7 +2542,7 @@ function renderTimetable() {
   h += `<div class="tt-bar">
     <div class="week-nav"><button data-tt-nav="-1" title="이전 주">${IC.left}</button><button class="today-btn" data-tt-nav="0">오늘</button><button data-tt-nav="1" title="다음 주">${IC.right}</button>
       <span class="cal-title">${fd.getMonth() + 1}/${fd.getDate()} – ${ld.getMonth() + 1}/${ld.getDate()}</span></div>
-    <div class="seg">${[[7, "1주"], [14, "2주"], [28, "4주"]].map(([n, l]) => `<button class="${ui.ttSpan === n ? "active" : ""}" data-tt-span="${n}">${l}</button>`).join("")}</div>
+    <div class="seg">${[[7, "1주"], [14, "2주"], [21, "3주"], [28, "4주"]].map(([n, l]) => `<button class="${ui.ttSpan === n ? "active" : ""}" data-tt-span="${n}">${l}</button>`).join("")}</div>
   </div>`;
 
   // ---- 캘린더 (출고 건마다 한 줄) ----
@@ -2546,12 +2574,27 @@ function renderTimetable() {
       items.push({ st, cs: idx(a), ce: idx(b) });
     });
     // 줄 고정: ① 원료&제조 ② 자재셋팅·이동 ③ 생산 ④ 파샬 출고·납품 — 같은 줄에서 겹치면 그 묶음만 한 줄 더
-    const grpOf = (k) => (["weigh", "mfg", "judge"].includes(k) ? 0 : ["mat", "move"].includes(k) ? 1 : k === "prod" ? 2 : 3);
     items.sort((x, y) => x.cs - y.cs || (y.ce - y.cs) - (x.ce - x.cs));
+    const grpOf = (k) => (["weigh", "mfg", "judge"].includes(k) ? 0 : ["mat", "move"].includes(k) ? 1 : k === "prod" ? 2 : 3);
+    // 고스트: 목표일을 맞추려면 이 공정이 있어야 할 자리(역산) — 늦은 공정만, 빨간 점선 테두리
+    const ghosts = [];
+    if (pl.ok && (pl.latestMove || pl.latestMat)) {
+      const tgt = { weigh: [pl.latestWeigh, pl.latestWeigh], mfg: [pl.latestMfg, pl.latestMfg], judge: [pl.latestMfg ? addBiz(pl.latestMfg, o.judgeDays ? 1 : 0) : null, pl.latestJudge],
+        mat: [pl.latestMat, pl.latestMat], move: [pl.latestMove, pl.latestMove], prod: [pl.latestMove ? addBiz(pl.latestMove, ttRules().gapProd) : null, pl.latestProdEnd] };
+      const before = {};                                                    // 보이는 기간보다 앞에 있어야 할 공정 → 묶음마다 '◀' 하나로
+      steps.filter((st) => !st.done && !st.sub && tgt[st.key]).forEach((st) => {
+        const n = st.key === "prod" ? pl.need.move || 0 : ttNeedOf(pl, st); if (!n) return;
+        let [a, b] = tgt[st.key]; if (!a || !b || a > last) return;
+        if (b < first) { const k = grpOf(st.key); (before[k] = before[k] || []).push({ st, n, to: b }); return; }
+        if (a < first) a = first; if (b > last) b = last;
+        ghosts.push({ st, cs: idx(a), ce: idx(b), ghost: true, n, to: tgt[st.key][1] });
+      });
+      Object.values(before).forEach((list) => ghosts.push({ st: list[0].st, cs: 0, ce: 0, ghost: true, n: Math.max(...list.map((x) => x.n)), to: null, prev: list }));
+    }
     const grpRows = [[], [], [], []];
-    items.forEach((it) => { const L = grpRows[grpOf(it.st.key)]; let r = 0; while ((L[r] || []).some(([a, b]) => !(it.ce < a || it.cs > b))) r++; (L[r] = L[r] || []).push([it.cs, it.ce]); it.gr = r; it.grp = grpOf(it.st.key); });
+    items.concat(ghosts).forEach((it) => { const L = grpRows[grpOf(it.st.key)]; let r = 0; while ((L[r] || []).some(([a, b]) => !(it.ce < a || it.cs > b))) r++; (L[r] = L[r] || []).push([it.cs, it.ce]); it.gr = r; it.grp = grpOf(it.st.key); });
     const grpStart = []; let nR = 0; grpRows.forEach((L, i) => { grpStart[i] = nR; nR += Math.max(1, L.length); });
-    items.forEach((it) => (it.r = grpStart[it.grp] + it.gr));
+    items.concat(ghosts).forEach((it) => (it.r = grpStart[it.grp] + it.gr));
     const S = ttStatus(pl, o);
     const hasDue0 = o.due && o.due >= first && o.due <= last, pt = hasDue0 ? 19 : 5;
     const rowLabels = ["원료·제조", "자재·이동", "생산", "출고·납품"].map((l, i) => `<span class="tt-rl" style="top:${pt + grpStart[i] * 23 + 3}px">${l}</span>`).join("");
@@ -2566,15 +2609,14 @@ function renderTimetable() {
     });
     const sa = idx(spanA < first ? first : spanA), sb = idx(spanB > last ? last : spanB);
     lane += `<span class="tt-span-bar" style="grid-column:${sa + 1} / ${sb + 2}"></span>`;
-    // 이동 필요일(목표 역산) ~ 계산 이동일 사이를 붉게 — 그만큼 늦음
-    if (pl.ok && pl.need.move) {
-      const g0 = ymd(addDays(parseYMD(pl.latestMove), 1)), a = g0 < first ? first : g0, b = pl.move > last ? last : pl.move;
-      if (a <= b) lane += `<span class="tt-gap" style="grid-column:${idx(a) + 1} / ${idx(b) + 2}" data-label="이동 ${pl.need.move}일 늦음" title="이동 필요일 ${fmtMD(pl.latestMove)}(목표일 역산) → 계산 이동일 ${fmtMD(pl.move)} · ${pl.need.move}영업일 늦음"></span>`;
-    }
     if (hasDue) {
       const bad = pl.ok && pl.slack < 0;
       lane += `<span class="tt-due ${bad ? "bad" : ""}" style="grid-column:${idx(o.due) + 1}" data-label="목표 ${fmtMD(o.due)}" title="출고 목표일 ${fmtKDate(o.due)}${pl.ok && pl.slack != null ? ` · ${S.txt}` : ""}"></span>`;
     }
+    ghosts.forEach(({ st, cs, ce, r, n, to, prev }) => {
+      const tip = prev ? "목표일을 맞추려면 (이 기간보다 앞):\n" + prev.map((x) => `· ${x.st.label} ${fmtMD(x.to)}까지 — ${x.n}영업일 늦음`).join("\n") : `목표일을 맞추려면 ${st.label} ${fmtMD(to)}까지 — 지금 ${n}영업일 늦음`;
+      lane += `<div class="tt-ghost ${st.cls}${prev ? " prev" : ""}" style="grid-column:${cs + 1} / ${ce + 2};grid-row:${r + 1}" data-tt-open="${o.id}" title="${esc(tip)}"><span>${prev ? `◀ ${prev.map((x) => x.st.short).join("·")}` : `${esc(st.short)} ~${fmtMD(to)}`}</span><b>−${n}</b></div>`;
+    });
     // 생산 줄 진도율: 파샬로 나간 수량(+최종 납품 완료) ÷ 발주량
     const shipped = Math.min(o.qty, o.partials.filter((x) => x.done && o.partial).reduce((n, x) => n + x.qty, 0) + (o.done.ship ? pl.remain || 0 : 0));
     const prPct = o.done.ship ? 100 : Math.round((shipped / o.qty) * 100), showPr = (o.partial && o.partials.length) || o.done.ship;
@@ -2582,13 +2624,13 @@ function renderTimetable() {
       const pr = st.key === "prod" && showPr;
       const od = ttStepOverdue(st, today), warn = st.partOk === false, dn = st.done ? 0 : ttDelay(o, st), nd = ttNeedOf(pl, st);
       const range = st.end && st.end !== st.date ? `${fmtMD(st.date)}–${fmtMD(st.end)}` : fmtMD(st.date);
-      lane += `<div class="tt-chip ${st.cls}${st.done ? " done" : ""}${od ? " over" : ""}${warn ? " warn" : ""}${nd ? " need-late" : ""}${pr ? " has-pr" : ""}${ttLateCls(dn)}" style="grid-column:${cs + 1} / ${ce + 2};grid-row:${r + 1}${pr ? `;--pr:${prPct}%` : ""}" data-tt-open="${o.id}" title="${esc(o.item)} · ${esc(st.label)} ${range}${pr ? ` · 출고 ${shipped.toLocaleString()}/${o.qty.toLocaleString()}ea (${prPct}%)` : ""}${st.done ? " (완료)" : ""}${dn ? ` — 최초 ${fmtMD(o.plan0[st.key])}보다 ${dn}일 밀림` : ""}${od ? ` — ${od}일 지남` : ""}${warn ? " — 그날까지 생산량이 부족합니다" : ""}${nd ? ` — 목표일 역산보다 ${nd}영업일 늦음` : ""}"><span class="tt-ck" data-tt-step="${o.id}|${st.key}" title="완료 표시">${st.done ? "✓" : ""}</span><span class="tt-cl">${st.key === "ship" ? "▼ " : ""}${esc(st.short)}${pr ? ` · 출고 ${prPct}%` : ""}</span>${nd ? `<span class="tt-nl">늦음 ${nd}</span>` : ""}${dn ? `<span class="tt-dn">D+${dn}</span>` : ""}</div>`;
+      lane += `<div class="tt-chip ${st.cls}${st.done ? " done" : ""}${od ? " over" : ""}${warn ? " warn" : ""}${nd ? " need-late" : ""}${pr ? " has-pr" : ""}${ttLateCls(dn)}" style="grid-column:${cs + 1} / ${ce + 2};grid-row:${r + 1}${pr ? `;--pr:${prPct}%` : ""}" data-tt-open="${o.id}" title="${esc(o.item)} · ${esc(st.label)} ${range}${pr ? ` · 출고 ${shipped.toLocaleString()}/${o.qty.toLocaleString()}ea (${prPct}%)` : ""}${st.done ? " (완료)" : ""}${dn ? ` — 최초 ${fmtMD(o.plan0[st.key])}보다 ${dn}일 밀림` : ""}${od ? ` — ${od}일 지남` : ""}${warn ? " — 그날까지 생산량이 부족합니다" : ""}${nd ? ` — 목표일 역산보다 ${nd}영업일 늦음` : ""}"><span class="tt-ck" data-tt-step="${o.id}|${st.key}" title="완료 표시">${st.done ? "✓" : ""}</span><span class="tt-cl">${st.key === "ship" ? "▼ " : ""}${esc(st.short)}${pr ? ` · 출고 ${prPct}%` : ""}</span>${dn ? `<span class="tt-dn">D+${dn}</span>` : ""}</div>`;
     });
     g += lane + `</div>`;
   });
   g += `</div></div>`;
   h += g;
-  h += `<div class="tt-legend">${[["s-weigh", "원료칭량·원료셋팅"], ["s-mfg", "제조"], ["s-judge", "제조 판정"], ["s-mat", "자재셋팅(추가 셋팅 포함)"], ["s-move", "이동"], ["s-prod", "생산"], ["s-part", "파샬 출고"], ["s-ship", "납품"]].map(([c, l]) => `<span class="${c}"><i></i>${l}</span>`).join("")}<span>│ 굵은 선 = 출고 목표일 · D+N = 최초 계획보다 밀린 일수</span></div>`;
+  h += `<div class="tt-legend">${[["s-weigh", "원료칭량·원료셋팅"], ["s-mfg", "제조"], ["s-judge", "제조 판정"], ["s-mat", "자재셋팅(추가 셋팅 포함)"], ["s-move", "이동"], ["s-prod", "생산"], ["s-part", "파샬 출고"], ["s-ship", "납품"]].map(([c, l]) => `<span class="${c}"><i></i>${l}</span>`).join("")}<span class="tt-lg-ghost"><i></i>빨간 점선 = 목표일 맞추려면 있어야 할 자리(−N 늦은 영업일)</span><span>│ 굵은 선 = 출고 목표일 · D+N = 최초 계획보다 밀린 일수</span></div>`;
   if (outside) h += `<div class="tt-outside">이 기간 밖의 출고 건 ${outside}개는 아래 목록에 있습니다.</div>`;
 
   // ---- 목록 ----
@@ -2667,7 +2709,7 @@ function renderOrderModal(id, copyFrom) {
   m.innerHTML = `<div id="tt-form">
     <div class="tt-mhead"><h3>${isNew ? (copyFrom ? "출고 건 복제" : "출고 건 추가") : "출고 건"}</h3></div>
     <div class="tt-q">
-      <section class="tt-box"><div class="tt-box-h"><i>1</i>기본 정보</div>
+      <section class="tt-box tt-a-basic"><div class="tt-box-h"><i>1</i>기본 정보</div>
         <div class="tt-r tt-r-item">
           <div class="field"><label for="tt-item">품목</label><input id="tt-item" value="${esc(isNew && !copyFrom ? "" : o.item)}" placeholder="예: 수분진정 토너 200ml" autocomplete="off" /></div>
           <div class="field"><label for="tt-client">거래처</label><input id="tt-client" value="${esc(o.client)}" placeholder="예: ○○코스메틱" autocomplete="off" /></div>
@@ -2679,20 +2721,20 @@ function renderOrderModal(id, copyFrom) {
           <div class="field"><label for="tt-line">생산 라인</label><input id="tt-line" value="${esc(o.line || "")}" placeholder="예: 1라인" autocomplete="off" title="같은 라인에서 생산 기간이 겹치면 알려 줍니다" /></div>
         </div>
       </section>
-      <section class="tt-box s-mfg"><div class="tt-box-h"><i>2</i>원료&amp;제조<div class="seg tt-type"><button type="button" data-v="own">자사 제조</button><button type="button" data-v="vendor">업체 제조</button></div></div>
+      <section class="tt-box s-mfg tt-a-raw"><div class="tt-box-h"><i>2</i>원료&amp;제조<div class="seg tt-type"><button type="button" data-v="own">자사 제조</button><button type="button" data-v="vendor">업체 제조</button></div></div>
         <div class="tt-r tt-r-3">
           <div class="field" id="tt-weigh-f"><label for="tt-weigh"><span id="tt-weigh-lab">원료칭량일</span><span class="tt-need" data-need="weigh"></span></label><input id="tt-weigh" type="date" value="${o.weighDate || ""}" title="비우면 제조 전날로 계산" /></div>
           <div class="field"><label for="tt-mfg"><span id="tt-mfg-lab">제조예정일</span><span class="tt-need" data-need="mfg"></span></label><input id="tt-mfg" type="date" value="${o.mfgDate || ""}" /></div>
           <div class="field"><label>제조 판정</label><div class="seg tt-judge">${[0, 1, 2, 3].map((n) => `<button type="button" data-d="${n}" title="${n ? `제조 다음 날부터 ${n}영업일` : "긴급 — 제조한 날 바로 판정"}">${n ? `D+${n}` : "당일"}</button>`).join("")}</div></div>
         </div>
       </section>
-      <section class="tt-box s-mat"><div class="tt-box-h"><i>3</i>자재 · 추가 셋팅<span class="tt-matfinal" id="tt-matfinal"></span><button type="button" class="tt-hbtn" id="tt-sadd" title="칼선·금형·단상자 등 — 자재셋팅일과 합쳐 가장 늦은 날이 최종 자재셋팅일">＋ 셋팅 추가</button></div>
+      <section class="tt-box s-mat tt-a-mat"><div class="tt-box-h"><i>3</i>자재 · 추가 셋팅<span class="tt-matfinal" id="tt-matfinal"></span><button type="button" class="tt-hbtn" id="tt-sadd" title="칼선·금형·단상자 등 — 자재셋팅일과 합쳐 가장 늦은 날이 최종 자재셋팅일">＋ 셋팅 추가</button></div>
         <div class="tt-r tt-r-2">
           <div class="field"><label for="tt-mat">자재셋팅일<span class="tt-need" data-need="mat"></span></label><input id="tt-mat" type="date" value="${o.matDate || ""}" /></div>
           <div id="tt-setups"></div>
         </div>
       </section>
-      <section class="tt-box s-ship"><div class="tt-box-h"><i>4</i>파샬 출고<span class="tt-hbtns"><button type="button" class="tt-hbtn tt-wk-tg" id="tt-wk-toggle" title="주마다 최소 출고량이 정해진 품목">주간 분할</button><button type="button" class="tt-hbtn" id="tt-padd" title="중간에 나눠 내보내는 출고 — 날짜·LOT·수량">＋ 파샬 출고 추가</button></span></div>
+      <section class="tt-box s-ship tt-a-part"><div class="tt-box-h"><i>4</i>파샬 출고<span class="tt-hbtns"><button type="button" class="tt-hbtn tt-wk-tg" id="tt-wk-toggle" title="주마다 최소 출고량이 정해진 품목">주간 분할</button><button type="button" class="tt-hbtn" id="tt-padd" title="중간에 나눠 내보내는 출고 — 날짜·LOT·수량">＋ 파샬 출고 추가</button></span></div>
         <div class="tt-wkp" id="tt-wkp" hidden>
           <label>주당 최소<input id="tt-wmin" inputmode="numeric" placeholder="50000" autocomplete="off" />ea</label>
           <label>출고 요일<select id="tt-wdow"><option value="">변동</option>${[1, 2, 3, 4, 5, 6, 0].map((d) => `<option value="${d}">${DOW[d]}</option>`).join("")}</select></label>
@@ -2757,7 +2799,7 @@ function renderOrderModal(id, copyFrom) {
     const cols = [
       { k: "weigh", l: pl.own ? "칭량" : "원료셋팅", c: "s-weigh", cur: pl.weigh, tgt: pl.latestWeigh, input: !!d.weighDate },
       { k: "mfg", l: "제조", c: "s-mfg", cur: d.mfgDate, tgt: pl.latestMfg },
-      { k: "judge", l: ttJudgeLabel(d.judgeDays), c: "s-judge", cur: pl.judgeEnd, tgt: pl.latestMat, pre: "~" },
+      { k: "judge", l: ttJudgeLabel(d.judgeDays), c: "s-judge", cur: pl.judgeEnd, tgt: pl.latestJudge, pre: "~" },
       { k: "mat", l: "자재(최종)", c: "s-mat", cur: pl.matFinal, tgt: pl.latestMat },
       { k: "move", l: "이동", c: "s-move", cur: pl.ok ? pl.move : null, tgt: pl.latestMove },
       { k: "prod", l: "생산", c: "s-prod", cur: pl.ok ? pl.prodEnd : null, curTxt: pl.ok ? fmtMD(pl.prodStart) + (pl.prodDays > 1 ? "–" + fmtMD(pl.prodEnd) : "") : "", tgt: pl.latestProdEnd, tgtTxt: pl.latestMove ? fmtMD(addBiz(pl.latestMove, ttRules().gapProd)) + (pl.baseDays > 1 ? "–" + fmtMD(pl.latestProdEnd) : "") : "" },
@@ -2766,8 +2808,9 @@ function renderOrderModal(id, copyFrom) {
     cols.forEach((x) => { x.diff = x.cur && x.tgt ? bizDiff(x.cur, x.tgt) : null; if (x.cur && x.tgt && x.cur > x.tgt && x.diff >= 0) x.diff = -1; });
     // 최대 차이 하나만: 이동을 정하는 병목(판정 완료 또는 최종 자재셋팅)을 이만큼 당기면 뒤 공정·목표일이 모두 맞음
     const diffs = cols.map((x) => x.diff).filter((x) => x != null), worst = diffs.length ? Math.min(...diffs) : null;
-    const causes = !pl.ok ? [] : [pl.judgeEnd && pl.judgeEnd === pl.base ? `제조예정일 ${fmtMD(d.mfgDate)} (판정 완료 ${fmtMD(pl.judgeEnd)})` : "",
-      pl.matFinal && pl.matFinal === pl.base ? `${pl.matBy === "자재셋팅" ? "자재셋팅일" : esc(pl.matBy)} ${fmtMD(pl.matFinal)} (최종 자재셋팅)` : ""].filter(Boolean);   // 같은 날 끝나면 둘 다
+    const mv0 = pl.ok ? [pl.rawMoveFrom, pl.matMoveFrom].filter(Boolean).sort().pop() : null;
+    const causes = !pl.ok ? [] : [pl.rawMoveFrom && pl.rawMoveFrom === mv0 ? `제조예정일 ${fmtMD(d.mfgDate)} (판정 완료 ${fmtMD(pl.judgeEnd)})` : "",
+      pl.matMoveFrom && pl.matMoveFrom === mv0 ? `${pl.matBy === "자재셋팅" ? "자재셋팅일" : esc(pl.matBy)} ${fmtMD(pl.matFinal)} (최종 자재셋팅)` : ""].filter(Boolean);   // 같은 날 끝나면 둘 다
     const causeTxt = causes.join(" · ");
     const maxDiffHtml = worst == null ? "" : worst < 0
       ? `<b class="neg">−${-worst}영업일</b> <span>가장 늦은 <b>${causeTxt}</b>을(를) ${-worst}영업일 당기면 목표일에 맞습니다</span>`
@@ -2791,7 +2834,7 @@ function renderOrderModal(id, copyFrom) {
     }
     const warns = pl.ok ? ttWarnings(d, pl, null) : [];
     warns.filter((w) => !w.soft).forEach((w) => short.push(esc(w.t)));
-    if (short.length) t += `<div class="tt-short"><div class="tt-short-h">부족 내용</div><ul>${short.map((x) => `<li>${x}</li>`).join("")}</ul></div>`;
+    if (short.length) t += `<details class="tt-short"><summary class="tt-short-h">부족 내용 ${short.length}건 <small>눌러서 보기</small></summary><ul>${short.map((x) => `<li>${x}</li>`).join("")}</ul></details>`;
     // 주간 출고표
     const wk = ttWeekly(d, pl);
     if (d.weekly.on && !d.weekly.min) t += `<div class="tt-pv-empty">주간 분할: 주당 최소 출고량을 넣어 주세요.</div>`;
@@ -2808,7 +2851,8 @@ function renderOrderModal(id, copyFrom) {
     // 계산 참고 (접어 둠)
     const byL = pl.ok ? { judge: `판정 완료(${fmtMD(pl.judgeEnd)})`, mat: `최종 자재셋팅(${fmtMD(pl.matFinal)})`, setup: `최종 자재셋팅(${fmtMD(pl.matFinal)} · ${pl.matBy})` }[pl.by] : "";
     const ref = [
-      pl.ok ? `이동 = 가장 늦게 끝나는 <b>${byL}</b> + ${ttRules().gapMove}영업일 → ${fmtMD(pl.move)}` : "",
+      pl.ok ? `이동 = 가장 늦게 끝나는 <b>${byL}</b>${pl.by === "judge" && !pl.own ? " 당일 (업체 제조: 판정 끝나면 바로 셋팅)" : ` + ${ttRules().gapMove}영업일`} → ${fmtMD(pl.move)}` : "",
+      !pl.own ? `업체 제조: 판정이 끝나면 보관품을 바로 쓰므로 원료 쪽은 판정 당일 이동, 자재 쪽은 최종 자재셋팅 + ${ttRules().gapMove}영업일` : "",
       `${wl}일은 비우면 제조 전날로 계산 · 제조 판정은 ${d.judgeDays ? `제조 다음 영업일부터 D+${d.judgeDays}` : "제조한 날 바로(당일)"} (당일~최대 D+${TT_JUDGE_MAX})`,
       `주말: ${TT_WEEKEND_LABEL[d.weekend]} — ${d.weekend === "off" ? "토·일은 영업일에서 뺌" : d.weekend === "sat" ? "토요일도 영업일로 셈 (일요일 쉼)" : "토·일 모두 영업일로 셈"} · 공휴일은 항상 쉼`,
       "자재셋팅일과 추가 셋팅(칼선·단상자 등) 중 가장 늦은 날이 최종 자재셋팅일",
