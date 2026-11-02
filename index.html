@@ -527,6 +527,7 @@
   /* 주간 분할 출고 */
   .tt-hbtns{margin-left:auto;display:flex;gap:6px;}
   .tt-box-h > .tt-hbtns .tt-hbtn{margin-left:0;}
+  .tt-hbtn.tt-tk-tg.on{background:color-mix(in srgb, var(--tt-mat) 14%, var(--surface));border-style:solid;border-color:var(--tt-mat);color:var(--tt-mat);}
   .tt-hbtn.on{background:color-mix(in srgb, var(--tt-ship) 14%, var(--surface));border-style:solid;border-color:var(--tt-ship);color:var(--tt-ship);}
   .tt-wkp{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:0 0 8px;padding:7px 9px;border-radius:9px;background:color-mix(in srgb, var(--tt-ship) 7%, var(--surface));font-size:11.5px;font-weight:700;color:var(--text-soft);}
   .tt-wkp[hidden]{display:none;}
@@ -1402,6 +1403,107 @@
   /* 완료된 프로젝트 카드 */
   .pj-card.is-done{opacity:.72;}
   .pj-card.is-done:hover{opacity:1;}
+  /* ========== 전체 테마: 소프트 클레이 (뉴모피즘 바탕 + 클레이 칩, 블루 톤) ========== */
+  body.skin-clay{
+    --personal:#7B6CF0; --personal-soft:#ECE9FE; --personal-line:#D6D0FB;
+    --urgent:#E5406A; --urgent-soft:#FDE6EC;
+    --high:#D68A00; --high-soft:#FFF1D6;
+    --done:#14A583; --done-soft:#DDF5EE;
+    --hol:#E5406A;
+    --border:#DCE3EE; --border-strong:#C9D3E2;
+    --text:#1B2333; --text-soft:#556079; --text-faint:#8792A8;
+    --neu-hi:#FFFFFF; --neu-lo:#C8D1DF;
+    --neu-out:6px 6px 14px var(--neu-lo), -6px -6px 14px var(--neu-hi);
+    --neu-sm:3px 3px 7px var(--neu-lo), -3px -3px 7px var(--neu-hi);
+    --neu-in:inset 3px 3px 7px var(--neu-lo), inset -3px -3px 7px var(--neu-hi);
+    --clay:inset 0 -3px 0 rgba(0,0,0,.14), inset 0 2px 0 rgba(255,255,255,.38);
+    --clay-sm:inset 0 -2px 0 rgba(0,0,0,.10), inset 0 1px 0 rgba(255,255,255,.35);
+    --shadow:var(--neu-sm);
+    --shadow-lg:0 20px 44px rgba(40,60,100,.20);
+    --radius:16px;
+  }
+  :root[data-theme="dark"] body.skin-clay{
+    --personal:#A99CFF; --personal-soft:#2A2747; --personal-line:#3D3870;
+    --urgent:#FF7D9B; --urgent-soft:#3D2230; --high:#FFC65C; --high-soft:#3A2F17; --done:#4FD8B3; --done-soft:#17332D; --hol:#FF7D9B;
+    --border:#2C3340; --border-strong:#3A4252; --text:#E8ECF4; --text-soft:#A3ADC2; --text-faint:#76819A;
+    --neu-hi:#2A313D; --neu-lo:#10131A; --clay:inset 0 -3px 0 rgba(0,0,0,.28), inset 0 2px 0 rgba(255,255,255,.16);
+    --clay-sm:inset 0 -2px 0 rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.14); --shadow-lg:0 20px 44px rgba(0,0,0,.5);
+  }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) body.skin-clay{
+    --personal:#A99CFF; --personal-soft:#2A2747; --personal-line:#3D3870;
+    --urgent:#FF7D9B; --urgent-soft:#3D2230; --high:#FFC65C; --high-soft:#3A2F17; --done:#4FD8B3; --done-soft:#17332D; --hol:#FF7D9B;
+    --border:#2C3340; --border-strong:#3A4252; --text:#E8ECF4; --text-soft:#A3ADC2; --text-faint:#76819A;
+    --neu-hi:#2A313D; --neu-lo:#10131A; --clay:inset 0 -3px 0 rgba(0,0,0,.28), inset 0 2px 0 rgba(255,255,255,.16);
+    --clay-sm:inset 0 -2px 0 rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.14); --shadow-lg:0 20px 44px rgba(0,0,0,.5);
+  }}
+  /* 바탕 패널: 테두리 대신 볼록한 그림자 */
+  body.skin-clay .topbar{border-bottom:0;box-shadow:0 6px 16px color-mix(in srgb, var(--neu-lo) 70%, transparent);}
+  body.skin-clay .tabbar{border-bottom:0;}
+  body.skin-clay .dash{border-left:0;}
+  body.skin-clay :is(.set-group,.card,.tt-card,.pj-card,.tt-box,.row-item){border-color:transparent;box-shadow:var(--neu-out);border-radius:16px;}
+  body.skin-clay .set-group{overflow:visible;}
+  body.skin-clay .set-row{border-color:color-mix(in srgb, var(--border) 70%, transparent);}
+  body.skin-clay .week-scroll{border:0;border-radius:18px;box-shadow:var(--neu-out);}
+  body.skin-clay .app.cal-view .week-scroll{border-radius:0;box-shadow:none;}
+  body.skin-clay .kpi{background:var(--bg);box-shadow:var(--neu-in);border-radius:14px;}
+  /* 탭 · 세그먼트: 선택된 쪽이 쏙 눌린 모양 */
+  body.skin-clay .tab{border-radius:12px;}
+  body.skin-clay .tab.active{background:var(--bg);color:var(--work);box-shadow:var(--neu-in);}
+  body.skin-clay :is(.seg,.week-nav .cal-seg){background:var(--bg);border:0;border-radius:13px;padding:4px;box-shadow:var(--neu-in);}
+  body.skin-clay :is(.seg button,.week-nav .cal-seg button){border-radius:10px;}
+  body.skin-clay :is(.seg button.active,.week-nav .cal-seg button.active){background:var(--surface);color:var(--work);box-shadow:var(--neu-sm);}
+  body.skin-clay .modal .type-tabs{background:var(--bg);border-radius:14px;padding:4px;box-shadow:var(--neu-in);gap:4px;}
+  body.skin-clay .modal .type-tabs button{border:0;background:transparent;border-radius:11px;}
+  body.skin-clay .modal .type-tabs button.active{background:var(--surface);color:var(--work);box-shadow:var(--neu-sm);}
+  body.skin-clay .seg-cat button{border:0;border-radius:12px;background:var(--surface);box-shadow:var(--neu-sm);}
+  body.skin-clay .seg-cat button.active{box-shadow:var(--neu-in);}
+  /* 버튼: 기본 = 말랑한 클레이, 보조 = 볼록 */
+  body.skin-clay .btn-primary{border-radius:13px;box-shadow:var(--clay), 0 6px 14px color-mix(in srgb, var(--work) 32%, transparent);}
+  body.skin-clay .btn-primary:active{box-shadow:inset 0 2px 4px rgba(0,0,0,.2);transform:translateY(1px);}
+  body.skin-clay :is(.btn-sub,.step-btn,.week-nav button){border-color:transparent;border-radius:12px;background:var(--surface);box-shadow:var(--neu-sm);}
+  body.skin-clay :is(.btn-sub,.step-btn,.week-nav button):active{box-shadow:var(--neu-in);}
+  body.skin-clay .btn-danger{border-radius:12px;}
+  body.skin-clay .icon-btn{border-color:transparent;border-radius:12px;box-shadow:var(--neu-sm);}
+  body.skin-clay .icon-btn.on{background:var(--bg);box-shadow:var(--neu-in);}
+  body.skin-clay .chip{border-color:transparent;box-shadow:var(--neu-sm);}
+  body.skin-clay .chip.active{box-shadow:var(--neu-in);}
+  body.skin-clay .chip[data-cat="all"].active{background:var(--work);color:#fff;box-shadow:var(--clay);}
+  body.skin-clay .design-opt{border-color:transparent;border-radius:14px;box-shadow:var(--neu-sm);}
+  body.skin-clay .design-opt.active{box-shadow:var(--neu-in), 0 0 0 2px var(--work-line);}
+  /* 입력칸 · 검색: 안쪽으로 파인 홈 */
+  body.skin-clay .search{border-color:transparent;border-radius:12px;background:var(--bg);box-shadow:var(--neu-in);}
+  body.skin-clay :is(.field input,.field select,.field textarea){border-color:transparent;border-radius:12px;background:var(--bg);box-shadow:var(--neu-in);}
+  body.skin-clay :is(.field input,.field select,.field textarea):focus{background:var(--bg);border-color:var(--work-line);box-shadow:var(--neu-in), 0 0 0 3px color-mix(in srgb, var(--work) 18%, transparent);}
+  /* 토글: 파인 홈 위의 클레이 손잡이 */
+  body.skin-clay .switch{background:var(--bg);box-shadow:var(--neu-in);}
+  body.skin-clay .switch::after{background:var(--surface);box-shadow:var(--clay-sm), 1px 1px 3px rgba(0,0,0,.18);}
+  body.skin-clay .switch.on{background:color-mix(in srgb, var(--work) 22%, var(--bg));}
+  body.skin-clay .switch.on::after{background:var(--work);}
+  /* 일정 블록 · 타임테이블 칩: 살짝 도톰하게 */
+  body.skin-clay :is(.evt,.cal-chip){border-radius:8px;box-shadow:var(--clay-sm);}
+  body.skin-clay .tt-chip{border-radius:7px;box-shadow:var(--clay-sm);}
+  body.skin-clay .tt-ghost{border-radius:7px;}
+  /* 팝업 · 알림 · 토스트 */
+  body.skin-clay .modal-backdrop{background:rgba(27,35,51,.32);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
+  body.skin-clay .modal{border:0;border-radius:24px;box-shadow:var(--shadow-lg), inset 0 -4px 0 rgba(0,0,0,.04);}
+  body.skin-clay #alert-stack{width:320px;}
+  body.skin-clay .alert-card{border:0;border-radius:22px;padding:14px 16px;box-shadow:var(--shadow-lg), inset 0 -4px 0 rgba(0,0,0,.04);}
+  body.skin-clay .alert-card .ac-badge{border-radius:999px;padding:3px 10px;}
+  body.skin-clay .alert-card .ac-actions{gap:8px;margin-top:12px;}
+  body.skin-clay .alert-card .ac-actions button{border:0;border-radius:13px;padding:10px 4px;background:var(--surface);box-shadow:var(--neu-sm);}
+  body.skin-clay .alert-card .ac-actions .ac-ok{background:var(--work);box-shadow:var(--clay), 0 6px 14px color-mix(in srgb, var(--work) 30%, transparent);}
+  body.skin-clay #toast{border-radius:999px;padding:11px 20px;}
+  body.skin-clay .pin-widget{border:0;border-radius:20px;}
+  body.skin-clay .fb-banner{border-radius:18px;}
+  body.skin-clay .bottom-nav{border-top:0;box-shadow:0 -6px 16px color-mix(in srgb, var(--neu-lo) 60%, transparent);}
+  /* 설정 미리보기 칸 */
+  .dp-clay{background:#E9EEF5;border-color:transparent !important;box-shadow:inset 2px 2px 4px #C8D1DF, inset -2px -2px 4px #fff;}
+  .dp-clay i{height:6px !important;border-radius:4px !important;background:#3D6BFF;box-shadow:inset 0 -1px 0 rgba(0,0,0,.18);}
+  .dp-clay i:nth-child(2){width:62%;background:#14A583;}
+  .dp-clay i:nth-child(3){width:45%;background:#7B6CF0;}
+  .dp-skin-basic{background:var(--surface-2);}
+  .dp-skin-basic i{background:color-mix(in srgb, var(--work) 45%, var(--surface));}
+  .dp-skin-basic i:nth-child(2){width:62%;} .dp-skin-basic i:nth-child(3){width:45%;}
 </style>
 </head>
 <body>
@@ -1492,7 +1594,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-11-02 · 업체 제조 판정 즉시 셋팅·출고 건 창 배치·역산 고스트·3주 보기";
+const APP_VERSION = "2026-11-02 · 전체 테마 소프트 클레이(블루)·자재 업체턴키";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1580,6 +1682,8 @@ const TT_SETUP_NAMES = ["칼선", "금형", "인쇄판(동판)", "지그", "라�
 function ttPlan(o) {
   ttUse(o);
   const R = ttRules(), own = o.mfgType !== "vendor", adj = o.adj || {};
+  const turnkey = !own && !!o.matTurnkey;                                // 업체 턴키: 자재도 업체가 셋팅 → 자재 쪽 이동 없음
+  const matGapMove = turnkey ? 0 : R.gapMove;
   const goodPerDay = o.capa;
   const baseDays = Math.max(1, Math.ceil(o.qty / goodPerDay - 1e-9));
   const prodDays = baseDays + (adj.prod || 0);
@@ -1607,9 +1711,9 @@ function ttPlan(o) {
   const latestMovePart = lpsPart ? subBiz(lpsPart, R.gapProd) : null;
   const latestBy = latestMovePart && (!latestMoveDue || latestMovePart < latestMoveDue) ? "partial" : "due";
   const latestMove = latestBy === "partial" ? latestMovePart : latestMoveDue;                    // 이동 필요일
-  const latestMat = latestMove ? subBiz(latestMove, R.gapMove) : null;                            // 자재·추가 셋팅 늦어도
+  const latestMat = latestMove ? subBiz(latestMove, matGapMove) : null;                           // 자재·추가 셋팅 늦어도 (턴키면 이동일 당일)
   // 판정 끝 늦어도: 자사는 판정 후 +gapMove일 이동, 업체 제조는 판정 끝나면 바로 셋팅(보관품 즉시 사용) → 이동일 당일까지
-  const latestJudge = latestMove ? (own ? latestMat : subBiz(latestMove, 0)) : null;
+  const latestJudge = latestMove ? (own ? subBiz(latestMove, R.gapMove) : subBiz(latestMove, 0)) : null;
   const latestMfg = latestJudge ? subBiz(latestJudge, judgeDays) : null;                          // 제조 늦어도 (판정 감안)
   const latestWeigh = latestMfg ? subBiz(latestMfg, 1) : null;
   const latestProdEnd = latestMove ? addBiz(addBiz(latestMove, R.gapProd), baseDays - 1) : null;
@@ -1617,10 +1721,11 @@ function ttPlan(o) {
   const over = (d, lim) => (d && lim && d > lim ? Math.max(1, bizDiff(lim, d)) : 0);
   const need = { weigh: over(o.weighDate, latestWeigh), mfg: over(o.mfgDate, latestMfg), mat: over(o.matDate, latestMat), matFinal: over(matFinal, latestMat), judge: over(judgeEnd, latestJudge), s: {} };
   (o.setups || []).forEach((x) => { const n = over(x.date, latestMat); if (n) need.s[x.id] = n; });
-  const common = { own, prodDays, baseDays, goodPerDay, judgeDays, judgeEnd, weigh, matFinal, matFirst, matBy, latestMat, latestMfg, latestMove, latestWeigh, latestProdEnd, latestJudge, latestBy, partBind, need, tail };
-  // 이동 가능일: 원료 쪽 — 자사는 판정 끝 + gapMove, 업체 제조는 판정 끝난 날 바로 / 자재 쪽 — 최종 자재셋팅 + gapMove
+  const common = { own, turnkey, prodDays, baseDays, goodPerDay, judgeDays, judgeEnd, weigh, matFinal, matFirst, matBy, latestMat, latestMfg, latestMove, latestWeigh, latestProdEnd, latestJudge, latestBy, partBind, need, tail };
+  // 이동 가능일: 원료 쪽 — 자사는 판정 끝 + gapMove, 업체 제조는 판정 끝난 날 바로
+  //             자재 쪽 — 최종 자재셋팅 + gapMove (업체 제조여도 자재는 옮겨야 함), 업체 턴키면 셋팅일 그대로
   const rawMoveFrom = rawReady ? addBiz(rawReady, own ? R.gapMove : 0) : null;
-  const matMoveFrom = matFinal ? addBiz(matFinal, R.gapMove) : null;
+  const matMoveFrom = matFinal ? addBiz(matFinal, matGapMove) : null;
   const froms = [rawMoveFrom, matMoveFrom].filter(Boolean);
   if (!froms.length) return { ok: false, ...common };
   const move0 = froms.slice().sort().pop();
@@ -1786,7 +1891,7 @@ function ttExportCsv() {
   const lines = [head];
   Store.state.orders.forEach((o) => {
     const pl = ttPlan(o), steps = ttSteps(o, pl);
-    lines.push([o.item, o.client, o.qty, o.capa, o.line, o.mfgType === "vendor" ? "업체 제조" : "자사 제조", o.due || "",
+    lines.push([o.item, o.client, o.qty, o.capa, o.line, o.mfgType === "vendor" ? (o.matTurnkey ? "업체 제조(자재 턴키)" : "업체 제조") : "자사 제조", o.due || "",
       pl.weigh || "", o.mfgDate || "", pl.judgeEnd || "", o.matDate || "",
       (o.setups || []).map((s) => `${s.name} ${s.date || "-"}`).join(" / "), pl.matFinal || "",
       pl.ok ? pl.move : "", pl.ok ? pl.prodStart : "", pl.ok ? pl.prodEnd : "", pl.prodDays,
@@ -1886,6 +1991,7 @@ const Store = (() => {
       matDate: o.matDate || null,                          // 자재셋팅일 (입력)
       mfgDate: o.mfgDate || null,                          // 제조예정일 (자사·업체 공통)
       mfgType: o.mfgType === "vendor" ? "vendor" : "own",
+      matTurnkey: !!o.matTurnkey,                          // 자재 업체 턴키 (업체 제조일 때만 적용) — 자재 이동 없이 셋팅일 그대로
       // 원료칭량일(업체 제조면 원료셋팅일), 비우면 제조 1영업일 전
       //  v1의 업체 제조 건은 mfgDate가 원료셋팅일이었으므로 칭량 칸으로 옮겨 둠
       weighDate: o.weighDate || (!(o.v >= 2) && o.mfgType === "vendor" ? o.mfgDate || null : null),
@@ -2648,7 +2754,7 @@ function renderTimetable() {
       : pl.ok && pl.slack < 0 && pl.latestMat ? `<div class="tt-warn soft">목표일을 맞추려면 ${mfgL} ${fmtMD(pl.latestMfg)} · 자재 ${fmtMD(pl.latestMat)}까지 끝나야 합니다</div>` : "";
     return `<div class="tt-card ${o.done.ship ? "is-done" : ""}" data-tt-open="${o.id}">
       <div class="tt-card-h"><b>${esc(o.item)}</b><span class="tt-pill ${S.cls}">${S.txt}</span></div>
-      <div class="tt-card-m">${esc(o.client || "거래처 없음")} · 발주 ${o.qty.toLocaleString()}ea · CAPA ${o.capa.toLocaleString()}/일${o.line ? ` · ${esc(o.line)}` : ""}${o.due ? ` · 목표 ${fmtMD(o.due)}` : ""}${pl.own ? "" : " · 업체 제조"} · ${ttJudgeLabel(o.judgeDays)}${o.weekend !== "off" ? ` · ${TT_WEEKEND_LABEL[o.weekend]}` : ""}${o.partial && pl.partSum ? ` · 파샬 ${pl.partChecks.length}회` : ""}${o.lot ? ` · LOT ${esc(o.lot)}` : ""}</div>
+      <div class="tt-card-m">${esc(o.client || "거래처 없음")} · 발주 ${o.qty.toLocaleString()}ea · CAPA ${o.capa.toLocaleString()}/일${o.line ? ` · ${esc(o.line)}` : ""}${o.due ? ` · 목표 ${fmtMD(o.due)}` : ""}${pl.own ? "" : pl.turnkey ? " · 업체 제조·자재 턴키" : " · 업체 제조"} · ${ttJudgeLabel(o.judgeDays)}${o.weekend !== "off" ? ` · ${TT_WEEKEND_LABEL[o.weekend]}` : ""}${o.partial && pl.partSum ? ` · 파샬 ${pl.partChecks.length}회` : ""}${o.lot ? ` · LOT ${esc(o.lot)}` : ""}</div>
       <div class="tt-card-d">${dates}</div>
       <div class="tt-prog-w"><div class="tt-prog"><i style="width:${steps.length ? Math.round((doneN / steps.length) * 100) : 0}%"></i></div><span class="tt-prog-t">${doneN}/${steps.length}</span></div>
       ${worst ? `<div class="tt-warn ${worst.n >= TT_LATE_MAX ? "" : "soft"}">최초 계획보다 ${esc({ prod: "생산", judge: "판정" }[worst.st.key] || worst.st.label)} ${worst.n}일 밀림 (D+${worst.n})</div>` : ""}
@@ -2700,6 +2806,7 @@ function renderOrderModal(id, copyFrom) {
   const parts = (o.partial ? o.partials || [] : []).map((x) => ({ ...x }));
   const setups = (o.setups || []).map((x) => ({ ...x }));
   ttUse(null);                                                            // 새 건 기본 목표일은 주말 쉼 기준
+  let matTurnkey = !!o.matTurnkey;
   let mfgType = o.mfgType || "own", judgeDays = Number.isFinite(+o.judgeDays) && o.judgeDays !== "" && o.judgeDays != null ? Math.min(TT_JUDGE_MAX, Math.max(0, +o.judgeDays)) : 2;
   let weekend = o.weekend || "off";
   const weekly = { on: false, min: "", dow: null, start: null, ...(o.weekly || {}) };
@@ -2728,7 +2835,7 @@ function renderOrderModal(id, copyFrom) {
           <div class="field"><label>제조 판정</label><div class="seg tt-judge">${[0, 1, 2, 3].map((n) => `<button type="button" data-d="${n}" title="${n ? `제조 다음 날부터 ${n}영업일` : "긴급 — 제조한 날 바로 판정"}">${n ? `D+${n}` : "당일"}</button>`).join("")}</div></div>
         </div>
       </section>
-      <section class="tt-box s-mat tt-a-mat"><div class="tt-box-h"><i>3</i>자재 · 추가 셋팅<span class="tt-matfinal" id="tt-matfinal"></span><button type="button" class="tt-hbtn" id="tt-sadd" title="칼선·금형·단상자 등 — 자재셋팅일과 합쳐 가장 늦은 날이 최종 자재셋팅일">＋ 셋팅 추가</button></div>
+      <section class="tt-box s-mat tt-a-mat"><div class="tt-box-h"><i>3</i>자재 · 추가 셋팅<span class="tt-matfinal" id="tt-matfinal"></span><span class="tt-hbtns"><button type="button" class="tt-hbtn tt-tk-tg" id="tt-turnkey" title="업체가 자재까지 셋팅 — 이동 없이 셋팅일 그대로 반영 (업체 제조일 때)">업체턴키</button><button type="button" class="tt-hbtn" id="tt-sadd" title="칼선·금형·단상자 등 — 자재셋팅일과 합쳐 가장 늦은 날이 최종 자재셋팅일">＋ 셋팅 추가</button></span></div>
         <div class="tt-r tt-r-2">
           <div class="field"><label for="tt-mat">자재셋팅일<span class="tt-need" data-need="mat"></span></label><input id="tt-mat" type="date" value="${o.matDate || ""}" /></div>
           <div id="tt-setups"></div>
@@ -2768,7 +2875,7 @@ function renderOrderModal(id, copyFrom) {
   const val = (x) => ($(x) ? $(x).value : "");
   const hasQty = () => /\d/.test(val("tt-qty")) && /\d/.test(val("tt-capa"));
   const readForm = () => ({ ...(saved || {}), item: val("tt-item"), client: val("tt-client"), qty: val("tt-qty"), capa: val("tt-capa"),
-    line: val("tt-line"), due: val("tt-due") || null, mfgType, judgeDays, v: 2,
+    line: val("tt-line"), due: val("tt-due") || null, mfgType, matTurnkey, judgeDays, v: 2,
     weighDate: val("tt-weigh") || null, mfgDate: val("tt-mfg") || null, matDate: val("tt-mat") || null,
     setups: setups.map((x) => ({ ...x })), partial: parts.length > 0, partials: parts.map((x) => ({ ...x })), weekend,
     weekly: { on: weekly.on, min: val("tt-wmin"), dow: val("tt-wdow") === "" ? null : +val("tt-wdow"), start: val("tt-wstart") || null } });
@@ -2851,8 +2958,8 @@ function renderOrderModal(id, copyFrom) {
     // 계산 참고 (접어 둠)
     const byL = pl.ok ? { judge: `판정 완료(${fmtMD(pl.judgeEnd)})`, mat: `최종 자재셋팅(${fmtMD(pl.matFinal)})`, setup: `최종 자재셋팅(${fmtMD(pl.matFinal)} · ${pl.matBy})` }[pl.by] : "";
     const ref = [
-      pl.ok ? `이동 = 가장 늦게 끝나는 <b>${byL}</b>${pl.by === "judge" && !pl.own ? " 당일 (업체 제조: 판정 끝나면 바로 셋팅)" : ` + ${ttRules().gapMove}영업일`} → ${fmtMD(pl.move)}` : "",
-      !pl.own ? `업체 제조: 판정이 끝나면 보관품을 바로 쓰므로 원료 쪽은 판정 당일 이동, 자재 쪽은 최종 자재셋팅 + ${ttRules().gapMove}영업일` : "",
+      pl.ok ? `이동 = 가장 늦게 끝나는 <b>${byL}</b>${pl.by === "judge" && !pl.own ? " 당일 (업체 제조: 판정 끝나면 바로 셋팅)" : pl.by !== "judge" && pl.turnkey ? " 당일 (업체 턴키: 자재 이동 없음)" : ` + ${ttRules().gapMove}영업일`} → ${fmtMD(pl.move)}` : "",
+      !pl.own ? `업체 제조: 판정이 끝나면 보관품을 바로 쓰므로 원료 쪽은 판정 당일 이동, 자재 쪽은 ${pl.turnkey ? "업체턴키라 최종 자재셋팅일 그대로 (이동 없음)" : `최종 자재셋팅 + ${ttRules().gapMove}영업일 (턴키면 '업체턴키' 버튼)`}` : "",
       `${wl}일은 비우면 제조 전날로 계산 · 제조 판정은 ${d.judgeDays ? `제조 다음 영업일부터 D+${d.judgeDays}` : "제조한 날 바로(당일)"} (당일~최대 D+${TT_JUDGE_MAX})`,
       `주말: ${TT_WEEKEND_LABEL[d.weekend]} — ${d.weekend === "off" ? "토·일은 영업일에서 뺌" : d.weekend === "sat" ? "토요일도 영업일로 셈 (일요일 쉼)" : "토·일 모두 영업일로 셈"} · 공휴일은 항상 쉼`,
       "자재셋팅일과 추가 셋팅(칼선·단상자 등) 중 가장 늦은 날이 최종 자재셋팅일",
@@ -2906,7 +3013,10 @@ function renderOrderModal(id, copyFrom) {
     mfgType = v;
     form.querySelectorAll(".tt-type button").forEach((b) => b.classList.toggle("active", b.dataset.v === v));
     $("tt-weigh-lab").textContent = v === "vendor" ? "원료셋팅일" : "원료칭량일";     // 업체 제조도 같은 구성, 첫 칸 이름만 다름
+    setTurnkey(matTurnkey);
   };
+  // 자재 업체턴키 — 업체 제조일 때만 보임
+  const setTurnkey = (on) => { matTurnkey = on; const b = $("tt-turnkey"); b.hidden = mfgType !== "vendor"; b.classList.toggle("on", on); b.textContent = on ? "업체턴키 ✓" : "업체턴키"; };
   const setWeekend = (v) => { weekend = v; form.querySelectorAll(".tt-wk button").forEach((b) => b.classList.toggle("active", b.dataset.wk === v)); };
   const setJudge = (n) => { judgeDays = n; form.querySelectorAll(".tt-judge button").forEach((b) => b.classList.toggle("active", +b.dataset.d === n)); };
   const addPart = () => {
@@ -2915,6 +3025,7 @@ function renderOrderModal(id, copyFrom) {
   };
 
   form.querySelectorAll(".tt-type button").forEach((b) => b.addEventListener("click", () => { setType(b.dataset.v); refresh(); }));
+  $("tt-turnkey").addEventListener("click", () => { setTurnkey(!matTurnkey); refresh(); });
   form.querySelectorAll(".tt-judge button").forEach((b) => b.addEventListener("click", () => { setJudge(+b.dataset.d); refresh(); }));
   form.querySelectorAll(".tt-wk button").forEach((b) => b.addEventListener("click", () => { setWeekend(b.dataset.wk); refresh(); }));
   const setWeekly = (on) => { weekly.on = on; $("tt-wkp").hidden = !on; $("tt-wk-toggle").classList.toggle("on", on); };
@@ -2999,7 +3110,7 @@ function renderOrderModal(id, copyFrom) {
     });
     $("tt-copy").addEventListener("click", () => {
       const f = readForm();
-      openOrder(null, { item: f.item, client: f.client, qty: f.qty, capa: f.capa, line: f.line, mfgType: f.mfgType, judgeDays: f.judgeDays,
+      openOrder(null, { item: f.item, client: f.client, qty: f.qty, capa: f.capa, line: f.line, mfgType: f.mfgType, matTurnkey: f.matTurnkey, judgeDays: f.judgeDays,
         setups: f.setups.map((s) => ({ name: s.name, date: null })), note: f.note });
       toast("같은 조건으로 새 출고 건을 만듭니다 — 날짜를 넣어 주세요");
     });
@@ -3393,14 +3504,22 @@ function renderSettings() {
     </div>`;
   return `<div class="view-head" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><h2>설정</h2><button class="btn-sub" id="set-close">닫기</button></div>
 
-    <p class="panel-title">화면</p>
+    <p class="panel-title">전체 테마</p>
+    <div class="set-group">
+      <div class="set-row col"><div><div class="lab">앱 전체 모양</div><div class="desc">패널·버튼·탭·입력칸·알림창·팝업의 모양과 색 톤을 한 번에 바꿉니다</div></div>
+        <div class="design-opts">${Object.keys(SKINS).map((k) => `<button class="design-opt ${prefs.skin === k ? "active" : ""}" data-skin="${k}">
+          <span class="dp dp-${k === "basic" ? "skin-basic" : k}"><i></i><i></i><i></i></span><b>${SKINS[k].name}</b><small>${SKINS[k].desc}</small></button>`).join("")}</div>
+      </div>
+    </div>
+
+    <p class="panel-title" style="margin-top:20px">화면</p>
     <div class="set-group">
       <div class="set-row"><div><div class="lab">다크 모드</div><div class="desc">화면 테마를 전환합니다</div></div>
         <button class="switch ${dark ? "on" : ""}" id="set-theme"></button></div>
       <div class="set-row" style="align-items:flex-start"><div><div class="lab">배경 테마</div><div class="desc">모눈·유선·엑셀·도트 종이 (선 기반, 휴대폰에서도 표시)</div></div></div>
       <div class="paper-seg">${paperOpts}</div>
-      <div class="set-row" style="align-items:flex-start"><div><div class="lab">테마 색상</div><div class="desc">배경 톤과 강조 색을 선택합니다</div></div></div>
-      <div class="swatch-row">${swatches}</div>
+      <div class="set-row" style="align-items:flex-start"><div><div class="lab">테마 색상</div><div class="desc">${SKINS[prefs.skin].light ? `'${SKINS[prefs.skin].name}' 테마는 전용 색 톤을 씁니다 (기본 테마에서 선택 가능)` : "배경 톤과 강조 색을 선택합니다"}</div></div></div>
+      <div class="swatch-row" ${SKINS[prefs.skin].light ? 'style="opacity:.4;pointer-events:none"' : ""}>${swatches}</div>
       <div class="set-row"><div><div class="lab">배경 투명도</div><div class="desc">패널이 배경을 비추는 정도 (60~100%)</div></div>
         ${slider("set-op", 60, 100, 1, prefs.panelOp, prefs.panelOp + "%")}</div>
       <div class="set-row"><div><div class="lab">글자 대비</div><div class="desc">배경이 옅을 때 글자를 더 진하게</div></div>
@@ -4091,10 +4210,17 @@ const CAL_DESIGNS = {
   line:  { name: "라인 클린", desc: "흰 여백 위주 · 선 최소 · 넉넉한 칸", row: 48 },
   night: { name: "미드나잇", desc: "촘촘한 칸 · 저대비 선 · 어두운 모드에 최적", row: 38 },
 };
+// 전체 테마(스킨) — 모양(그림자·모서리·버튼)과 색 톤을 한 묶음으로 바꿈
+const SKINS = {
+  basic: { name: "기본", desc: "지금 쓰시던 모양 · 테마 색상 선택 가능" },
+  clay:  { name: "소프트 클레이", desc: "볼록한 패널 · 눌린 탭 · 말랑한 버튼 · 블루 톤",
+    light: { bg: "#E9EEF5", surface: "#EEF2F8", s2: "#E4EAF2", s3: "#D8E0EB", work: "#3D6BFF" },
+    dark:  { bg: "#1A1F28", surface: "#1E242E", s2: "#252C38", s3: "#2D3543", work: "#7C9BFF" } },
+};
 const calRowH = () => (CAL_DESIGNS[prefs.calDesign] || CAL_DESIGNS.basic).row;
 const PAPER_STYLES = ["none", "grid", "ruled", "excel", "dot"];
 const PAPER_LABEL = { none: "없음", grid: "모눈", ruled: "유선", excel: "엑셀", dot: "도트" };
-const prefs = { paperStyle: "grid", theme: "cream", panelOp: 92, contrast: "auto", calScale: 100, alertScale: 100, alertSec: 0, splitBand: true, calDesign: "basic" };
+const prefs = { paperStyle: "grid", theme: "cream", panelOp: 92, contrast: "auto", calScale: 100, alertScale: 100, alertSec: 0, splitBand: true, calDesign: "basic", skin: "basic" };
 function loadPrefs() {
   try {
     const p = JSON.parse(localStorage.getItem("scheduler:prefs") || "{}");
@@ -4108,6 +4234,7 @@ function loadPrefs() {
     if (Number.isFinite(p.alertSec)) prefs.alertSec = Math.max(0, Math.min(120, p.alertSec));
     if (typeof p.splitBand === "boolean") prefs.splitBand = p.splitBand;
     if (CAL_DESIGNS[p.calDesign]) prefs.calDesign = p.calDesign;
+    if (SKINS[p.skin]) prefs.skin = p.skin;
     if (p.tt && typeof p.tt === "object") {
       const t = {}; Object.keys(TT_RULES_DEFAULT).forEach((k) => { const v = +p.tt[k]; if (Number.isFinite(v) && v >= 0 && v <= 15) t[k] = Math.round(v); });
       prefs.tt = t;
@@ -4116,9 +4243,19 @@ function loadPrefs() {
 }
 function savePrefs() { try { localStorage.setItem("scheduler:prefs", JSON.stringify(prefs)); } catch (e) {} }
 function applyThemeColors() {
-  const t = THEMES[prefs.theme] || THEMES.cream;
   const el = document.documentElement;
   const dark = currentDark();
+  const sk = SKINS[prefs.skin];
+  if (sk && sk.light) {                                     // 스킨 고유 색 톤 (밝게/어둡게 모두)
+    const c = dark ? sk.dark : sk.light, base = dark ? "#1c1f22" : "#ffffff";
+    el.style.setProperty("--work", c.work);
+    el.style.setProperty("--work-soft", `color-mix(in srgb, ${c.work} 14%, ${base})`);
+    el.style.setProperty("--work-line", `color-mix(in srgb, ${c.work} 32%, ${base})`);
+    el.style.setProperty("--bg", c.bg); el.style.setProperty("--surface", c.surface);
+    el.style.setProperty("--surface-2", c.s2); el.style.setProperty("--surface-3", c.s3);
+    return;
+  }
+  const t = THEMES[prefs.theme] || THEMES.cream;
   const base = dark ? "#1c1f22" : "#ffffff";
   el.style.setProperty("--work", t.work);
   el.style.setProperty("--work-soft", `color-mix(in srgb, ${t.work} 12%, ${base})`);
@@ -4135,6 +4272,7 @@ function applyThemeColors() {
 function applyPrefs() {
   PAPER_STYLES.forEach((s) => document.body.classList.toggle("paper-" + s, prefs.paperStyle === s));
   Object.keys(CAL_DESIGNS).forEach((d) => document.body.classList.toggle("design-" + d, prefs.calDesign === d));
+  Object.keys(SKINS).forEach((k) => document.body.classList.toggle("skin-" + k, prefs.skin === k));
   document.documentElement.style.setProperty("--cell-h", calRowH() + "px");
   document.body.classList.toggle("contrast-strong", prefs.contrast === "strong");
   const el = document.documentElement;
@@ -5253,7 +5391,7 @@ function wireGlobal() {
 
   document.addEventListener("click", (e) => {
     if (e.target.closest("#timepop") || e.target.closest(".pin-widget")) return; // 별도 핸들러 처리
-    const t = e.target.closest("[data-cat],[data-todo-filter],[data-toggle],[data-ev-toggle],[data-edit-event],[data-del-event],[data-edit-todo],[data-del-todo],[data-ww],[data-dash-toggle],#dash-collapse,#wk-prev,#wk-next,#wk-today,#roll-desktop,#roll-mobile,#set-theme,#set-pin,#set-splitband,#set-export,#set-import,#set-clear,#set-alert-demo,#set-close,[data-paper],[data-design],[data-theme-key],[data-contrast],[data-step],[data-proj],#pj-new,[data-band-more],[data-calmode],[data-goweek]");
+    const t = e.target.closest("[data-cat],[data-todo-filter],[data-toggle],[data-ev-toggle],[data-edit-event],[data-del-event],[data-edit-todo],[data-del-todo],[data-ww],[data-dash-toggle],#dash-collapse,#wk-prev,#wk-next,#wk-today,#roll-desktop,#roll-mobile,#set-theme,#set-pin,#set-splitband,#set-export,#set-import,#set-clear,#set-alert-demo,#set-close,[data-paper],[data-design],[data-skin],[data-theme-key],[data-contrast],[data-step],[data-proj],#pj-new,[data-band-more],[data-calmode],[data-goweek]");
     if (!t) return;
     if (t.dataset.evToggle) { Store.toggleEvent(t.dataset.evToggle); return; }
     if (t.dataset.dashToggle) { ui.dashExp[t.dataset.dashToggle] = !ui.dashExp[t.dataset.dashToggle]; saveUI(); render(); return; }
@@ -5275,6 +5413,7 @@ function wireGlobal() {
     if (t.id === "wk-today") { ui.weekRef = startOfWeek(new Date()); ui.monthRef = startOfMonth(new Date()); render(); return; }
     if (t.id === "roll-desktop" || t.id === "roll-mobile") { const n = Store.rollover(); toast(n ? `${n}건을 오늘로 이월했습니다` : "이월할 업무가 없습니다"); return; }
     if (t.dataset.themeKey) { setPref("theme", t.dataset.themeKey); render(); return; }
+    if (t.dataset.skin) { setPref("skin", t.dataset.skin); render(); toast(`전체 테마를 '${SKINS[t.dataset.skin].name}'(으)로 바꿨습니다`); return; }
     if (t.dataset.contrast) { setPref("contrast", t.dataset.contrast); render(); return; }
     if (t.dataset.bandMore) { ui.bandOpen[t.dataset.bandMore] = !ui.bandOpen[t.dataset.bandMore]; render(); return; }
     if (t.id === "pj-new") { openModal("project", { cat: ui.cat === "personal" ? "personal" : "work" }); return; }
