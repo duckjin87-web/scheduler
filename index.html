@@ -380,13 +380,7 @@
   .week-grid .hourlabel.now-row{color:var(--urgent);font-weight:800;background:color-mix(in srgb, var(--urgent) 9%, transparent);}
   .week-grid .hourlabel.now-row::after{content:attr(data-now);display:block;margin-top:2px;font-size:10px;font-weight:800;color:#fff;background:var(--urgent);
     border-radius:999px;padding:0 5px;width:max-content;margin-left:auto;font-variant-numeric:tabular-nums;}
-  /* ---------- 지연 경고 테두리 (캘린더 · 고정 창) ---------- */
-  /* D+5 이상: 주황 점선 / D+10 이상: 빨간 실선 */
-  .week-grid :is(.evt,.cal-chip,.m-item,.pj-chip).late-warn,
-  .pin-todo.late-warn{outline:2px dashed var(--late-warn);outline-offset:-2px;}
-  .week-grid :is(.evt,.cal-chip,.m-item,.pj-chip).late-crit,
-  .pin-todo.late-crit{outline:2px solid var(--late-crit);outline-offset:-2px;}
-  /* D+N 배지도 테두리와 같은 색으로 (고정 창의 .pin-todo .dd 규칙을 이기도록 함께 지정) */
+  /* ---------- 지연 표시 (캘린더 · 고정 창): 테두리 없이 D+N 배지 색만 — D+5 이상 주황 / D+10 이상 빨강 ---------- */
   .late-warn :is(.evt-d,.dd,.dbadge), .pin-todo.late-warn .dd{background:var(--late-warn);}
   .late-crit :is(.evt-d,.dd,.dbadge), .pin-todo.late-crit .dd{background:var(--late-crit);}
   .pin-todo:is(.late-warn,.late-crit){border-radius:7px;}
@@ -463,13 +457,12 @@
   .tt-chip.done{opacity:.45;} .tt-chip.done .tt-cl{text-decoration:line-through;}
   .tt-chip.done .tt-ck{background:rgba(255,255,255,.9);color:var(--c);}
   .tt-chip.over{outline:2px solid var(--late-crit);outline-offset:-2px;}
-  /* 자동 이월 지연 단계 (D+1 → D+5 최대): 테두리 두께 1 → 3px, 색 연주황 → 짙은 빨강 */
+  /* 자동 이월 지연 단계 (D+1 → D+5 최대): 테두리 없이 D+N 배지 색만 연주황 → 짙은 빨강 */
   .tt-late-1{--lw:1px;--lc:color-mix(in srgb, var(--late-warn) 50%, transparent);}
   .tt-late-2{--lw:1.5px;--lc:color-mix(in srgb, var(--late-warn) 78%, transparent);}
   .tt-late-3{--lw:2px;--lc:var(--late-warn);}
   .tt-late-4{--lw:2.5px;--lc:color-mix(in srgb, var(--late-warn) 40%, var(--late-crit));}
   .tt-late-5{--lw:3px;--lc:color-mix(in srgb, var(--late-crit) 82%, #000);}
-  .tt-chip:is(.tt-late-1,.tt-late-2,.tt-late-3,.tt-late-4,.tt-late-5){box-shadow:0 0 0 var(--lw) var(--lc), 0 1px 2px rgba(0,0,0,.12);z-index:3;}   /* 그림자 테두리: 1.5·2.5px도 그대로 그려짐 */
   .tt-dn{flex:none;font-size:9px;font-weight:800;line-height:1;padding:2px 4px;border-radius:999px;background:rgba(255,255,255,.92);color:var(--lc, var(--late-warn));margin-left:auto;font-style:normal;}
   .tt-chip:is(.tt-late-4,.tt-late-5) .tt-dn, .tt-sd .tt-dn:is(.tt-late-4,.tt-late-5){background:var(--lc);color:#fff;}
   .tt-chip.s-part .tt-dn{background:color-mix(in srgb, var(--lc) 16%, var(--surface));}
@@ -480,7 +473,6 @@
   .tt-lane.has-due .tt-gap{margin-top:-19px;}
   .tt-gap::after{content:attr(data-label);position:absolute;left:3px;top:3px;font-size:9.5px;font-weight:800;line-height:1;color:#fff;background:var(--late-crit);padding:2px 6px;border-radius:999px;white-space:nowrap;}
   .tt-chip.need-late{box-shadow:inset 0 -3px 0 var(--late-crit), 0 1px 1px rgba(0,0,0,.08);}
-  .tt-chip.need-late:is(.tt-late-1,.tt-late-2,.tt-late-3,.tt-late-4,.tt-late-5){box-shadow:inset 0 -3px 0 var(--late-crit), 0 0 0 var(--lw) var(--lc);}
   .tt-nl{flex:none;font-size:9px;font-weight:800;line-height:1;padding:2px 4px;border-radius:999px;background:var(--late-crit);color:#fff;margin-left:auto;}
   .tt-nl + .tt-dn{margin-left:2px;}
   .tt-need{display:inline-block;margin-left:5px;font-size:10px;font-weight:800;line-height:1.35;padding:0 6px;border-radius:999px;background:var(--late-crit);color:#fff;font-variant-numeric:tabular-nums;vertical-align:1px;}
@@ -1528,6 +1520,75 @@
   .dp-skin-basic{background:var(--surface-2);}
   .dp-skin-basic i{background:color-mix(in srgb, var(--work) 45%, var(--surface));}
   .dp-skin-basic i:nth-child(2){width:62%;} .dp-skin-basic i:nth-child(3){width:45%;}
+
+  /* ================= 캘린더 디자인: 클레이 레일 =================
+     요일마다 떠 있는 카드(열 사이 틈), 일정 = 분류색 파스텔 알약, 우선순위 = 앞의 점, 주말 = 눌린 카드, 오늘 = 파란 테두리 */
+  body.design-rail{--rail-card:color-mix(in srgb, var(--surface) 72%, #ffffff); --rail-line:color-mix(in srgb, var(--text) 7%, transparent);
+    --rail-sunk:color-mix(in srgb, var(--bg) 88%, var(--text)); --rail-gap:8px; --rail-hi:rgba(255,255,255,.7); --rail-lo:rgba(27,35,51,.12);}
+  :root[data-theme="dark"] body.design-rail{--rail-card:color-mix(in srgb, var(--surface) 85%, #ffffff); --rail-sunk:color-mix(in srgb, var(--bg) 80%, #000); --rail-hi:rgba(255,255,255,.05); --rail-lo:rgba(0,0,0,.45);}
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) body.design-rail{--rail-card:color-mix(in srgb, var(--surface) 85%, #ffffff); --rail-sunk:color-mix(in srgb, var(--bg) 80%, #000); --rail-hi:rgba(255,255,255,.05); --rail-lo:rgba(0,0,0,.45);} }
+  @media (max-width:640px){ body.design-rail{--rail-gap:4px;}
+    body.design-rail .week-grid .evt.timed .ci{display:none;}
+    body.design-rail .week-grid .evt.timed{padding:2px 4px;}
+    body.design-rail .week-grid .evt.timed::before{margin-right:2px !important;width:6px !important;height:6px !important;} }
+  body.design-rail .week-scroll{background:var(--bg);border:0;}
+  body.design-rail .week-grid,
+  body.design-rail .week-grid.month-grid{column-gap:var(--rail-gap);background:var(--bg) !important;padding:0 var(--rail-gap) var(--rail-gap) 0;}
+  body.design-rail .proj-lane{column-gap:var(--rail-gap);}
+  body.design-rail .week-grid :is(.corner,.band-label,.hourlabel,.proj-label){background:var(--bg);border-color:transparent;}
+  body.design-rail .week-grid .hourlabel{border-top:0;}
+  body.design-rail .week-grid :is(.head,.band-cell,.cell){background:var(--rail-card);border-left:0;border-right:0;}
+  /* 고정된 요일 줄: 열 사이 틈을 바탕색으로 채워 아래로 스크롤된 내용이 비치지 않게 */
+  body.design-rail .week-grid .head{border-bottom:0;border-radius:12px 12px 0 0;box-shadow:var(--rail-gap) 0 0 0 var(--bg);}
+  body.design-rail .week-grid .head::before{content:none;}
+  body.design-rail .week-grid .head.today{outline:none;}
+  body.design-rail .week-grid .head .dow{font-size:13px;}
+  body.design-rail .week-grid .head.today .num{box-shadow:inset 0 -3px 0 rgba(0,0,0,.16), inset 0 2px 0 rgba(255,255,255,.35);}
+  body.design-rail .week-grid .band-cell{border-top:1px solid var(--rail-line);border-bottom:0;}
+  body.design-rail .week-grid .band-cell.todo-row{border-top:1px dashed var(--rail-line);background:var(--rail-card);}
+  body.design-rail .week-grid .band-label{border-top:0;border-bottom:0;}
+  body.design-rail .week-grid .cell{border-top:1px solid var(--rail-line);}
+  body.design-rail .week-grid .cell:first-of-type{border-top-width:2px;}
+  body.design-rail .week-grid .cell::after{border-top-color:color-mix(in srgb, var(--text) 4%, transparent);}
+  body.design-rail .week-grid .cell:hover{background:color-mix(in srgb, var(--work) 6%, var(--rail-card));}
+  body.design-rail .week-grid .cell.last-row{border-radius:0 0 14px 14px;}
+  /* 주말 = 눌린(가라앉은) 카드, 오늘 = 파란 테두리 */
+  body.design-rail .week-grid :is(.head,.band-cell,.cell).wkend{background:var(--rail-sunk);}
+  body.design-rail .week-grid :is(.head,.band-cell,.cell).today-col,
+  body.design-rail .week-grid .head.today{background:color-mix(in srgb, var(--work) 6%, var(--rail-card));box-shadow:inset 2px 0 0 color-mix(in srgb, var(--work) 70%, transparent), inset -2px 0 0 color-mix(in srgb, var(--work) 70%, transparent);}
+  body.design-rail .week-grid .head.today{box-shadow:inset 2px 2px 0 color-mix(in srgb, var(--work) 70%, transparent), inset -2px 0 0 color-mix(in srgb, var(--work) 70%, transparent), var(--rail-gap) 0 0 0 var(--bg);}
+  body.design-rail .week-grid .cell.today-col.last-row{box-shadow:inset 2px -2px 0 color-mix(in srgb, var(--work) 70%, transparent), inset -2px 0 0 color-mix(in srgb, var(--work) 70%, transparent);}
+  body.design-rail .week-grid :is(.band-cell,.cell).holiday-col{background:color-mix(in srgb, var(--hol) var(--hol-tint), var(--rail-card));}
+  body.design-rail .lane-today{background:color-mix(in srgb, var(--work) 6%, transparent);}
+  /* 일정: 분류색 파스텔 알약 + 우선순위 점 (바탕색이 우선순위를 뜻하지 않음) */
+  body.design-rail .week-grid :is(.evt,.cal-chip.allday,.m-item){border-left:0;border-radius:10px;
+    box-shadow:inset 0 -2px 0 rgba(0,0,0,.07), inset 0 1px 0 var(--rail-hi);}
+  body.design-rail .week-grid :is(.evt,.cal-chip.allday,.m-item).work{background:color-mix(in srgb, var(--work) 16%, var(--rail-card));color:color-mix(in srgb, var(--work) 62%, var(--text));}
+  body.design-rail .week-grid :is(.evt,.cal-chip.allday,.m-item).personal{background:color-mix(in srgb, var(--personal) 17%, var(--rail-card));color:color-mix(in srgb, var(--personal) 62%, var(--text));}
+  body.design-rail .week-grid :is(.evt.timed,.cal-chip.allday,.m-item):not(.proj-item)::before{content:"";display:inline-block;flex:none;width:7px;height:7px;border-radius:50%;margin-right:4px;vertical-align:1px;background:var(--done);box-shadow:inset 0 -1.5px 0 rgba(0,0,0,.2);}
+  body.design-rail .week-grid :is(.evt.timed,.cal-chip.allday,.m-item).pri-high:not(.proj-item)::before{background:var(--high);}
+  body.design-rail .week-grid :is(.evt.timed,.cal-chip.allday,.m-item).pri-urgent:not(.proj-item)::before{background:var(--urgent);box-shadow:0 0 0 2.5px color-mix(in srgb, var(--urgent) 25%, transparent);}
+  body.design-rail .week-grid .evt.timed.pri-urgent:not(.done){box-shadow:inset 0 -2px 0 rgba(0,0,0,.07), inset 0 0 0 1.5px var(--urgent);}
+  body.design-rail .week-grid .evt.timed{padding:3px 7px;}
+  body.design-rail .week-grid .band-cell .cal-chip{border-radius:999px;border:0;}
+  body.design-rail .week-grid .band-cell .cal-chip.allday{padding:0 9px;}
+  body.design-rail .week-grid .band-cell .cal-chip.todo{background:var(--bg);color:var(--high);border:0;
+    box-shadow:inset 2px 2px 4px var(--rail-lo), inset -2px -2px 4px var(--rail-hi);}
+  body.design-rail .week-grid .band-cell .cal-chip.todo .cal-check{border-radius:50%;}
+  body.design-rail .week-grid .band-cell .cal-chip.todo.done{background:transparent;box-shadow:none;color:var(--text-faint);text-decoration:line-through;}
+  body.design-rail .week-grid :is(.cal-chip,.evt).proj-item{border-left:0;border-radius:10px;border:1.5px dashed var(--pc);background:color-mix(in srgb, var(--pc) 12%, var(--rail-card));box-shadow:none;}
+  body.design-rail .week-grid .pj-bar{border-radius:999px;}
+  body.design-rail .week-grid .pj-chip{border-radius:999px;}
+  /* 월간 */
+  body.design-rail .month-grid{row-gap:var(--rail-gap);}
+  body.design-rail .month-grid .m-cell{background:var(--rail-card);border:0;border-radius:12px;}
+  body.design-rail .month-grid .m-cell.today{box-shadow:inset 0 0 0 2px color-mix(in srgb, var(--work) 70%, transparent);}
+  .dp-rail{background:#E9EEF5 !important;border-color:transparent !important;display:grid !important;grid-template-columns:repeat(3,1fr);gap:3px !important;padding:3px !important;}
+  .dp-rail i{display:block;height:100% !important;border-radius:4px !important;background:#F7F9FD;box-shadow:1px 1px 2px #C8D1DF;position:relative;}
+  .dp-rail i::after{content:"";position:absolute;left:2px;right:2px;top:4px;height:5px;border-radius:3px;background:#DCE5FF;}
+  .dp-rail i:nth-child(2)::after{top:10px;background:#E7E2FF;}
+  .dp-rail i:nth-child(3){background:#E2E7EF;box-shadow:inset 1px 1px 2px #C8D1DF;}
+  .dp-rail i:nth-child(3)::after{content:none;}
 </style>
 </head>
 <body>
@@ -1617,7 +1678,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-11-02 · 상단바 모든 메뉴 동일 높이·위치 + 메뉴 이동 모션, 캘린더 도구줄";
+const APP_VERSION = "2026-11-03 · 캘린더 디자인 클레이 레일 적용, 지연 테두리 제거";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -2288,6 +2349,7 @@ function delayDays(x) {
 }
 // D+5 이상 주황 테두리, D+10 이상 빨간 테두리
 const LATE_WARN = 5, LATE_CRIT = 10;
+const isWkend = (ds) => { const g = parseYMD(ds).getDay(); return g === 0 || g === 6; };
 const lateCls = (x) => { const n = delayDays(x); return n >= LATE_CRIT ? " late-crit" : n >= LATE_WARN ? " late-warn" : ""; };
 const lateTitle = (x) => { const n = delayDays(x); return n >= LATE_WARN ? ` — ${n}일 지연` : ""; };
 const nowMin = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
@@ -2449,7 +2511,7 @@ function renderWeek() {
   week.forEach((d) => {
     const isToday = ymd(d) === today;
     const hds = ymd(d), hol = holidayName(hds);
-    grid += `<div class="head ${isToday ? "today" : ""} ${hol ? "holiday" : ""} ${isRedDay(hds) ? "red" : ""}" data-date="${hds}"${hol ? ` title="${esc(hol)}"` : ""}><span class="dow">${DOW[d.getDay()]}</span><span class="num">${d.getDate()}</span></div>`;
+    grid += `<div class="head ${isToday ? "today" : ""} ${hol ? "holiday" : ""} ${isRedDay(hds) ? "red" : ""}${isWkend(hds) ? " wkend" : ""}" data-date="${hds}"${hol ? ` title="${esc(hol)}"` : ""}><span class="dow">${DOW[d.getDay()]}</span><span class="num">${d.getDate()}</span></div>`;
   });
   // 프로젝트 한 줄 — 왼쪽 칸에 이름·진도율, 막대(기간+진행률) 위에 단계 칩을 날짜 칸마다 표시
   lanes.forEach(({ p, st }) => {
@@ -2488,7 +2550,7 @@ function renderWeek() {
     week.forEach((d) => {
       const ds = ymd(d), isToday = ds === today, holN = holidayName(ds), b = bandOf(ds);
       const key = kind === "all" ? ds : `${ds}:${kind}`;
-      let cell = `<div class="band-cell ${kind}-row ${isToday ? "today-col" : ""} ${holN ? "holiday-col" : ""}" data-date="${ds}" data-band="1" data-bandkind="${kind}">`;
+      let cell = `<div class="band-cell ${kind}-row ${isToday ? "today-col" : ""} ${holN ? "holiday-col" : ""}${isWkend(ds) ? " wkend" : ""}" data-date="${ds}" data-band="1" data-bandkind="${kind}">`;
       // 공휴일 이름은 맨 윗줄에만, 항상 먼저 (접기 개수에 넣지 않음)
       if (holN && kind !== "todo") cell += `<div class="cal-chip holiday" title="${esc(holN)}">${esc(holN)}</div>`;
       const chips = [];
@@ -2558,7 +2620,7 @@ function renderWeek() {
         const left = (L.col / L.n) * 100, w = (L.span / L.n) * 100;
         return `<div class="evt timed pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}${projCls(e)}${lateCls(e)}" style="${inProject(e) ? `--pc:${projectById(e.projectId).color};` : ""}top:${top.toFixed(1)}px;left:calc(${left}% + 1px);width:calc(${w}% - 3px);height:${height.toFixed(1)}px;" title="${esc(evTimeText(e))} ${esc(e.title)}${lateTitle(e)}" draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="rz rz-top" data-rz="top" title="위로 끌어 시작 시간 변경"></span><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span><span class="t">${esc(evTimeText(e))}</span><span class="ci">${catIcon(e.cat)}</span>${e.rolledFrom ? `<span class="evt-d">D+${daysBetween(e.rolledFrom, e.date)}</span>` : ""}${projDot(e.projectId)}${esc(e.title)}${e.repeat !== "none" ? " ↻" : ""}<span class="rz rz-bot" data-rz="bot" title="아래로 끌어 종료 시간 변경"></span></div>`;
       }).join("");
-      grid += `<div class="cell ${starts.length ? "has-evt" : ""} ${isToday ? "today-col" : ""} ${isHoliday(ds) ? "holiday-col" : ""}" data-date="${ds}" data-hour="${pad(h)}:00">${inner}</div>`;
+      grid += `<div class="cell ${starts.length ? "has-evt" : ""} ${isToday ? "today-col" : ""} ${isHoliday(ds) ? "holiday-col" : ""}${isWkend(ds) ? " wkend" : ""}${h === 20 ? " last-row" : ""}" data-date="${ds}" data-hour="${pad(h)}:00">${inner}</div>`;
     });
   }
   grid += `</div></div>`;
@@ -4268,6 +4330,7 @@ const CAL_DESIGNS = {
   basic: { name: "기본", desc: "지금 쓰시던 모양", row: 46 },
   line:  { name: "라인 클린", desc: "흰 여백 위주 · 선 최소 · 넉넉한 칸", row: 48 },
   night: { name: "미드나잇", desc: "촘촘한 칸 · 저대비 선 · 어두운 모드에 최적", row: 38 },
+  rail:  { name: "클레이 레일", desc: "요일마다 떠 있는 카드 · 파스텔 알약 · 우선순위 점", row: 44 },
 };
 // 전체 테마(스킨) — 모양(그림자·모서리·버튼)과 색 톤을 한 묶음으로 바꿈
 const SKINS = {
@@ -4279,7 +4342,7 @@ const SKINS = {
 const calRowH = () => (CAL_DESIGNS[prefs.calDesign] || CAL_DESIGNS.basic).row;
 const PAPER_STYLES = ["none", "grid", "ruled", "excel", "dot"];
 const PAPER_LABEL = { none: "없음", grid: "모눈", ruled: "유선", excel: "엑셀", dot: "도트" };
-const prefs = { paperStyle: "grid", theme: "cream", panelOp: 92, contrast: "auto", calScale: 100, alertScale: 100, alertSec: 0, splitBand: true, calDesign: "basic", skin: "basic" };
+const prefs = { paperStyle: "grid", theme: "cream", panelOp: 92, contrast: "auto", calScale: 100, alertScale: 100, alertSec: 0, splitBand: true, calDesign: "rail", calDesignV: 2, skin: "basic" };
 function loadPrefs() {
   try {
     const p = JSON.parse(localStorage.getItem("scheduler:prefs") || "{}");
@@ -4293,6 +4356,7 @@ function loadPrefs() {
     if (Number.isFinite(p.alertSec)) prefs.alertSec = Math.max(0, Math.min(120, p.alertSec));
     if (typeof p.splitBand === "boolean") prefs.splitBand = p.splitBand;
     if (CAL_DESIGNS[p.calDesign]) prefs.calDesign = p.calDesign;
+    if (p.calDesignV !== 2) prefs.calDesign = "rail";        // 2026-11: 클레이 레일을 기본으로 (한 번만 바꿈, 이후엔 고른 디자인 유지)
     if (SKINS[p.skin]) prefs.skin = p.skin;
     if (p.tt && typeof p.tt === "object") {
       const t = {}; Object.keys(TT_RULES_DEFAULT).forEach((k) => { const v = +p.tt[k]; if (Number.isFinite(v) && v >= 0 && v <= 15) t[k] = Math.round(v); });
