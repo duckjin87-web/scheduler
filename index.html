@@ -1589,6 +1589,41 @@
   .dp-rail i:nth-child(2)::after{top:10px;background:#E7E2FF;}
   .dp-rail i:nth-child(3){background:#E2E7EF;box-shadow:inset 1px 1px 2px #C8D1DF;}
   .dp-rail i:nth-child(3)::after{content:none;}
+
+  /* --- 클레이 레일: '오늘' 목록 · 오늘 할 일 고정 창도 같은 표기 ---
+     일정 = 분류색(업무 파랑/개인 보라) 파스텔 카드, 할 일 = 눌린 알약 + 동그란 체크, 우선순위 = 앞의 점(긴급은 링) */
+  body.design-rail .agenda{gap:10px;}
+  body.design-rail .agenda .row-item{border:0;border-radius:14px;padding:11px 14px;background:var(--rail-card);
+    box-shadow:inset 0 -2px 0 rgba(0,0,0,.06), inset 0 1px 0 var(--rail-hi), 0 4px 12px var(--rail-lo);}
+  body.design-rail .agenda .row-item.work{background:color-mix(in srgb, var(--work) 13%, var(--rail-card));}
+  body.design-rail .agenda .row-item.personal{background:color-mix(in srgb, var(--personal) 14%, var(--rail-card));}
+  body.design-rail .agenda .row-item.work .time{color:color-mix(in srgb, var(--work) 70%, var(--text));}
+  body.design-rail .agenda .row-item.personal .time{color:color-mix(in srgb, var(--personal) 70%, var(--text));}
+  body.design-rail .agenda .row-item.pri-urgent:not(.done){box-shadow:inset 0 0 0 1.5px var(--urgent), 0 4px 12px var(--rail-lo);}
+  body.design-rail .agenda .row-item.done{opacity:.6;}
+  body.design-rail .agenda .row-item .box{border-radius:7px;}
+  body.design-rail .agenda .todo{border:0;border-radius:18px;padding:11px 14px;background:var(--bg);
+    box-shadow:inset 3px 3px 7px var(--rail-lo), inset -3px -3px 7px var(--rail-hi);}
+  body.design-rail .agenda .todo .box{border-radius:50%;border-color:color-mix(in srgb, var(--high) 70%, var(--border-strong));}
+  body.design-rail .agenda .todo .box.done{border-color:var(--done);}
+  body.design-rail .agenda .todo.done{opacity:.65;}
+  body.design-rail .pin-todo{border-radius:12px;padding:7px 8px;margin-bottom:5px;}
+  body.design-rail .pin-todo.k-ev{background:var(--rail-card);box-shadow:inset 0 -2px 0 rgba(0,0,0,.06), inset 0 1px 0 var(--rail-hi);}
+  body.design-rail .pin-todo.k-ev.work{background:color-mix(in srgb, var(--work) 14%, var(--rail-card));}
+  body.design-rail .pin-todo.k-ev.personal{background:color-mix(in srgb, var(--personal) 15%, var(--rail-card));}
+  body.design-rail .pin-todo.k-todo{background:var(--bg);box-shadow:inset 2px 2px 5px var(--rail-lo), inset -2px -2px 5px var(--rail-hi);border-radius:999px;padding:6px 10px;}
+  body.design-rail .pin-todo.k-todo .box{border-radius:50%;border-color:color-mix(in srgb, var(--high) 70%, var(--border-strong));}
+  body.design-rail .pin-todo.k-todo .box.done{border-color:var(--done);}
+  body.design-rail .pin-todo.pri-urgent.k-ev:not(.done){box-shadow:inset 0 0 0 1.5px var(--urgent);}
+  body.design-rail .pin-todo.done{background:transparent;box-shadow:none;}
+  /* 우선순위 점 (오늘 목록 · 고정 창 공통) */
+  body.design-rail :is(.agenda .row-item,.agenda .todo,.pin-todo)::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;align-self:center;
+    background:var(--done);box-shadow:inset 0 -1.5px 0 rgba(0,0,0,.2);}
+  body.design-rail .agenda .todo::before{align-self:flex-start;margin-top:6px;}
+  body.design-rail .pin-todo:not(.pin-tk)::before{align-self:flex-start;margin-top:5px;width:7px;height:7px;}
+  body.design-rail :is(.agenda .row-item,.agenda .todo,.pin-todo).pri-high::before{background:var(--high);}
+  body.design-rail :is(.agenda .row-item,.agenda .todo,.pin-todo).pri-urgent::before{background:var(--urgent);box-shadow:0 0 0 2.5px color-mix(in srgb, var(--urgent) 25%, transparent);}
+  body.design-rail :is(.agenda .row-item,.agenda .todo,.pin-todo).done::before{background:var(--text-faint);box-shadow:none;}
 </style>
 </head>
 <body>
@@ -1678,7 +1713,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-11-03 · 캘린더 디자인 클레이 레일 적용, 지연 테두리 제거";
+const APP_VERSION = "2026-11-03 · 오늘 목록·고정 창에도 클레이 레일 표기";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -3712,7 +3747,7 @@ function todoRow(t) {
   const dueTxt = t.due ? `<span class="${overdue ? "tag overdue" : ""}">${fmtDueMeta(t.due)}</span>` : "";
   const late = t.rolledFrom ? daysBetween(t.rolledFrom, todayStr()) : 0;
   const roll = late > 0 ? `<span class="dbadge">D+${late}</span>` : "";
-  return `<div class="todo ${t.done ? "done" : ""}">
+  return `<div class="todo ${t.cat} pri-${t.priority} ${t.done ? "done" : ""}${lateCls(t)}">
     <div class="box ${t.done ? "done" : ""}" data-toggle="${t.id}">${t.done ? IC.check : ""}</div>
     <div class="tx" data-edit-todo="${t.id}">
       <div class="title">${esc(t.title)}</div>
@@ -4299,7 +4334,7 @@ function toast(msg) {
 
 /* ---------- 테마 ---------- */
 function currentDark() { const a = document.documentElement.getAttribute("data-theme"); return a ? a === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches; }
-function setTheme(dark) { document.documentElement.setAttribute("data-theme", dark ? "dark" : "light"); try { localStorage.setItem("scheduler:theme", dark ? "dark" : "light"); } catch (e) {} updateThemeIcon(); if (typeof applyThemeColors === "function") applyThemeColors(); }
+function setTheme(dark) { document.documentElement.setAttribute("data-theme", dark ? "dark" : "light"); try { localStorage.setItem("scheduler:theme", dark ? "dark" : "light"); } catch (e) {} updateThemeIcon(); if (typeof applyThemeColors === "function") applyThemeColors(); if (typeof pipSyncTheme === "function") pipSyncTheme(); }
 function updateThemeIcon() {
   document.getElementById("theme-icon").innerHTML = currentDark()
     ? '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'
@@ -4946,7 +4981,7 @@ function pinItemsHtml() {
   let h = `<div class="pin-sec">할 일 · ${todos.length}</div>`;
   h += todos.length ? todos.map((t) => {
     const late = t.rolledFrom ? `<span class="dd">D+${daysBetween(t.rolledFrom, today)}</span>` : (t.due && t.due < today ? `<span class="dd">D+${daysBetween(t.due, today)}</span>` : "");
-    return `<div class="pin-todo pri-${t.priority}${lateCls(t)}" title="${esc(t.title)}${lateTitle(t)}">
+    return `<div class="pin-todo k-todo ${t.cat} pri-${t.priority}${lateCls(t)}" title="${esc(t.title)}${lateTitle(t)}">
       <div class="box" data-pin-toggle="${t.id}"></div>
       <div class="pin-tx" data-pin-edit-todo="${t.id}"><div class="t">${late}${esc(t.title)}</div>${t.projectId ? `<div class="m">${projTag(t.projectId)}</div>` : ""}</div>
     </div>`;
@@ -4956,7 +4991,7 @@ function pinItemsHtml() {
     const dd = e._delay ? `<span class="dd">D+${e._delay}</span>` : "";
     // 고정 창에는 시간을 적지 않음 (시간순으로 이미 정렬되어 있음)
     const meta = [e.location ? esc(e.location) : "", projTag(e.projectId)].filter(Boolean).join(" ");
-    return `<div class="pin-todo pri-${e.priority}${lateCls(e)}" title="${esc(e.title)}${lateTitle(e)}">
+    return `<div class="pin-todo k-ev ${e.cat} pri-${e.priority}${lateCls(e)}" title="${esc(e.title)}${lateTitle(e)}">
       <div class="box" data-pin-ev-toggle="${e._base || e.id}"></div>
       <div class="pin-tx" data-pin-edit-event="${e._base || e.id}"><div class="t">${dd}${catIcon(e.cat)} ${esc(e.title)}</div>${meta ? `<div class="m">${meta}</div>` : ""}</div>
     </div>`;
@@ -4970,7 +5005,7 @@ function pinItemsHtml() {
   h += `<div class="pin-divider pin-fold" data-pin-donetoggle style="cursor:pointer">완료 · ${doneItems.length} ${pinState.doneOpen ? "▲" : "▼"}</div>`;
   if (pinState.doneOpen) {
     h += doneItems.length ? doneItems.map((d) => `
-      <div class="pin-todo done pri-${d.pri}" title="완료 · 체크 해제 시 복원">
+      <div class="pin-todo done k-${d.kind === "todo" ? "todo" : "ev"} ${d.cat} pri-${d.pri}" title="완료 · 체크 해제 시 복원">
         <div class="box done" data-pin-${d.kind === "todo" ? "toggle" : "ev-toggle"}="${d.id}">${IC.check}</div>
         <div><div class="t">${d.kind === "event" ? catIcon(d.cat) + " " : ""}${esc(d.title)}</div></div>
       </div>`).join("") : `<div class="pin-empty">완료된 항목 없음</div>`;
@@ -4984,7 +5019,7 @@ function pinTickerItems() {
   const today = todayStr();
   const todos = Store.state.todos.filter((t) => !t.done && (!t.due || t.due <= today))
     .sort((a, b) => (a.due || "9999").localeCompare(b.due || "9999") || PRIO[a.priority].rank - PRIO[b.priority].rank)
-    .map((t) => ({ kind: "todo", id: t.id, title: t.title, pri: t.priority, late: lateCls(t),
+    .map((t) => ({ kind: "todo", id: t.id, title: t.title, pri: t.priority, cat: t.cat, late: lateCls(t),
       d: t.rolledFrom ? daysBetween(t.rolledFrom, today) : t.due && t.due < today ? daysBetween(t.due, today) : 0 }));
   const evs = todayAgendaEvents().map((e) => ({ kind: "event", id: e._base || e.id, title: e.title, pri: e.priority, cat: e.cat, late: lateCls(e), d: e._delay || 0 }));
   return todos.concat(evs);
@@ -4994,7 +5029,7 @@ function pinTickerHtml() {
   if (pinTickPage >= pages) pinTickPage = 0;
   const shown = all.slice(pinTickPage * PIN_TICK_N, (pinTickPage + 1) * PIN_TICK_N);
   if (!shown.length) return `<div class="pin-empty">${IC.check} 오늘 할 일·일정 없음</div>`;
-  return shown.map((x) => `<div class="pin-todo pin-tk pri-${x.pri}${x.late}" title="${esc(x.title)}">
+  return shown.map((x) => `<div class="pin-todo pin-tk k-${x.kind === "todo" ? "todo" : "ev"} ${x.cat || ""} pri-${x.pri}${x.late}" title="${esc(x.title)}">
       <div class="box" data-pin-${x.kind === "todo" ? "toggle" : "ev-toggle"}="${x.id}"></div>
       <div class="pin-tx" data-pin-edit-${x.kind}="${x.id}"><div class="t">${x.d ? `<span class="dd">D+${x.d}</span>` : ""}${x.kind === "event" ? catIcon(x.cat) + " " : ""}${esc(x.title)}</div></div>
     </div>`).join("") + (pages > 1 ? `<div class="pin-tk-pg">${[...Array(pages)].map((_, i) => `<i class="${i === pinTickPage ? "on" : ""}"></i>`).join("")}<span>${pinTickPage + 1}/${pages}</span></div>` : "");
@@ -5169,6 +5204,19 @@ function togglePin() {
   if (pipSupported()) openPip(); // 지원 시 항상-위 PiP 창으로 승격 (성공하면 위젯 숨김)
 }
 
+// 항상-위(PiP) 창에 지금 테마(색 변수 · 다크 · 전체 테마 · 캘린더 디자인)를 그대로 옮김
+function pipSyncTheme() {
+  if (!pipWin || !pipWin.document) return;
+  const d = pipWin.document, root = d.documentElement;
+  root.style.cssText = document.documentElement.style.cssText;
+  root.style.background = "transparent";
+  root.style.opacity = (pinState.opacity / 100).toFixed(2);                 // 창 전체 투명도
+  const dk = document.documentElement.getAttribute("data-theme");
+  if (dk) root.setAttribute("data-theme", dk); else root.removeAttribute("data-theme");
+  const keep = /^(design-|skin-|contrast-)/;
+  [...d.body.classList].filter((c) => keep.test(c)).forEach((c) => d.body.classList.remove(c));
+  [...document.body.classList].filter((c) => keep.test(c)).forEach((c) => d.body.classList.add(c));
+}
 function renderPin() {
   document.getElementById("pin-btn").classList.toggle("on", pinState.open);
   const w = document.getElementById("pin-widget");
@@ -5178,7 +5226,7 @@ function renderPin() {
     if (pb) { pb.innerHTML = pinItemsHtml(); pb.style.opacity = ""; }
     const cnt = pipWin.document.getElementById("pip-cnt");   // 접어 둬도 남은 개수는 보이게
     if (cnt) { const n = Store.state.todos.filter((t) => !t.done && t.due && t.due <= todayStr()).length; cnt.textContent = n ? String(n) : ""; }
-    pipWin.document.documentElement.style.opacity = (pinState.opacity / 100).toFixed(2); // 창 전체 투명도
+    pipSyncTheme();
     applyPinFont(); renderPinTicker();
     w.hidden = true; return;
   }
