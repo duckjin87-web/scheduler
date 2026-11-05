@@ -1720,7 +1720,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-11-03 · 생산 라인 수(CAPA×라인)·CAPA 입력 버벅임 개선·선택색 노랑·종일 줄은 있을 때만";
+const APP_VERSION = "2026-11-05 · 모바일 제목 자동완성(예전 입력값 추천) 끔";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -4006,7 +4006,7 @@ function renderModal(kind, data, cat, isEdit) {
     const endV = data.endTime || (isEdit ? "" : addMin(startV, 30));
     const remindV = data.reminder != null ? data.reminder : "0";   // 기본: 정각
     fields = `
-      <div class="field"><label for="f-title">제목</label><input id="f-title" value="${esc(data.title || "")}" placeholder="예: 팀 회의" /></div>
+      <div class="field"><label for="f-title">제목</label><input id="f-title" value="${esc(data.title || "")}" placeholder="예: 팀 회의" autocomplete="off" /></div>
       <div class="field-row">
         <div class="field">
           <div class="field-head"><label for="f-date">날짜</label><label class="inline-check"><input type="checkbox" id="f-allday" ${allDay ? "checked" : ""}/> 종일</label></div>
@@ -4025,14 +4025,14 @@ function renderModal(kind, data, cat, isEdit) {
       <button type="button" class="more-btn" id="m-more">+ 추가 옵션 (위치·반복·설명)</button>
       <div id="m-extra" hidden>
         <div class="field-row">
-          <div class="field"><label for="f-loc">위치</label><input id="f-loc" value="${esc(data.location || "")}" placeholder="예: 2층 회의실 / 온라인" /></div>
+          <div class="field"><label for="f-loc">위치</label><input id="f-loc" value="${esc(data.location || "")}" placeholder="예: 2층 회의실 / 온라인" autocomplete="off" /></div>
           <div class="field"><label for="f-repeat">반복</label><select id="f-repeat">${opt(REPEAT_LABEL, data.repeat || "none")}</select></div>
         </div>
         <div class="field"><label for="f-note">설명</label><textarea id="f-note" placeholder="메모/설명">${esc(data.note || "")}</textarea></div>
       </div>`;
   } else {
     fields = `
-      <div class="field"><label for="f-title">할 일</label><input id="f-title" value="${esc(data.title || "")}" placeholder="예: 견적서 확인" /></div>
+      <div class="field"><label for="f-title">할 일</label><input id="f-title" value="${esc(data.title || "")}" placeholder="예: 견적서 확인" autocomplete="off" /></div>
       <div class="field-row">
         <div class="field"><label for="f-due">마감일</label><input id="f-due" type="date" value="${esc(isEdit ? (data.due || "") : (data.due || data.date || todayStr()))}" /></div>
         <div class="field"><label for="f-prio">우선순위</label>${prioSel(data.priority || "normal")}</div>
@@ -4047,7 +4047,7 @@ function renderModal(kind, data, cat, isEdit) {
   document.getElementById("modal").innerHTML = `
     <h3>${isEdit ? "수정" : "새로 추가"}</h3>
     ${isEdit ? "" : tabs}
-    <form id="m-form">${fields}
+    <form id="m-form" autocomplete="off">${fields}
       <div class="modal-actions">
         ${isEdit ? `<button type="button" class="btn-del" id="m-del">삭제</button>` : ""}
         <button type="button" class="btn-sub" id="m-cancel">취소</button>
@@ -5556,6 +5556,10 @@ function wireGlobal() {
   document.addEventListener("click", statClick); // 통계 화면
   document.addEventListener("click", syncSettingsClick);   // 설정: 클라우드 동기화·복원
   document.addEventListener("click", fbSettingsClick);     // 설정: 자동 백업 파일
+  // 모바일 브라우저가 예전 입력값을 제목 추천으로 띄우지 않게 — 창(모달)에 그려지는 글자 칸은 모두 자동완성 끔
+  const noAc = (root) => root.querySelectorAll('input:not([type]),input[type="text"],input[type="search"],textarea').forEach((el) => { if (!el.hasAttribute("autocomplete")) el.setAttribute("autocomplete", "off"); });
+  const modalEl = document.getElementById("modal");
+  if (modalEl) { noAc(modalEl); new MutationObserver(() => noAc(modalEl)).observe(modalEl, { childList: true, subtree: true }); }
   window.addEventListener("resize", () => { clearTimeout(moveNavInd.t); moveNavInd.t = setTimeout(moveNavInd, 80); });
   document.getElementById("sync-btn").addEventListener("click", () => {          // 백업 화면 열기/닫기
     if (ui.view === "backup") setView(ui.prevView && ui.prevView !== "settings" && ui.prevView !== "backup" ? ui.prevView : "today"); else setView("backup"); });
