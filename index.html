@@ -1907,6 +1907,45 @@
   .iq-dett p{margin:0 0 6px;font-size:12px;white-space:pre-wrap;line-height:1.5;}
   body.skin-clay .iq-detbtn{border-color:transparent;box-shadow:var(--neu-sm);}
   body.skin-clay .iq-detbtn.on{box-shadow:var(--neu-in);}
+
+  /* --- 업체 탐색: 열 너비 조절 · 옅은 구분선 · 표 머리에서 항목 ＋/− --- */
+  .iq-table.fixed{table-layout:fixed;min-width:0 !important;}
+  .iq-table.fixed th{width:auto !important;min-width:0 !important;position:relative;overflow:hidden;text-overflow:ellipsis;}
+  .iq-table.fixed td{overflow:hidden;}
+  .iq-table th,.iq-table td{border-left:1px solid color-mix(in srgb, var(--border) 75%, transparent);}
+  .iq-table th:first-child,.iq-table td:first-child{border-left:0;}
+  .iq-table tbody td{border-top:1px solid color-mix(in srgb, var(--border) 85%, transparent);}
+  .iq-table thead tr:nth-child(2) th{border-top:1px solid color-mix(in srgb, var(--border) 75%, transparent);}
+  .iq-table th.grp{border-left:1px solid color-mix(in srgb, var(--border) 75%, transparent);border-right:0;}
+  .iq-rz{position:absolute;top:0;right:-3px;width:7px;height:100%;cursor:col-resize;z-index:3;touch-action:none;}
+  .iq-rz::after{content:"";position:absolute;top:20%;bottom:20%;left:3px;width:1px;background:transparent;transition:background .12s;}
+  .iq-table th:hover .iq-rz::after,.iq-rz.on::after{background:var(--work);width:2px;}
+  body.iq-resizing,body.iq-resizing *{cursor:col-resize !important;user-select:none !important;}
+  .iq-thl{overflow:hidden;text-overflow:ellipsis;}
+  .iq-thx{border:0;background:transparent;color:var(--text-faint);font-size:14px;font-weight:900;line-height:1;cursor:pointer;padding:0 3px;margin-left:3px;vertical-align:-1px;}
+  .iq-thx:hover{color:var(--urgent);}
+  .iq-thadd{text-align:center;padding:2px 3px !important;}
+  .iq-thplus{border:1.5px dashed var(--border-strong);background:transparent;border-radius:7px;width:26px;height:22px;color:var(--work);font-weight:900;font-size:13px;cursor:pointer;line-height:1;}
+  .iq-thplus:hover{border-color:var(--work);}
+  .iq-thadd .iq-additem{width:100% !important;border-radius:6px !important;padding:2px 4px !important;font-size:11.5px !important;}
+  .iq-addcol{background:color-mix(in srgb, var(--text) 2%, transparent);}
+  .iq-catsel{width:auto !important;max-width:120px;font-size:11.5px;font-weight:700;color:var(--work);background:var(--work-soft);border-radius:999px;padding:3px 6px;}
+  .iq-catin{width:110px !important;text-align:left;}
+  .iq-titlein{flex:0 1 240px;max-width:300px;}
+  .iq-commonw{flex:1 1 260px;min-width:200px;max-width:520px;}
+  .iq-commonw .iq-clamp{-webkit-line-clamp:1;background:var(--surface-2);border-radius:8px;}
+  .iq-commonw .iq-clamp.empty{color:var(--text-faint);}
+  .iq-sort{border:0;background:transparent;font:inherit;font-weight:700;color:inherit;cursor:pointer;padding:0;display:inline-flex;align-items:center;gap:4px;}
+  .iq-sort i{font-style:normal;font-size:10px;color:var(--text-faint);}
+  .iq-sort.on{color:var(--work);} .iq-sort.on i{color:var(--work);}
+  .iq-ibar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .iq-ibar .iq-filters{margin:0;}
+  .iq-vsearch{min-width:180px;flex:0 1 240px;}
+  .iq-vside{display:flex;flex-direction:column;gap:8px;min-width:0;}
+  .iq-vside .iq-vsearch{flex:none;}
+  .iq-cnt{font-size:11.5px;margin-top:6px;}
+  body.skin-clay .iq-catsel{box-shadow:var(--clay-sm);}
+  body.skin-clay .iq-commonw .iq-clamp{background:var(--bg);box-shadow:var(--neu-in);}
 </style>
 </head>
 <body>
@@ -1998,7 +2037,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-11-06 · 업체 탐색 가로 스크롤·상세(연락 회차·변경 이력)·상세내용 2줄 줄임";
+const APP_VERSION = "2026-11-06 · 업체 탐색 카테고리·구분선·표 머리 항목 ＋/−·열 너비 조절·업체명 조회·항목별 정렬";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -2351,7 +2390,7 @@ const ST_ARCHIVE_MAX = 2000;                // 통계용 완료 기록 보관 �
 
 /* ---------- Store (데이터 계층) ---------- */
 // 업체 탐색: 기본 확인 항목 (사전에 새 항목을 더해 다음 탐색에서도 재사용)
-const INQ_ITEMS_DEFAULT = [{ id: "ok", label: "가능여부" }, { id: "moq", label: "MOQ" }, { id: "price", label: "예상단가" }];
+const INQ_ITEMS_DEFAULT = [{ id: "ok", label: "가능여부" }, { id: "moq", label: "MOQ" }, { id: "price", label: "예상단가" }, { id: "limit", label: "제한사항" }];
 const Store = (() => {
   const KEY = "scheduler:v1";
   let state = { version: 2, events: [], todos: [], projects: [], orders: [], archive: [], vendors: [], inquiries: [], inqItems: INQ_ITEMS_DEFAULT.map((x) => ({ ...x })) };
@@ -2373,7 +2412,7 @@ const Store = (() => {
     const gap = parseInt(q.gap, 10);
     return { id: q.id || uid(), category: str(q.category).trim() || "가능처 탐색", title: str(q.title).trim(), secret: !!q.secret,
       askedAt: q.askedAt || todayStr(), gap: Number.isFinite(gap) ? Math.max(0, Math.min(15, gap)) : 2, common: str(q.common),
-      items: Array.isArray(q.items) ? q.items.filter(Boolean) : ["ok", "moq", "price"],
+      items: Array.isArray(q.items) ? ["ok", ...q.items.filter((k) => k && k !== "ok")] : ["ok", "moq", "price", "limit"],
       rows: (Array.isArray(q.rows) ? q.rows : []).map(normalizeInqRow), done: !!q.done, doneAt: q.doneAt || null, createdAt: q.createdAt || Date.now() };
   }
   function normalizeInqItems(list) {
@@ -4061,19 +4100,33 @@ function iqCaseView() {
   if (!qs.length) return `<div class="empty iq-empty">${Store.state.inquiries.length ? "조건에 맞는 탐색 건이 없습니다." : "아직 탐색 건이 없습니다. <b>＋ 새 탐색</b>을 누르면 바로 입력할 수 있는 카드가 생깁니다."}</div>`;
   return qs.map(({ q, rows }) => iqCaseCard(q, rows)).join("");
 }
+// 카테고리: 가능처 탐색 · 단가문의 · 기타(직접 입력)
+const INQ_CAT_PRESET = ["가능처 탐색", "단가문의"];
+// 확인 항목: 가능여부(O·X·△)는 늘 첫 칸, 나머지는 표 머리에서 ＋추가 · −제외
+const iqItemsX = (q) => q.items.filter((k) => k !== "ok");
+const iqColCount = (q) => 15 + iqItemsX(q).length;
+// 열 너비 (드래그로 조절 · 모든 탐색 건 공통 · 이 기기에 저장)
+const IQ_COLW_KEY = "scheduler:inq-colw";
+let iqColW = {}; try { iqColW = JSON.parse(localStorage.getItem(IQ_COLW_KEY) || "{}") || {}; } catch (_) {}
+const IQ_COL_DEF = { no: 34, c: 190, v: 160, o: 80, pn: 86, pp: 124, pe: 150, ok: 96, add: 44, s: 80, rd: 116, d: 220, n: 140, x: 90, det: 76 };
+function iqCols(q) { return ["no", "c", "v", "o", "pn", "pp", "pe", "ok", ...iqItemsX(q).map((k) => "a:" + k), "add", "s", "rd", "d", "n", "x", "det"]; }
+const iqColWidth = (key) => iqColW[key] || IQ_COL_DEF[key] || (key.startsWith("a:") ? 96 : 90);
+const iqRz = (key) => `<span class="iq-rz" data-iq-rz="${key}" title="끌어서 열 너비 조절 · 두 번 눌러 원래대로"></span>`;
 function iqCaseCard(q, rows) {
   const open = !!iq.open[q.id] || !!iq.q, late = inqCaseLate(q), rv = inqRowsV(q), replied = rv.filter((r) => r.status !== "wait").length;
   const picked = rv.filter((r) => r.picked).map((r) => (vendorById(r.vendorId) || {}).name).filter(Boolean);
   const pct = rv.length ? Math.round((replied / rv.length) * 100) : 0;
+  const isEtc = !INQ_CAT_PRESET.includes(q.category);
   ttUse(null);
   let h = `<section class="iq-case ${open ? "open" : ""} ${q.done ? "done" : ""}" data-iq-case="${q.id}">
     <div class="iq-ch">
       <button type="button" class="iq-tg" data-iq-toggle="${q.id}" aria-label="${open ? "접기" : "펼치기"}">${open ? "−" : "＋"}</button>
-      <input class="iq-in iq-catin" data-iqk="c:${q.id}:category" value="${esc(q.category)}" list="iq-cats" autocomplete="off" aria-label="카테고리" />
+      <select class="iq-in iq-catsel" data-iqk="c:${q.id}:catsel" aria-label="카테고리">${INQ_CAT_PRESET.map((c) => `<option ${q.category === c ? "selected" : ""}>${c}</option>`).join("")}<option value="__etc" ${isEtc ? "selected" : ""}>기타 (직접 입력)</option></select>
+      ${isEtc ? `<input class="iq-in iq-catin" data-iqk="c:${q.id}:category" value="${q.category === "기타" ? "" : esc(q.category)}" placeholder="카테고리 입력" autocomplete="off" aria-label="카테고리 직접 입력" />` : ""}
       <input class="iq-in iq-titlein" data-iqk="c:${q.id}:title" value="${esc(q.title)}" placeholder="목적 입력 (예: 글라인더 하이드로겔)" autocomplete="off" aria-label="목적" />
+      <div class="iq-commonw" title="공통 요청 내용 — 모든 업체에 같이 보낸 사양 · 수량 · 납기">${iqClampTa(`c:${q.id}:common`, q.common, "공통 요청 내용", "공통 요청 내용 (사양 · 수량 · 납기)")}</div>
       <button type="button" class="iq-tgl ${q.secret ? "on secret" : ""}" data-iq-secret="${q.id}" title="대외비 표시">대외비</button>
       <span class="iq-meta">문의 <input type="date" class="iq-in iq-date" data-iqk="c:${q.id}:askedAt" value="${q.askedAt}" aria-label="문의일" /> · 기한 + <input class="iq-in iq-gap" data-iqk="c:${q.id}:gap" value="${q.gap}" inputmode="numeric" autocomplete="off" aria-label="회신 기한 영업일" />영업일 → <b>${fmtMD(inqCaseDue(q))}</b></span>
-      <span class="iq-sp"></span>
       ${picked.length ? `<span class="iq-pick">★ ${esc(picked.join(", "))}</span>` : ""}
       <span class="iq-prog">회신 <b>${replied}/${rv.length}</b><i style="--p:${pct}%"></i></span>
       ${late ? `<span class="iq-late">지연 ${late}</span>` : ""}
@@ -4081,21 +4134,21 @@ function iqCaseCard(q, rows) {
       ${iqDelBtn("case:" + q.id, "삭제", "이 탐색 건 삭제 (업체 정보는 남음)")}
     </div>`;
   if (open) {
+    const cols = iqCols(q), tw = cols.reduce((n, k) => n + iqColWidth(k), 0), ix = iqItemsX(q);
+    const th = (key, label, extra = "") => `<th data-col="${key}" ${extra}>${label}${iqRz(key)}</th>`;
     h += `<div class="iq-cb">
-      <div class="iq-top">
-        <div class="iq-box"><span class="lab">공통 요청 내용 <small>· 모든 업체에 같이 보낸 사양 · 수량 · 납기</small></span><textarea class="iq-in iq-common" data-iqk="c:${q.id}:common" rows="2" placeholder="예: 하이드로겔 패치 · 초도 30,000ea · 12월 말 납기">${esc(q.common)}</textarea></div>
-        <div class="iq-box"><span class="lab">확인 항목 <small>· ×로 빼기 · 새 항목은 사전에 저장</small></span><div class="iq-itemchips">${q.items.map((k) => `<span class="iq-ic">${esc(inqItemLabel(k))}<button type="button" class="iq-icx" data-iq-rmitem="${q.id}:${k}" aria-label="${esc(inqItemLabel(k))} 빼기">×</button></span>`).join("")}
-          <input class="iq-in iq-additem" data-iqk="ai:${q.id}" list="iq-items" placeholder="＋ 항목 (Enter)" autocomplete="off" /></div></div>
-      </div>
-      <div class="iq-table-w" data-iq-tw="${q.id}"><table class="iq-table"><thead>
-        <tr><th class="no" rowspan="2">NO</th><th class="w-c" rowspan="2">연락 이력</th><th class="w-v" rowspan="2">업체명</th><th class="w-o" rowspan="2">담당자<br><small>(콜마)</small></th>
-          <th colspan="3" class="grp">업체 담당자</th>${q.items.length ? `<th colspan="${q.items.length}" class="grp">확인 항목</th>` : ""}<th colspan="2" class="grp">회신</th>
-          <th class="w-d" rowspan="2">상세내용</th><th class="w-n" rowspan="2">비고</th><th class="w-x" rowspan="2">최종 변경</th><th class="w-det" rowspan="2">상세</th></tr>
-        <tr><th class="w-pn">이름</th><th class="w-pp">휴대폰</th><th class="w-pe">메일</th>${q.items.map((k) => `<th class="${k === "ok" ? "w-ok" : "w-a"}">${esc(inqItemLabel(k))}</th>`).join("")}<th class="w-s">상태</th><th class="w-rd">회신일</th></tr>
+      <div class="iq-table-w" data-iq-tw="${q.id}"><table class="iq-table fixed" style="width:${tw}px"><colgroup>${cols.map((k) => `<col data-col="${k}" style="width:${iqColWidth(k)}px" />`).join("")}</colgroup><thead>
+        <tr>${th("no", "NO", 'class="no" rowspan="2"')}${th("c", "연락 이력", 'rowspan="2"')}${th("v", "업체명", 'rowspan="2"')}${th("o", "담당자<br><small>(콜마)</small>", 'rowspan="2"')}
+          <th colspan="3" class="grp">업체 담당자</th><th colspan="${ix.length + 2}" class="grp">확인 항목</th><th colspan="2" class="grp">회신</th>
+          ${th("d", "상세내용", 'rowspan="2"')}${th("n", "비고", 'rowspan="2"')}${th("x", "최종 변경", 'rowspan="2"')}${th("det", "상세", 'rowspan="2"')}</tr>
+        <tr>${th("pn", "이름")}${th("pp", "휴대폰")}${th("pe", "메일")}${th("ok", "가능여부")}
+          ${ix.map((k) => th("a:" + k, `<span class="iq-thl">${esc(inqItemLabel(k))}</span><button type="button" class="iq-thx" data-iq-rmitem="${q.id}:${k}" title="'${esc(inqItemLabel(k))}' 항목 빼기" aria-label="${esc(inqItemLabel(k))} 빼기">−</button>`)).join("")}
+          <th data-col="add" class="iq-thadd">${iq.addItem === q.id ? `<input class="iq-in iq-additem" data-iqk="ai:${q.id}" list="iq-items" placeholder="항목" autocomplete="off" aria-label="추가할 확인 항목" />` : `<button type="button" class="iq-thplus" data-iq-additem="${q.id}" title="확인 항목 추가" aria-label="확인 항목 추가">＋</button>`}</th>
+          ${th("s", "상태")}${th("rd", "회신일")}</tr>
       </thead><tbody>
-      ${rows.map((r) => iqRowTr(q, r, q.rows.indexOf(r) + 1)).join("") || `<tr><td colspan="${13 + q.items.length}" class="iq-norow">아래 '＋ 행 추가'로 업체를 넣으세요</td></tr>`}
+      ${rows.map((r) => iqRowTr(q, r, q.rows.indexOf(r) + 1)).join("") || `<tr><td colspan="${iqColCount(q)}" class="iq-norow">아래 '＋ 행 추가'로 업체를 넣으세요</td></tr>`}
       </tbody></table></div>
-      <div class="iq-addrow"><button type="button" class="iq-add" data-iq-addrow="${q.id}">＋ 행 추가</button><button type="button" class="btn-sub iq-sm ${iq.paste === q.id ? "on" : ""}" data-iq-paste="${q.id}">엑셀 붙여넣기</button><span class="muted">업체명을 치면 저장된 업체 · 담당자가 자동으로 채워집니다 · Enter로 다음 칸</span></div>
+      <div class="iq-addrow"><button type="button" class="iq-add" data-iq-addrow="${q.id}">＋ 행 추가</button><button type="button" class="btn-sub iq-sm ${iq.paste === q.id ? "on" : ""}" data-iq-paste="${q.id}">엑셀 붙여넣기</button><span class="muted">업체명을 치면 저장된 업체 · 담당자가 자동으로 채워집니다 · Enter로 다음 칸 · 열 경계를 끌어 너비 조절</span></div>
       ${iq.paste === q.id ? `<div class="iq-pastebox"><span class="muted">엑셀에서 <b>업체명 · 담당자(콜마) · 업체 담당자 · 휴대폰 · 메일</b> 순서의 칸을 복사해 붙여넣으세요 (업체명만 있어도 됩니다)</span>
         <textarea class="iq-in" id="iq-pastetext" rows="4" placeholder="○○바이오&#9;이OO&#9;김OO 과장&#9;010-0000-0000&#9;a@b.com"></textarea>
         <div><button type="button" class="btn-primary iq-sm" data-iq-pastego="${q.id}">추가</button> <button type="button" class="btn-sub iq-sm" data-iq-paste="${q.id}">닫기</button></div></div>` : ""}
@@ -4124,7 +4177,7 @@ function iqRowTr(q, r, no) {
     <td>${iqIn(`rv:${k}:person`, v ? v.person : "", `placeholder="${v ? "이름" : "업체명 먼저"}" ${v ? "" : "disabled"} aria-label="업체 담당자 이름"`)}</td>
     <td>${iqIn(`rv:${k}:phone`, v ? v.phone : "", `placeholder="—" inputmode="tel" ${v ? "" : "disabled"} aria-label="휴대폰"`)}</td>
     <td>${iqIn(`rv:${k}:email`, v ? v.email : "", `placeholder="—" inputmode="email" ${v ? "" : "disabled"} aria-label="메일"`)}</td>
-    ${q.items.map((it) => `<td>${it === "ok" ? `<div class="iq-oxseg" role="group" aria-label="가능여부">${IQ_OX.map(([s, l]) => `<button type="button" class="ox-${s === "△" ? "t" : s.toLowerCase()} ${ox === s ? "on" : ""}" data-iq-ox="${k}:${s}" title="${l}" aria-pressed="${ox === s}">${s}</button>`).join("")}</div>${ox && !IQ_OX.some(([s]) => s === ox) ? `<span class="muted iq-oxold">${esc(ox)}</span>` : ""}` : iqIn(`a:${k}:${it}`, r.answers[it], `placeholder="—" aria-label="${esc(inqItemLabel(it))}"`)}</td>`).join("")}
+    ${["ok", ...iqItemsX(q)].map((it) => `<td>${it === "ok" ? `<div class="iq-oxseg" role="group" aria-label="가능여부">${IQ_OX.map(([s, l]) => `<button type="button" class="ox-${s === "△" ? "t" : s.toLowerCase()} ${ox === s ? "on" : ""}" data-iq-ox="${k}:${s}" title="${l}" aria-pressed="${ox === s}">${s}</button>`).join("")}</div>${ox && !IQ_OX.some(([s]) => s === ox) ? `<span class="muted iq-oxold">${esc(ox)}</span>` : ""}` : iqIn(`a:${k}:${it}`, r.answers[it], `placeholder="—" aria-label="${esc(inqItemLabel(it))}"`)}</td>`).join("")}<td class="iq-addcol"></td>
     <td><select class="iq-in iq-stsel st-${r.status}" data-iqk="r:${k}:status" aria-label="회신 상태">${Object.keys(INQ_STATUS).map((s) => `<option value="${s}" ${r.status === s ? "selected" : ""}>${INQ_STATUS[s]}</option>`).join("")}</select></td>
     <td class="iq-rdcell">${r.status !== "wait" ? `<input type="date" class="iq-in iq-date" data-iqk="r:${k}:replyDate" value="${r.replyDate || ""}" aria-label="회신일" />` : late ? `<b class="iq-dn" title="기한 ${fmtMD(inqRowDue(q, r))}">D+${late}</b>` : `<span class="muted iq-due" title="회신 기한">~${fmtMD(inqRowDue(q, r))}</span>`}</td>
     <td>${iqClampTa(`r:${k}:detail`, r.detail, "상세내용")}</td>
@@ -4137,7 +4190,7 @@ function iqRowTr(q, r, no) {
 function iqDetailRow(q, r, k) {
   const fmtAt = (t) => { const d = new Date(t); return `${d.getMonth() + 1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
   const log = (r.log || []).slice().reverse();
-  return `<tr class="iq-detrow"><td colspan="${13 + q.items.length}"><div class="iq-det">
+  return `<tr class="iq-detrow"><td colspan="${iqColCount(q)}"><div class="iq-det">
     <div class="iq-detc"><b class="lab">연락 회차 · ${r.contacts.length}회</b>
       ${r.contacts.map((c, i) => `<div class="iq-c"><b>${i + 1}차</b><input type="date" class="iq-in iq-date" data-iqk="rc:${k}:${i}" value="${c.date}" aria-label="${i + 1}차 연락일" /><button type="button" class="iq-icx" data-iq-rmc="${k}:${i}" aria-label="${i + 1}차 연락 지우기">×</button></div>`).join("") || `<span class="muted">연락 기록 없음</span>`}
       <span class="muted">회신 기한 = 마지막 연락 ${fmtMD(inqLastContact(q, r))} + ${q.gap}영업일 → ${fmtMD(inqRowDue(q, r))}</span></div>
@@ -4146,8 +4199,8 @@ function iqDetailRow(q, r, k) {
   </div></td></tr>`;
 }
 // 상세내용 · 비고: 평소엔 2줄까지(넘으면 …), 누르면 전체 편집 · 줄 수만큼 칸이 늘어남
-function iqClampTa(key, val, label) {
-  return `<div class="iq-clampw"><div class="iq-clamp ${val ? "" : "empty"}">${val ? esc(val) : "—"}</div><textarea class="iq-in iq-ta" data-iqk="${key}" rows="1" aria-label="${label}">${esc(val || "")}</textarea></div>`;
+function iqClampTa(key, val, label, ph) {
+  return `<div class="iq-clampw"><div class="iq-clamp ${val ? "" : "empty"}">${val ? esc(val) : esc(ph || "—")}</div><textarea class="iq-in iq-ta" data-iqk="${key}" rows="1" aria-label="${label}" ${ph ? `placeholder="${esc(ph)}"` : ""}>${esc(val || "")}</textarea></div>`;
 }
 // 변경 이력 (줄마다 최근 60건)
 function iqLog(r, text) { r.log = [...(r.log || []), { at: Date.now(), text }].slice(-60); r.updatedAt = Date.now(); }
@@ -4164,7 +4217,9 @@ function iqVendorView() {
   vs.sort((a, b) => info(b).late - info(a).late || a.name.localeCompare(b.name, "ko"));
   if (!vs.length) return `<div class="empty iq-empty">${Store.state.vendors.length ? "조건에 맞는 업체가 없습니다." : "탐색 건에 업체를 추가하면 여기에 업체별로 모입니다."}</div>`;
   if (!iq.vendor || !vs.some((v) => v.id === iq.vendor)) iq.vendor = vs[0].id;
-  const list = vs.map((v) => { const s = info(v); return `<button type="button" class="iq-vli ${v.id === iq.vendor ? "active" : ""}" data-iq-vendor="${v.id}">
+  const vq = iqNorm(iq.vq || "");
+  const shown = vs.filter((v) => !vq || iqNorm(v.name + " " + (v.tags || []).join(" ")).includes(vq));
+  const list = shown.map((v) => { const s = info(v); return `<button type="button" class="iq-vli ${v.id === iq.vendor ? "active" : ""}" data-iq-vendor="${v.id}">
       <span class="t"><b>${esc(v.name)}</b>${s.picks ? `<span class="iq-star">★</span>` : ""}${s.late ? `<span class="iq-dn">D+${s.late}</span>` : `<small>문의 ${s.cases.length}건</small>`}</span>
       <span class="m">${esc([(v.tags || []).join(" · "), v.person].filter(Boolean).join(" · ") || "정보 없음")}</span>
       ${s.lastRep ? `<span class="m ok">최근 ${fmtMD(s.lastRep)} 회신</span>` : ""}</button>`; }).join("");
@@ -4188,19 +4243,42 @@ function iqVendorView() {
       <div class="muted">${r.contacts.map((c, i) => `${i + 1}차 ${fmtMD(c.date)}`).join(" → ")}${r.replyDate ? ` → 회신 ${fmtMD(r.replyDate)}` : ""}${r.owner ? ` · 담당 ${esc(r.owner)}` : ""}</div>
       <div class="a">${Object.keys(r.answers).filter((x) => r.answers[x]).map((x) => `<span class="iq-ic">${esc(inqItemLabel(x))} ${esc(r.answers[x])}</span>`).join("")}${r.detail ? `<span class="d">${esc(r.detail)}</span>` : ""}</div></div></div>`).join("") || `<div class="muted">아직 문의 이력이 없습니다.</div>`}</div>
   </div>`;
-  return `<div class="iq-vgrid"><div class="iq-vlist">${list}</div>${detail}</div>`;
+  return `<div class="iq-vgrid"><div class="iq-vside"><div class="search iq-vsearch"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input id="iq-vq" type="search" placeholder="업체명으로 조회" value="${esc(iq.vq || "")}" autocomplete="off" /></div>
+    <div class="iq-vlist" id="iq-vitems">${list || `<div class="muted iq-cnt">'${esc(iq.vq)}'에 맞는 업체가 없습니다</div>`}</div></div>${detail}</div>`;
 }
 
+// 항목별 보기: 업체 · 값 · 탐색 건 · 회신일 머리를 눌러 오름/내림 정렬 + 업체명 조회
+const IQ_OX_RANK = { O: 3, "△": 2, X: 1 };
+function iqValCmp(a, b) {
+  const oa = IQ_OX_RANK[iqOxNorm(a)], ob = IQ_OX_RANK[iqOxNorm(b)];
+  if (oa && ob) return oa - ob;
+  const na = parseFloat(String(a).replace(/,/g, "").match(/-?\d+(\.\d+)?/)), nb = parseFloat(String(b).replace(/,/g, "").match(/-?\d+(\.\d+)?/));
+  if (!isNaN(na) && !isNaN(nb) && na !== nb) return na - nb;
+  return String(a).localeCompare(String(b), "ko");
+}
+function iqItemRows() {
+  const rows = [], vq = iqNorm(iq.ivq || "");
+  Store.state.inquiries.forEach((q) => q.rows.forEach((r) => { const a = r.answers[iq.item]; if (!a || !r.vendorId) return; const v = vendorById(r.vendorId) || { name: "(업체)" };
+    if (vq && !iqNorm(v.name).includes(vq)) return; if (!iqMatch(iqRowText(q, r) + " " + iqCaseText(q))) return;
+    rows.push({ q, r, v, a: iq.item === "ok" ? iqOxNorm(a) : a, at: r.replyDate || inqLastContact(q, r) }); }));
+  const so = iq.isort || { k: "vendor", d: 1 }, d = so.d;
+  const cmp = { vendor: (x, y) => x.v.name.localeCompare(y.v.name, "ko"), val: (x, y) => iqValCmp(x.a, y.a), case: (x, y) => (x.q.title || "").localeCompare(y.q.title || "", "ko"), date: (x, y) => x.at.localeCompare(y.at) }[so.k] || (() => 0);
+  rows.sort((x, y) => d * cmp(x, y) || x.v.name.localeCompare(y.v.name, "ko") || y.at.localeCompare(x.at));
+  return rows;
+}
+function iqItemTable() {
+  const rows = iqItemRows(), so = iq.isort || { k: "vendor", d: 1 };
+  const sh = (k, l) => `<th><button type="button" class="iq-sort ${so.k === k ? "on" : ""}" data-iq-sort="${k}" title="눌러서 정렬 (오름차순 ↔ 내림차순)">${l}<i>${so.k === k ? (so.d > 0 ? "▲" : "▼") : "↕"}</i></button></th>`;
+  return rows.length ? `<div class="iq-table-w"><table class="iq-table iq-ro"><thead><tr>${sh("vendor", "업체")}${sh("val", esc(inqItemLabel(iq.item)))}${sh("case", "탐색 건")}${sh("date", "회신일")}<th>상세내용</th></tr></thead><tbody>
+    ${rows.map((x) => `<tr data-inq-open="${x.q.id}" class="${x.r.picked ? "picked" : ""}"><td><b>${esc(x.v.name)}</b>${x.r.picked ? ` <span class="iq-star">★</span>` : ""}</td><td><b>${esc(x.a)}</b></td><td><span class="iq-cat">${esc(x.q.category)}</span> ${esc(x.q.title)}</td><td>${fmtMD(x.at)}</td><td class="iq-detail">${esc(x.r.detail || "")}</td></tr>`).join("")}
+    </tbody></table></div><div class="muted iq-cnt">${rows.length}건</div>` : `<div class="empty iq-empty">${iq.ivq ? `'${esc(iq.ivq)}' 업체의 ` : ""}'${esc(inqItemLabel(iq.item))}' 답변이 아직 없습니다.</div>`;
+}
 function iqItemView() {
   const its = inqItems();
   if (!its.some((x) => x.id === iq.item)) iq.item = its[0] ? its[0].id : "ok";
-  const rows = [];
-  Store.state.inquiries.forEach((q) => q.rows.forEach((r) => { const a = r.answers[iq.item]; if (!a || !r.vendorId) return; if (!iqMatch(iqRowText(q, r) + " " + iqCaseText(q))) return; rows.push({ q, r, v: vendorById(r.vendorId) || { name: "(업체)" }, a, at: r.replyDate || inqLastContact(q, r) }); }));
-  rows.sort((x, y) => x.v.name.localeCompare(y.v.name, "ko") || y.at.localeCompare(x.at));
-  return `<div class="chip-row iq-filters">${its.map((it) => `<button type="button" class="chip ${iq.item === it.id ? "active" : ""}" data-iq-item="${it.id}">${esc(it.label)}</button>`).join("")}</div>
-    ${rows.length ? `<div class="iq-table-w"><table class="iq-table iq-ro"><thead><tr><th>업체</th><th>${esc(inqItemLabel(iq.item))}</th><th>탐색 건</th><th>회신일</th><th>상세내용</th></tr></thead><tbody>
-    ${rows.map((x) => `<tr data-inq-open="${x.q.id}" class="${x.r.picked ? "picked" : ""}"><td><b>${esc(x.v.name)}</b>${x.r.picked ? ` <span class="iq-star">★</span>` : ""}</td><td><b>${esc(x.a)}</b></td><td><span class="iq-cat">${esc(x.q.category)}</span> ${esc(x.q.title)}</td><td>${fmtMD(x.at)}</td><td class="iq-detail">${esc(x.r.detail || "")}</td></tr>`).join("")}
-    </tbody></table></div>` : `<div class="empty iq-empty">'${esc(inqItemLabel(iq.item))}' 답변이 아직 없습니다.</div>`}`;
+  return `<div class="iq-ibar"><div class="chip-row iq-filters">${its.map((it) => `<button type="button" class="chip ${iq.item === it.id ? "active" : ""}" data-iq-item="${it.id}">${esc(it.label)}</button>`).join("")}</div>
+    <div class="search iq-vsearch"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input id="iq-ivq" type="search" placeholder="업체명으로 조회" value="${esc(iq.ivq || "")}" autocomplete="off" /></div></div>
+    <div id="iq-itable">${iqItemTable()}</div>`;
 }
 
 /* ---------- 화면에서 바로 저장 ---------- */
@@ -4219,7 +4297,7 @@ function inqFieldChange(e) {
   const el = e.target, key = el.dataset && el.dataset.iqk;
   if (!key || ui.view !== "vendors") return;
   const [t, a, b, c] = key.split(":"), val = el.type === "checkbox" ? el.checked : el.value;
-  if (t === "ai") return;                                                  // 항목 추가는 Enter로
+  if (t === "ai") { const lab = String(val).trim(); if (lab) { const q = iqClone(iqQ(a)); const id = Store.addInqItem(lab); if (!q.items.includes(id)) q.items.push(id); iq.addItem = null; Store.saveInquiry(q); } return; }
   if (iqPtrDown) { iqQuiet = true; iqPendingRender = true; }               // 다른 곳을 눌러 칸을 벗어난 경우 → 클릭이 끝난 뒤 다시 그림
   if (t === "v") { const v = vendorById(a); if (!v) return;
     if (b === "name") { const n = String(val).trim(); if (!n) { el.value = v.name; return; } const dup = vendorByName(n); if (dup && dup.id !== v.id) { toast("같은 이름의 업체가 이미 있습니다"); el.value = v.name; return; } }
@@ -4228,6 +4306,8 @@ function inqFieldChange(e) {
   const q0 = iqQ(a); if (!q0) return;
   const q = iqClone(q0);
   if (t === "c") {
+    if (b === "catsel") { if (val === "__etc") { q.category = "기타"; iqFocusNext = `c:${q.id}:category`; } else q.category = val; Store.saveInquiry(q); return; }
+    if (b === "category") { q.category = String(val).trim() || "기타"; Store.saveInquiry(q); return; }
     if (b === "gap") q.gap = Math.max(0, Math.min(15, parseInt(val, 10) || 0));
     else if (b === "askedAt") q.askedAt = val || q.askedAt;
     else q[b] = b === "common" ? val : String(val).trim();
@@ -4255,8 +4335,9 @@ function inqFieldKey(e) {
     e.preventDefault(); const lab = el.value.trim(); if (!lab) return;
     const q = iqClone(iqQ(key.slice(3))); const id = Store.addInqItem(lab);
     if (!q.items.includes(id)) q.items.push(id);
-    iqFocusNext = key; Store.saveInquiry(q); return;
+    iq.addItem = null; Store.saveInquiry(q); return;
   }
+  if (key.startsWith("ai:") && e.key === "Escape") { iq.addItem = null; render(); return; }
   // Enter(입력 칸) · Tab = 다음 칸, Shift+Tab = 이전 칸
   //  저장하며 표를 다시 그리므로: 갈 칸을 먼저 정해 두고 → 저장(blur) → 다시 그린 표에서 그 칸으로
   if ((e.key === "Enter" && el.tagName === "INPUT") || e.key === "Tab") {
@@ -4334,6 +4415,8 @@ function inqClick(e) {
   const rc = t.closest("[data-iq-recontact]"); if (rc) { const [a, b] = rc.dataset.iqRecontact.split(":"); inqRecontact(a, b); return; }
   const rmc = t.closest("[data-iq-rmc]"); if (rmc) { const [a, b, i] = rmc.dataset.iqRmc.split(":"); const q = iqClone(iqQ(a)); const r = q.rows.find((x) => x.id === b); if (r) { const old = r.contacts[+i]; r.contacts.splice(+i, 1); iqLog(r, `${+i + 1}차 연락 삭제 (${fmtMD(old && old.date)})`); Store.saveInquiry(q); } return; }
   const dt = t.closest("[data-iq-det]"); if (dt) { const k = dt.dataset.iqDet; iq.det[k] = !iq.det[k]; render(); return; }
+  const so = t.closest("[data-iq-sort]"); if (so) { const k = so.dataset.iqSort, cur = iq.isort || { k: "vendor", d: 1 }; iq.isort = { k, d: cur.k === k ? -cur.d : 1 }; const t2 = document.getElementById("iq-itable"); if (t2) t2.innerHTML = iqItemTable(); return; }
+  const adi = t.closest("[data-iq-additem]"); if (adi) { iq.addItem = adi.dataset.iqAdditem; iqFocusNext = `ai:${iq.addItem}`; render(); return; }
   const ox = t.closest("[data-iq-ox]"); if (ox) { const [a, b, val] = ox.dataset.iqOx.split(":"); const q = iqClone(iqQ(a)); const r = q.rows.find((x) => x.id === b); if (r) { const old = iqOxNorm(r.answers.ok); r.answers.ok = old === val ? "" : val; iqLog(r, `가능여부: ${old || "—"} → ${r.answers.ok || "—"}`); Store.saveInquiry(q); } return; }
   const pk = t.closest("[data-iq-pick]"); if (pk) { const [a, b] = pk.dataset.iqPick.split(":"); const q = iqClone(iqQ(a)); const r = q.rows.find((x) => x.id === b); if (r) { r.picked = !r.picked; iqLog(r, r.picked ? "★ 선정" : "선정 해제"); Store.saveInquiry(q); } return; }
   const ld = t.closest("[data-iq-load]"); if (ld) { const [a, b] = ld.dataset.iqLoad.split(":"); const q = iqClone(iqQ(a)); const r = q.rows.find((x) => x.id === b); if (!r) return;
@@ -4370,8 +4453,23 @@ function inqPasteGo(qid) {
   lines.forEach(([name, owner, person, phone, email]) => { const vid = Store.upsertVendor({ name, person, phone, email }); if (!q.rows.some((x) => x.vendorId === vid)) q.rows.push(Store.normalizeInqRow({ vendorId: vid, owner, contacts: [{ date: q.askedAt }], log: [{ at: Date.now(), text: "엑셀 붙여넣기로 추가" }] })); });
   iq.paste = null; Store.saveInquiry(q); toast(`${lines.length}개 업체를 추가했습니다`);
 }
+function iqRzStart(e) {
+  const rz = e.target.closest && e.target.closest("[data-iq-rz]"); if (!rz) return;
+  e.preventDefault(); e.stopPropagation();
+  const key = rz.dataset.iqRz, table = rz.closest("table"), col = table.querySelector(`col[data-col="${CSS.escape(key)}"]`);
+  const x0 = e.clientX, w0 = col.getBoundingClientRect().width || iqColWidth(key), t0 = table.getBoundingClientRect().width;
+  rz.classList.add("on"); document.body.classList.add("iq-resizing");
+  let w = w0;
+  const mv = (ev) => { w = Math.max(32, Math.round(w0 + ev.clientX - x0)); col.style.width = w + "px"; table.style.width = (t0 + w - w0) + "px"; };
+  const up = () => { document.removeEventListener("pointermove", mv, true); document.removeEventListener("pointerup", up, true); document.removeEventListener("pointercancel", up, true);
+    rz.classList.remove("on"); document.body.classList.remove("iq-resizing"); iqPtrDown = false;
+    if (w !== w0) { iqColW[key] = w; try { localStorage.setItem(IQ_COLW_KEY, JSON.stringify(iqColW)); } catch (_) {} render(); } };
+  document.addEventListener("pointermove", mv, true); document.addEventListener("pointerup", up, true); document.addEventListener("pointercancel", up, true);
+}
 function inqSearchInput(e) {
   if (e.target.classList && e.target.classList.contains("iq-ta")) { e.target.style.height = "auto"; e.target.style.height = e.target.scrollHeight + "px"; return; }
+  if (e.target.id === "iq-vq") { iq.vq = e.target.value; const box = document.getElementById("iq-body"); if (box) { const pos = e.target.selectionStart; box.innerHTML = iqBodyHtml(); const n = document.getElementById("iq-vq"); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (_) {} } } return; }
+  if (e.target.id === "iq-ivq") { iq.ivq = e.target.value; const t2 = document.getElementById("iq-itable"); if (t2) t2.innerHTML = iqItemTable(); return; }
   if (e.target.id !== "iq-q") return;
   iq.q = e.target.value; const body = document.getElementById("iq-body"); if (body) body.innerHTML = iqBodyHtml();
 }
@@ -6505,6 +6603,8 @@ function wireGlobal() {
   document.addEventListener("change", inqFieldChange);     // 업체 탐색: 칸을 고치고 넘어가면 저장
   document.addEventListener("change", inqAddToChange);
   document.addEventListener("keydown", inqFieldKey);
+  document.addEventListener("pointerdown", iqRzStart, true);               // 업체 탐색 표: 열 경계 끌어 너비 조절
+  document.addEventListener("dblclick", (e) => { const rz = e.target.closest && e.target.closest("[data-iq-rz]"); if (!rz) return; delete iqColW[rz.dataset.iqRz]; try { localStorage.setItem(IQ_COLW_KEY, JSON.stringify(iqColW)); } catch (_) {} render(); });
   // 칸을 고친 채 버튼을 누를 때: 마우스를 떼기 전에 화면을 다시 그리면 클릭이 사라지므로, 뗀 뒤에 다시 그림
   document.addEventListener("pointerdown", () => { iqPtrDown = true; }, true);
   const iqPtrUp = () => { iqPtrDown = false; if (iqPendingRender) { iqPendingRender = false; setTimeout(() => { iqQuiet = false; render(); }, 0); } };
