@@ -1840,6 +1840,41 @@
   body.skin-clay .iq-tgl,body.skin-clay .iq-addto{border-color:transparent;box-shadow:var(--neu-sm);}
   body.skin-clay .iq-catin{box-shadow:var(--clay-sm);}
   @media (max-width:760px){ .iq-titlein{flex-basis:100%;max-width:none;} }
+
+  /* --- 업체 탐색 표: 촘촘하게 (가로 스크롤) --- */
+  .iq-table{min-width:1560px;font-size:12px;}
+  .iq-table th{padding:5px 6px;}
+  .iq-table thead tr:first-child th{border-bottom:1px solid var(--border);}
+  .iq-table th.grp{text-align:center;color:var(--text);border-left:1px solid var(--border);border-right:1px solid var(--border);}
+  .iq-table td{padding:2px 3px;vertical-align:middle;}
+  .iq-table .iq-in{padding:2px 5px;font-size:12px;line-height:1.35;}
+  .iq-table textarea.iq-in{min-height:24px;}
+  .iq-table th.w-c{width:212px;min-width:212px;} .iq-table th.w-v{width:160px;min-width:160px;} .iq-table th.w-o{width:76px;}
+  .iq-table th.w-pn{width:84px;} .iq-table th.w-pp{width:124px;min-width:124px;} .iq-table th.w-pe{width:150px;}
+  .iq-table th.w-ok{width:92px;} .iq-table th.w-a{width:84px;} .iq-table th.w-s{width:78px;min-width:78px;} .iq-table th.w-rd{width:112px;}
+  .iq-table .iq-stsel{min-width:70px;padding-right:0;}
+  .iq-table th.w-d{width:220px;} .iq-table th.w-n{width:110px;} .iq-table th.w-x{width:86px;}
+  .iq-c{display:flex !important;align-items:center;gap:2px;margin:0;white-space:nowrap;}
+  .iq-c + .iq-c{margin-top:1px;}
+  .iq-c b{font-size:10.5px;width:20px;}
+  .iq-c .iq-date{width:104px !important;padding:1px 3px !important;}
+  .iq-re{margin:0 0 0 2px;padding:1px 6px;font-size:10.5px;white-space:nowrap;}
+  .iq-vrow{display:flex;align-items:center;gap:3px;}
+  .iq-new{flex:none;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;padding:0;border-radius:50%;background:var(--high);color:#fff;font-size:9.5px;font-weight:900;}
+  .iq-hist{font-size:10.5px;padding:0 5px;line-height:1.3;}
+  .iq-oxseg{display:inline-flex;gap:2px;background:var(--surface-2);border-radius:8px;padding:2px;}
+  .iq-oxseg button{border:0;background:transparent;width:24px;height:22px;border-radius:6px;font-size:13px;font-weight:900;color:var(--text-faint);cursor:pointer;line-height:1;}
+  .iq-oxseg button.on.ox-o{background:var(--done);color:#fff;}
+  .iq-oxseg button.on.ox-x{background:var(--urgent);color:#fff;}
+  .iq-oxseg button.on.ox-t{background:var(--high);color:#fff;}
+  .iq-oxold{display:block;font-size:10.5px;padding:0 4px;}
+  .iq-rdcell .iq-dn{margin:0 4px;} .iq-rdcell .iq-due{padding:0 5px;font-size:11.5px;}
+  .iq-rowact{display:flex;align-items:center;gap:1px;}
+  .iq-upd{font-size:10.5px;color:var(--text-faint);min-width:28px;font-variant-numeric:tabular-nums;}
+  .iq-starbtn{padding:1px 3px;font-size:14px;}
+  .iq-del{padding:2px 6px;}
+  body.skin-clay .iq-oxseg{background:var(--bg);box-shadow:var(--neu-in);}
+  body.skin-clay .iq-oxseg button.on{box-shadow:var(--clay-sm);}
 </style>
 </head>
 <body>
@@ -1931,7 +1966,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-11-06 · 업체 탐색 창 없이 바로 입력·담당자(콜마)·재연락 바로 추가·화면에서 삭제";
+const APP_VERSION = "2026-11-06 · 업체 탐색 표 정리 (재연락 위치·N 표시·담당자 3열·O/X/△·회신일·최종 변경)";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -2299,7 +2334,7 @@ const Store = (() => {
     return { id: r.id || uid(), vendorId: r.vendorId || null,
       contacts: (Array.isArray(r.contacts) ? r.contacts : []).filter((c) => c && c.date).map((c) => ({ date: c.date, how: str(c.how), note: str(c.note) })).sort((a, b) => a.date.localeCompare(b.date)),
       status: ["wait", "reply", "no", "hold"].includes(r.status) ? r.status : "wait", replyDate: r.replyDate || null,
-      answers, owner: str(r.owner).trim(), detail: str(r.detail), note: str(r.note), picked: !!r.picked };
+      answers, owner: str(r.owner).trim(), detail: str(r.detail), note: str(r.note), picked: !!r.picked, updatedAt: r.updatedAt || null };
   }
   function normalizeInquiry(q) {
     const gap = parseInt(q.gap, 10);
@@ -4019,8 +4054,13 @@ function iqCaseCard(q, rows) {
         <div class="iq-box"><span class="lab">확인 항목 <small>· ×로 빼기 · 새 항목은 사전에 저장</small></span><div class="iq-itemchips">${q.items.map((k) => `<span class="iq-ic">${esc(inqItemLabel(k))}<button type="button" class="iq-icx" data-iq-rmitem="${q.id}:${k}" aria-label="${esc(inqItemLabel(k))} 빼기">×</button></span>`).join("")}
           <input class="iq-in iq-additem" data-iqk="ai:${q.id}" list="iq-items" placeholder="＋ 항목 (Enter)" autocomplete="off" /></div></div>
       </div>
-      <div class="iq-table-w" data-iq-tw="${q.id}"><table class="iq-table"><thead><tr><th class="no">NO</th><th class="w-c">연락 이력</th><th class="w-v">업체명</th><th class="w-o">담당자 <small>(콜마)</small></th><th class="w-p">업체 담당자 <small>이름 · 휴대폰 · 메일</small></th>${q.items.map((k) => `<th class="w-a">${esc(inqItemLabel(k))}</th>`).join("")}<th class="w-s">회신</th><th class="w-d">상세내용</th><th class="w-n">비고</th><th class="w-x"></th></tr></thead><tbody>
-      ${rows.map((r) => iqRowTr(q, r, q.rows.indexOf(r) + 1)).join("") || `<tr><td colspan="${9 + q.items.length}" class="iq-norow">아래 '＋ 행 추가'로 업체를 넣으세요</td></tr>`}
+      <div class="iq-table-w" data-iq-tw="${q.id}"><table class="iq-table"><thead>
+        <tr><th class="no" rowspan="2">NO</th><th class="w-c" rowspan="2">연락 이력</th><th class="w-v" rowspan="2">업체명</th><th class="w-o" rowspan="2">담당자<br><small>(콜마)</small></th>
+          <th colspan="3" class="grp">업체 담당자</th>${q.items.length ? `<th colspan="${q.items.length}" class="grp">확인 항목</th>` : ""}<th colspan="2" class="grp">회신</th>
+          <th class="w-d" rowspan="2">상세내용</th><th class="w-n" rowspan="2">비고</th><th class="w-x" rowspan="2">최종 변경</th></tr>
+        <tr><th class="w-pn">이름</th><th class="w-pp">휴대폰</th><th class="w-pe">메일</th>${q.items.map((k) => `<th class="${k === "ok" ? "w-ok" : "w-a"}">${esc(inqItemLabel(k))}</th>`).join("")}<th class="w-s">상태</th><th class="w-rd">회신일</th></tr>
+      </thead><tbody>
+      ${rows.map((r) => iqRowTr(q, r, q.rows.indexOf(r) + 1)).join("") || `<tr><td colspan="${12 + q.items.length}" class="iq-norow">아래 '＋ 행 추가'로 업체를 넣으세요</td></tr>`}
       </tbody></table></div>
       <div class="iq-addrow"><button type="button" class="iq-add" data-iq-addrow="${q.id}">＋ 행 추가</button><button type="button" class="btn-sub iq-sm ${iq.paste === q.id ? "on" : ""}" data-iq-paste="${q.id}">엑셀 붙여넣기</button><span class="muted">업체명을 치면 저장된 업체 · 담당자가 자동으로 채워집니다 · Enter로 다음 칸</span></div>
       ${iq.paste === q.id ? `<div class="iq-pastebox"><span class="muted">엑셀에서 <b>업체명 · 담당자(콜마) · 업체 담당자 · 휴대폰 · 메일</b> 순서의 칸을 복사해 붙여넣으세요 (업체명만 있어도 됩니다)</span>
@@ -4030,28 +4070,33 @@ function iqCaseCard(q, rows) {
   }
   return h + `</section>`;
 }
+// 가능여부: O · X · △ (예전 값 가능/불가/협의도 같은 칸으로 읽음)
+const IQ_OX = [["O", "가능"], ["X", "불가"], ["△", "협의"]];
+const iqOxNorm = (v) => { const t = String(v || "").trim(); if (!t) return ""; if (/^(o|ㅇ|가능)/i.test(t)) return "O"; if (/^(x|불가|안\s?됨)/i.test(t)) return "X"; if (/^(△|세모|협의|검토)/.test(t)) return "△"; return t; };
 function iqRowTr(q, r, no) {
   const v = vendorById(r.vendorId), k = `${q.id}:${r.id}`, late = inqRowLate(q, r);
   const firstCase = v && inqVendorCases(v.id).length <= 1;
   const hist = v && r.status === "wait" ? inqLatestAnswers(v.id, q.id) : {};
   const hk = q.items.find((x) => hist[x]);
   const histN = v ? inqVendorHistory(v.id, q.id).length : 0;
-  const okCls = (a) => (/불가|안\s?됨/.test(a || "") ? "neg" : /가능/.test(a || "") ? "pos" : "");
+  const reBtn = `<button type="button" class="iq-re" data-iq-recontact="${k}" title="오늘 다시 연락 — 기한을 오늘부터 다시 셉니다">＋재연락</button>`;
+  const ox = iqOxNorm(r.answers.ok);
+  const upd = r.updatedAt ? new Date(r.updatedAt) : null;
   return `<tr class="${late ? "late" : ""} ${r.picked ? "picked" : ""}" data-iq-r="${k}">
     <td class="no">${no}</td>
-    <td class="iq-contacts">${r.contacts.map((c, i) => `<span class="iq-c"><b>${i + 1}차</b><input type="date" class="iq-in iq-date" data-iqk="rc:${k}:${i}" value="${c.date}" aria-label="${i + 1}차 연락일" /><button type="button" class="iq-icx" data-iq-rmc="${k}:${i}" aria-label="${i + 1}차 연락 지우기">×</button></span>`).join("")}
-      <button type="button" class="iq-re" data-iq-recontact="${k}" title="오늘 다시 연락 — 기한을 오늘부터 다시 셉니다">＋ 재연락</button></td>
-    <td class="iq-vcell">${iqIn(`r:${k}:name`, v ? v.name : "", `list="iq-vendors" placeholder="업체명" aria-label="업체명"`)}
-      <span class="iq-vtags">${r.picked ? `<span class="iq-star">★ 선정</span>` : ""}${firstCase ? `<span class="iq-new">첫 문의</span>` : ""}</span>
+    <td class="iq-contacts">${r.contacts.map((c, i) => `<div class="iq-c"><b>${i + 1}차</b><input type="date" class="iq-in iq-date" data-iqk="rc:${k}:${i}" value="${c.date}" aria-label="${i + 1}차 연락일" /><button type="button" class="iq-icx" data-iq-rmc="${k}:${i}" aria-label="${i + 1}차 연락 지우기">×</button>${i === r.contacts.length - 1 ? reBtn : ""}</div>`).join("") || `<div class="iq-c">${reBtn}</div>`}</td>
+    <td class="iq-vcell"><div class="iq-vrow">${firstCase ? `<span class="iq-new" title="처음 문의하는 업체">N</span>` : ""}${iqIn(`r:${k}:name`, v ? v.name : "", `list="iq-vendors" placeholder="업체명" aria-label="업체명"`)}</div>
       ${hk ? `<span class="iq-hist">지난 문의 ${histN}건 · ${esc(inqItemLabel(hk))} ${esc(hist[hk][0].val)} (${fmtMD(hist[hk][0].at)}) <button type="button" class="iq-link" data-iq-load="${k}">불러오기</button></span>` : histN ? `<span class="iq-hist">지난 문의 ${histN}건</span>` : ""}</td>
     <td>${iqIn(`r:${k}:owner`, r.owner, `placeholder="이름" aria-label="담당자(콜마)"`)}</td>
-    <td class="iq-person">${iqIn(`rv:${k}:person`, v ? v.person : "", `placeholder="${v ? "이름 · 직함" : "업체명 먼저"}" ${v ? "" : "disabled"} aria-label="업체 담당자"`)}${iqIn(`rv:${k}:phone`, v ? v.phone : "", `placeholder="휴대폰" inputmode="tel" ${v ? "" : "disabled"} aria-label="휴대폰"`)}${iqIn(`rv:${k}:email`, v ? v.email : "", `placeholder="메일" inputmode="email" ${v ? "" : "disabled"} aria-label="메일"`)}</td>
-    ${q.items.map((it) => `<td>${it === "ok" ? iqIn(`a:${k}:${it}`, r.answers[it], `list="iq-oks" class="iq-in iq-okin ${okCls(r.answers[it])}" placeholder="—" aria-label="가능여부"`).replace('class="iq-in" ', "") : iqIn(`a:${k}:${it}`, r.answers[it], `placeholder="—" aria-label="${esc(inqItemLabel(it))}"`)}</td>`).join("")}
-    <td class="iq-stcell"><select class="iq-in iq-stsel st-${r.status}" data-iqk="r:${k}:status" aria-label="회신 상태">${Object.keys(INQ_STATUS).map((s) => `<option value="${s}" ${r.status === s ? "selected" : ""}>${INQ_STATUS[s]}</option>`).join("")}</select>
-      ${r.status !== "wait" ? `<input type="date" class="iq-in iq-date" data-iqk="r:${k}:replyDate" value="${r.replyDate || ""}" aria-label="회신일" />` : late ? `<b class="iq-dn">D+${late}</b>` : `<span class="muted iq-due">~${fmtMD(inqRowDue(q, r))}</span>`}</td>
+    <td>${iqIn(`rv:${k}:person`, v ? v.person : "", `placeholder="${v ? "이름" : "업체명 먼저"}" ${v ? "" : "disabled"} aria-label="업체 담당자 이름"`)}</td>
+    <td>${iqIn(`rv:${k}:phone`, v ? v.phone : "", `placeholder="—" inputmode="tel" ${v ? "" : "disabled"} aria-label="휴대폰"`)}</td>
+    <td>${iqIn(`rv:${k}:email`, v ? v.email : "", `placeholder="—" inputmode="email" ${v ? "" : "disabled"} aria-label="메일"`)}</td>
+    ${q.items.map((it) => `<td>${it === "ok" ? `<div class="iq-oxseg" role="group" aria-label="가능여부">${IQ_OX.map(([s, l]) => `<button type="button" class="ox-${s === "△" ? "t" : s.toLowerCase()} ${ox === s ? "on" : ""}" data-iq-ox="${k}:${s}" title="${l}" aria-pressed="${ox === s}">${s}</button>`).join("")}</div>${ox && !IQ_OX.some(([s]) => s === ox) ? `<span class="muted iq-oxold">${esc(ox)}</span>` : ""}` : iqIn(`a:${k}:${it}`, r.answers[it], `placeholder="—" aria-label="${esc(inqItemLabel(it))}"`)}</td>`).join("")}
+    <td><select class="iq-in iq-stsel st-${r.status}" data-iqk="r:${k}:status" aria-label="회신 상태">${Object.keys(INQ_STATUS).map((s) => `<option value="${s}" ${r.status === s ? "selected" : ""}>${INQ_STATUS[s]}</option>`).join("")}</select></td>
+    <td class="iq-rdcell">${r.status !== "wait" ? `<input type="date" class="iq-in iq-date" data-iqk="r:${k}:replyDate" value="${r.replyDate || ""}" aria-label="회신일" />` : late ? `<b class="iq-dn" title="기한 ${fmtMD(inqRowDue(q, r))}">D+${late}</b>` : `<span class="muted iq-due" title="회신 기한">~${fmtMD(inqRowDue(q, r))}</span>`}</td>
     <td><textarea class="iq-in iq-ta" data-iqk="r:${k}:detail" rows="1" placeholder="—" aria-label="상세내용">${esc(r.detail)}</textarea></td>
     <td>${iqIn(`r:${k}:note`, r.note, `placeholder="—" aria-label="비고"`)}</td>
-    <td class="iq-rowact"><button type="button" class="iq-starbtn ${r.picked ? "on" : ""}" data-iq-pick="${k}" title="선정 업체 표시" aria-label="선정">★</button>${iqDelBtn("row:" + k, "×", "이 줄 삭제 (업체 정보는 남음)")}</td>
+    <td class="iq-rowact"><span class="iq-upd" title="${upd ? upd.toLocaleString("ko-KR") : ""}">${upd ? `${upd.getMonth() + 1}/${upd.getDate()}` : ""}</span><button type="button" class="iq-starbtn ${r.picked ? "on" : ""}" data-iq-pick="${k}" title="선정 업체 표시" aria-label="선정">★</button>${iqDelBtn("row:" + k, "×", "이 줄 삭제 (업체 정보는 남음)")}</td>
   </tr>`;
 }
 
@@ -4136,9 +4181,10 @@ function inqFieldChange(e) {
     Store.saveInquiry(q); return;
   }
   const r = q.rows.find((x) => x.id === b); if (!r) return;
+  r.updatedAt = Date.now();                                                 // 맨 오른쪽 '최종 변경'
   if (t === "rc") { const i = +c; if (val) r.contacts[i].date = val; else r.contacts.splice(i, 1); r.contacts.sort((x, y) => x.date.localeCompare(y.date)); }
   else if (t === "a") r.answers[c] = String(val).trim();
-  else if (t === "rv") { const v = vendorById(r.vendorId); if (v) Store.saveVendor({ ...v, [c]: String(val).trim() }); return; }
+  else if (t === "rv") { const v = vendorById(r.vendorId); if (v) Store.saveVendor({ ...v, [c]: String(val).trim() }); Store.saveInquiry(q); return; }
   else if (t === "r") {
     if (c === "name") iqSetRowVendor(q, r, val);
     else if (c === "status") { r.status = val; if (val !== "wait" && !r.replyDate) r.replyDate = todayStr(); if (val === "wait") r.replyDate = null; }
@@ -4194,7 +4240,7 @@ function inqOpenCase(qid) {
 }
 function inqRecontact(qid, rid) {
   const q = iqClone(iqQ(qid)); const r = q.rows.find((x) => x.id === rid); if (!r) return;
-  r.contacts.push({ date: todayStr(), how: "", note: "재연락" }); r.contacts.sort((x, y) => x.date.localeCompare(y.date));
+  r.contacts.push({ date: todayStr(), how: "", note: "재연락" }); r.contacts.sort((x, y) => x.date.localeCompare(y.date)); r.updatedAt = Date.now();
   if (r.status !== "wait") { r.status = "wait"; r.replyDate = null; }
   Store.saveInquiry(q); ttUse(null);
   toast(`${r.contacts.length}차 연락을 기록했습니다 — 회신 기한 ${fmtMD(addBiz(todayStr(), q.gap))}`);
@@ -4232,7 +4278,8 @@ function inqClick(e) {
   if (iqArm && !dl) { iqArm = null; clearTimeout(iqArmT); }
   const rc = t.closest("[data-iq-recontact]"); if (rc) { const [a, b] = rc.dataset.iqRecontact.split(":"); inqRecontact(a, b); return; }
   const rmc = t.closest("[data-iq-rmc]"); if (rmc) { const [a, b, i] = rmc.dataset.iqRmc.split(":"); const q = iqClone(iqQ(a)); const r = q.rows.find((x) => x.id === b); if (r) { r.contacts.splice(+i, 1); Store.saveInquiry(q); } return; }
-  const pk = t.closest("[data-iq-pick]"); if (pk) { const [a, b] = pk.dataset.iqPick.split(":"); const q = iqClone(iqQ(a)); const r = q.rows.find((x) => x.id === b); if (r) { r.picked = !r.picked; Store.saveInquiry(q); } return; }
+  const ox = t.closest("[data-iq-ox]"); if (ox) { const [a, b, val] = ox.dataset.iqOx.split(":"); const q = iqClone(iqQ(a)); const r = q.rows.find((x) => x.id === b); if (r) { r.answers.ok = iqOxNorm(r.answers.ok) === val ? "" : val; r.updatedAt = Date.now(); Store.saveInquiry(q); } return; }
+  const pk = t.closest("[data-iq-pick]"); if (pk) { const [a, b] = pk.dataset.iqPick.split(":"); const q = iqClone(iqQ(a)); const r = q.rows.find((x) => x.id === b); if (r) { r.picked = !r.picked; r.updatedAt = Date.now(); Store.saveInquiry(q); } return; }
   const ld = t.closest("[data-iq-load]"); if (ld) { const [a, b] = ld.dataset.iqLoad.split(":"); const q = iqClone(iqQ(a)); const r = q.rows.find((x) => x.id === b); if (!r) return;
     const la = inqLatestAnswers(r.vendorId, q.id); let n = 0; q.items.forEach((k) => { if (la[k] && !r.answers[k]) { r.answers[k] = la[k][0].val; n++; } }); Store.saveInquiry(q);
     toast(n ? `지난 답변 ${n}개를 채웠습니다 — 바뀐 값이 있으면 고쳐 주세요` : "채울 빈 칸이 없습니다"); return; }
