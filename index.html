@@ -2037,7 +2037,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-11-06 · 업체 탐색 카테고리·구분선·표 머리 항목 ＋/−·열 너비 조절·업체명 조회·항목별 정렬";
+const APP_VERSION = "2026-11-06 · 업체 탐색 항목 중복 정리·업체명 한글 조회·열 너비 조절 수정";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -2415,13 +2415,26 @@ const Store = (() => {
       items: Array.isArray(q.items) ? ["ok", ...q.items.filter((k) => k && k !== "ok")] : ["ok", "moq", "price", "limit"],
       rows: (Array.isArray(q.rows) ? q.rows : []).map(normalizeInqRow), done: !!q.done, doneAt: q.doneAt || null, createdAt: q.createdAt || Date.now() };
   }
-  function normalizeInqItems(list) {
+  // 같은 이름의 항목은 하나로 (기본 항목이 먼저) — 겹친 항목을 쓰던 탐색 건 · 답변은 남는 항목으로 옮김
+  function normalizeInqItems(list, alias) {
     const out = INQ_ITEMS_DEFAULT.map((x) => ({ ...x }));
-    (Array.isArray(list) ? list : []).forEach((x) => { if (x && x.id && x.label && !out.some((y) => y.id === x.id)) out.push({ id: str(x.id), label: str(x.label).trim() }); });
+    (Array.isArray(list) ? list : []).forEach((x) => {
+      if (!x || !x.id || !x.label) return;
+      const lab = str(x.label).trim(), same = out.find((y) => y.id === x.id || y.label.replace(/\s+/g, "") === lab.replace(/\s+/g, ""));
+      if (same) { if (same.id !== x.id && alias) alias[x.id] = same.id; return; }
+      out.push({ id: str(x.id), label: lab });
+    });
     return out;
   }
-  const inqPart = (p) => ({ vendors: Array.isArray(p.vendors) ? p.vendors.map(normalizeVendor).filter((v) => v.name) : [],
-    inquiries: Array.isArray(p.inquiries) ? p.inquiries.map(normalizeInquiry) : [], inqItems: normalizeInqItems(p.inqItems) });
+  function inqApplyAlias(q, alias) {
+    if (!Object.keys(alias).length) return q;
+    const m = (k) => alias[k] || k;
+    return { ...q, items: [...new Set((q.items || []).map(m))],
+      rows: (q.rows || []).map((r) => { const a = {}; Object.keys(r.answers || {}).forEach((k) => { if (r.answers[k] && !a[m(k)]) a[m(k)] = r.answers[k]; }); return { ...r, answers: a }; }) };
+  }
+  const inqPart = (p) => { const alias = {}; const inqItems = normalizeInqItems(p.inqItems, alias);
+    return { vendors: Array.isArray(p.vendors) ? p.vendors.map(normalizeVendor).filter((v) => v.name) : [],
+      inquiries: Array.isArray(p.inquiries) ? p.inquiries.map((q) => normalizeInquiry(inqApplyAlias(q, alias))) : [], inqItems }; };
   let loadBroken = false;
   const subs = [];
 
@@ -2644,7 +2657,7 @@ const Store = (() => {
     },
     saveVendor(v) { const n = normalizeVendor(v); const i = state.vendors.findIndex((x) => x.id === n.id); if (i >= 0) state.vendors[i] = n; else state.vendors.push(n); emit(); },
     deleteVendor(id) { state.vendors = state.vendors.filter((x) => x.id !== id); emit(); },
-    addInqItem(label) { const l = str(label).trim(); const ex = state.inqItems.find((x) => x.label === l); if (ex) return ex.id; const id = "i" + uid(); state.inqItems.push({ id, label: l }); emit(); return id; },
+    addInqItem(label) { const l = str(label).trim(); const ex = state.inqItems.find((x) => x.label.replace(/\s+/g, "") === l.replace(/\s+/g, "")); if (ex) return ex.id; const id = "i" + uid(); state.inqItems.push({ id, label: l }); emit(); return id; },
     // ---- 타임테이블 출고 건 ----
     normalizeOrder,
     addOrder(o) { const no = normalizeOrder({ ...o, plan0: {}, adj: {}, log: [] }); ttBaseline(no, false); state.orders.push(no); emit(); return no.id; },
@@ -4457,10 +4470,12 @@ function iqRzStart(e) {
   const rz = e.target.closest && e.target.closest("[data-iq-rz]"); if (!rz) return;
   e.preventDefault(); e.stopPropagation();
   const key = rz.dataset.iqRz, table = rz.closest("table"), col = table.querySelector(`col[data-col="${CSS.escape(key)}"]`);
-  const x0 = e.clientX, w0 = col.getBoundingClientRect().width || iqColWidth(key), t0 = table.getBoundingClientRect().width;
+  // 글자 크기 설정이 화면 배율(zoom)로 적용되므로: 시작 너비는 CSS 값, 마우스 이동량은 배율로 나눠 씀 (누르자마자 넓어지는 문제 방지)
+  const z = parseFloat(getComputedStyle(document.body).zoom) || 1;
+  const x0 = e.clientX, w0 = parseFloat(col.style.width) || iqColWidth(key), t0 = parseFloat(table.style.width) || table.getBoundingClientRect().width / z;
   rz.classList.add("on"); document.body.classList.add("iq-resizing");
   let w = w0;
-  const mv = (ev) => { w = Math.max(32, Math.round(w0 + ev.clientX - x0)); col.style.width = w + "px"; table.style.width = (t0 + w - w0) + "px"; };
+  const mv = (ev) => { w = Math.max(32, Math.round(w0 + (ev.clientX - x0) / z)); col.style.width = w + "px"; table.style.width = Math.round(t0 + w - w0) + "px"; };
   const up = () => { document.removeEventListener("pointermove", mv, true); document.removeEventListener("pointerup", up, true); document.removeEventListener("pointercancel", up, true);
     rz.classList.remove("on"); document.body.classList.remove("iq-resizing"); iqPtrDown = false;
     if (w !== w0) { iqColW[key] = w; try { localStorage.setItem(IQ_COLW_KEY, JSON.stringify(iqColW)); } catch (_) {} render(); } };
@@ -4468,7 +4483,8 @@ function iqRzStart(e) {
 }
 function inqSearchInput(e) {
   if (e.target.classList && e.target.classList.contains("iq-ta")) { e.target.style.height = "auto"; e.target.style.height = e.target.scrollHeight + "px"; return; }
-  if (e.target.id === "iq-vq") { iq.vq = e.target.value; const box = document.getElementById("iq-body"); if (box) { const pos = e.target.selectionStart; box.innerHTML = iqBodyHtml(); const n = document.getElementById("iq-vq"); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (_) {} } } return; }
+  // 업체명 조회: 입력 칸은 그대로 두고 목록만 바꿈 (한글 조합 중 칸을 다시 그리면 'ㅅ ㅔ ㄹ'처럼 끊김)
+  if (e.target.id === "iq-vq") { iq.vq = e.target.value; const list = document.getElementById("iq-vitems"); if (list) { const tmp = document.createElement("div"); tmp.innerHTML = iqVendorView(); const nl = tmp.querySelector("#iq-vitems"); if (nl) list.innerHTML = nl.innerHTML; } return; }
   if (e.target.id === "iq-ivq") { iq.ivq = e.target.value; const t2 = document.getElementById("iq-itable"); if (t2) t2.innerHTML = iqItemTable(); return; }
   if (e.target.id !== "iq-q") return;
   iq.q = e.target.value; const body = document.getElementById("iq-body"); if (body) body.innerHTML = iqBodyHtml();
