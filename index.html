@@ -1951,23 +1951,20 @@
   .iq-table .iq-num{text-align:right;font-variant-numeric:tabular-nums;}
   .iq-table .iq-num:focus{text-align:left;}
   .iq-hasf{background-image:linear-gradient(225deg, var(--done) 0 5px, transparent 5px) !important;background-repeat:no-repeat;}
-  .iq-fcell{transition:background .12s;}
-  .iq-fcell.drop{background:color-mix(in srgb, var(--work) 12%, transparent) !important;outline:2px dashed var(--work);outline-offset:-3px;}
-  .iq-files{display:flex;align-items:center;gap:3px;flex-wrap:wrap;padding:1px 2px;}
-  .iq-fchip{display:inline-flex;align-items:center;gap:3px;max-width:100%;border:1px solid var(--border);background:var(--surface);border-radius:7px;padding:1px 6px;font-size:11px;font-weight:600;color:var(--text);cursor:pointer;min-width:0;}
-  .iq-files .iq-fchip{max-width:calc(100% - 30px);}
-  .iq-fchip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
-  .iq-fchip svg{width:11px;height:11px;stroke:var(--work);flex:none;}
-  .iq-fchip:hover{border-color:var(--work);}
-  .iq-fchip.wide{max-width:260px;}
-  .iq-fmore{border:0;background:var(--work-soft);color:var(--work);border-radius:7px;padding:1px 6px;font-size:11px;font-weight:800;cursor:pointer;}
-  .iq-fadd{position:relative;display:inline-flex;align-items:center;justify-content:center;width:22px;height:20px;border:1.5px dashed var(--border-strong);border-radius:6px;color:var(--work);font-weight:900;font-size:12px;cursor:pointer;flex:none;}
-  .iq-fadd:hover{border-color:var(--work);}
-  .iq-fadd input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;}
-  .iq-detf{display:flex;flex-direction:column;gap:3px;min-width:240px;max-width:420px;}
-  .iq-dfi{display:flex;align-items:center;gap:6px;font-size:11.5px;}
-  .iq-detf > .muted{font-size:10.5px;margin-top:2px;}
-  body.skin-clay .iq-fchip{border-color:transparent;box-shadow:var(--neu-sm);}
+
+  /* --- 업체 탐색: 확인 항목 ＋ 상자 · 엑셀 버튼 --- */
+  .iq-thadd.open{text-align:left;vertical-align:top;overflow:visible !important;}
+  .iq-addbox{display:flex;flex-direction:column;gap:4px;}
+  .iq-addrow1{display:flex;align-items:center;gap:3px;}
+  .iq-addrow1 .iq-additem{flex:1 1 auto;width:auto !important;border:1px solid var(--work) !important;border-radius:6px !important;background:var(--surface) !important;font-weight:600;}
+  .iq-addgo,.iq-addx{flex:none;width:24px;height:24px;border-radius:6px;font-weight:900;cursor:pointer;line-height:1;}
+  .iq-addgo{border:0;background:var(--work);color:#fff;font-size:14px;}
+  .iq-addx{border:1px solid var(--border);background:var(--surface);color:var(--text-faint);font-size:14px;}
+  .iq-addpick{display:flex;flex-wrap:wrap;gap:3px;}
+  .iq-addpick button{border:1px dashed var(--border-strong);background:transparent;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:700;color:var(--text-soft);cursor:pointer;}
+  .iq-addpick button:hover{border-color:var(--work);color:var(--work);}
+  .iq-xlsx{color:#1D6F42;border-color:color-mix(in srgb, #1D6F42 40%, var(--border));}
+  .iq-xlsx:hover{background:color-mix(in srgb, #1D6F42 10%, var(--surface));}
 </style>
 </head>
 <body>
@@ -2059,7 +2056,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-11-12 · 업체 탐색 숫자 쉼표·단가 수식·첨부(견적서) 열";
+const APP_VERSION = "2026-11-12 · 업체 탐색 첨부 삭제·확인 항목 ＋ 직접 입력·탐색 건별 엑셀 내려받기";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -2429,7 +2426,6 @@ const Store = (() => {
       status: ["wait", "reply", "no", "hold"].includes(r.status) ? r.status : "wait", replyDate: r.replyDate || null,
       answers, owner: str(r.owner).trim(), detail: str(r.detail), note: str(r.note), picked: !!r.picked, updatedAt: r.updatedAt || null,
       formulas: (() => { const f = {}; if (r.formulas && typeof r.formulas === "object") Object.keys(r.formulas).forEach((k) => { const v = str(r.formulas[k]).trim(); if (v.startsWith("=") && answers[k]) f[k] = v; }); return f; })(),
-      files: (Array.isArray(r.files) ? r.files : []).filter((x) => x && x.id && x.name).map((x) => ({ id: str(x.id), name: str(x.name), size: +x.size || 0, type: str(x.type), at: +x.at || Date.now() })),
       log: (Array.isArray(r.log) ? r.log : []).filter((x) => x && x.text).map((x) => ({ at: +x.at || Date.now(), text: str(x.text) })).slice(-60) };
   }
   function normalizeInquiry(q) {
@@ -4141,12 +4137,12 @@ function iqCaseView() {
 const INQ_CAT_PRESET = ["가능처 탐색", "단가문의"];
 // 확인 항목: 가능여부(O·X·△)는 늘 첫 칸, 나머지는 표 머리에서 ＋추가 · −제외
 const iqItemsX = (q) => q.items.filter((k) => k !== "ok");
-const iqColCount = (q) => 16 + iqItemsX(q).length;
+const iqColCount = (q) => 15 + iqItemsX(q).length;
 // 열 너비 (드래그로 조절 · 모든 탐색 건 공통 · 이 기기에 저장)
 const IQ_COLW_KEY = "scheduler:inq-colw";
 let iqColW = {}; try { iqColW = JSON.parse(localStorage.getItem(IQ_COLW_KEY) || "{}") || {}; } catch (_) {}
-const IQ_COL_DEF = { no: 34, c: 190, v: 160, o: 80, pn: 86, pp: 124, pe: 150, ok: 96, add: 44, s: 80, rd: 116, d: 220, n: 140, f: 170, x: 90, det: 76 };
-function iqCols(q) { return ["no", "c", "v", "o", "pn", "pp", "pe", "ok", ...iqItemsX(q).map((k) => "a:" + k), "add", "s", "rd", "d", "n", "f", "x", "det"]; }
+const IQ_COL_DEF = { no: 34, c: 190, v: 160, o: 80, pn: 86, pp: 124, pe: 150, ok: 96, add: 44, s: 80, rd: 116, d: 220, n: 140, x: 90, det: 76 };
+function iqCols(q) { return ["no", "c", "v", "o", "pn", "pp", "pe", "ok", ...iqItemsX(q).map((k) => "a:" + k), "add", "s", "rd", "d", "n", "x", "det"]; }
 const iqColWidth = (key) => iqColW[key] || IQ_COL_DEF[key] || (key.startsWith("a:") ? 96 : 90);
 const iqRz = (key) => `<span class="iq-rz" data-iq-rz="${key}" title="끌어서 열 너비 조절 · 두 번 눌러 원래대로"></span>`;
 function iqCaseCard(q, rows) {
@@ -4168,19 +4164,24 @@ function iqCaseCard(q, rows) {
       <span class="iq-prog">회신 <b>${replied}/${rv.length}</b><i style="--p:${pct}%"></i></span>
       ${late ? `<span class="iq-late">지연 ${late}</span>` : ""}
       <button type="button" class="iq-tgl ${q.done ? "on done" : ""}" data-iq-done="${q.id}" title="끝난 탐색 — 진행 중 목록과 알림에서 빠짐">${q.done ? "완료됨" : "완료"}</button>
+      <button type="button" class="iq-tgl iq-xlsx" data-iq-xlsx="${q.id}" title="이 탐색 건 표를 엑셀(.xlsx)로 내려받기">엑셀</button>
       ${iqDelBtn("case:" + q.id, "삭제", "이 탐색 건 삭제 (업체 정보는 남음)")}
     </div>`;
   if (open) {
-    const cols = iqCols(q), tw = cols.reduce((n, k) => n + iqColWidth(k), 0), ix = iqItemsX(q);
+    const adding = iq.addItem === q.id, cw = (k) => (k === "add" && adding ? Math.max(250, iqColWidth(k)) : iqColWidth(k));
+    const cols = iqCols(q), tw = cols.reduce((n, k) => n + cw(k), 0), ix = iqItemsX(q);
     const th = (key, label, extra = "") => `<th data-col="${key}" ${extra}>${label}${iqRz(key)}</th>`;
     h += `<div class="iq-cb">
-      <div class="iq-table-w" data-iq-tw="${q.id}"><table class="iq-table fixed" style="width:${tw}px"><colgroup>${cols.map((k) => `<col data-col="${k}" style="width:${iqColWidth(k)}px" />`).join("")}</colgroup><thead>
+      <div class="iq-table-w" data-iq-tw="${q.id}"><table class="iq-table fixed" style="width:${tw}px"><colgroup>${cols.map((k) => `<col data-col="${k}" style="width:${cw(k)}px" />`).join("")}</colgroup><thead>
         <tr>${th("no", "NO", 'class="no" rowspan="2"')}${th("c", "연락 이력", 'rowspan="2"')}${th("v", "업체명", 'rowspan="2"')}${th("o", "담당자<br><small>(콜마)</small>", 'rowspan="2"')}
           <th colspan="3" class="grp">업체 담당자</th><th colspan="${ix.length + 2}" class="grp">확인 항목</th><th colspan="2" class="grp">회신</th>
-          ${th("d", "상세내용", 'rowspan="2"')}${th("n", "비고", 'rowspan="2"')}${th("f", "첨부 <small>(견적서 등)</small>", 'rowspan="2"')}${th("x", "최종 변경", 'rowspan="2"')}${th("det", "상세", 'rowspan="2"')}</tr>
+          ${th("d", "상세내용", 'rowspan="2"')}${th("n", "비고", 'rowspan="2"')}${th("x", "최종 변경", 'rowspan="2"')}${th("det", "상세", 'rowspan="2"')}</tr>
         <tr>${th("pn", "이름")}${th("pp", "휴대폰")}${th("pe", "메일")}${th("ok", "가능여부")}
           ${ix.map((k) => th("a:" + k, `<span class="iq-thl">${esc(inqItemLabel(k))}</span><button type="button" class="iq-thx" data-iq-rmitem="${q.id}:${k}" title="'${esc(inqItemLabel(k))}' 항목 빼기" aria-label="${esc(inqItemLabel(k))} 빼기">−</button>`)).join("")}
-          <th data-col="add" class="iq-thadd">${iq.addItem === q.id ? `<input class="iq-in iq-additem" data-iqk="ai:${q.id}" list="iq-items" placeholder="항목" autocomplete="off" aria-label="추가할 확인 항목" />` : `<button type="button" class="iq-thplus" data-iq-additem="${q.id}" title="확인 항목 추가" aria-label="확인 항목 추가">＋</button>`}</th>
+          <th data-col="add" class="iq-thadd ${adding ? "open" : ""}">${adding ? `<div class="iq-addbox">
+              <div class="iq-addrow1"><input class="iq-in iq-additem" data-iqk="ai:${q.id}" placeholder="항목 이름 직접 입력" autocomplete="off" aria-label="추가할 확인 항목 이름" /><button type="button" class="iq-addgo" data-iq-additemgo="${q.id}" title="추가 (Enter)" aria-label="항목 추가">＋</button><button type="button" class="iq-addx" data-iq-additemx="${q.id}" title="닫기 (Esc)" aria-label="닫기">×</button></div>
+              ${inqItems().filter((it) => it.id !== "ok" && !q.items.includes(it.id)).length ? `<div class="iq-addpick">${inqItems().filter((it) => it.id !== "ok" && !q.items.includes(it.id)).map((it) => `<button type="button" data-iq-additempick="${q.id}:${it.id}">${esc(it.label)}</button>`).join("")}</div>` : ""}</div>`
+            : `<button type="button" class="iq-thplus" data-iq-additem="${q.id}" title="확인 항목 추가" aria-label="확인 항목 추가">＋</button>`}</th>
           ${th("s", "상태")}${th("rd", "회신일")}</tr>
       </thead><tbody>
       ${rows.map((r) => iqRowTr(q, r, q.rows.indexOf(r) + 1)).join("") || `<tr><td colspan="${iqColCount(q)}" class="iq-norow">아래 '＋ 행 추가'로 업체를 넣으세요</td></tr>`}
@@ -4219,7 +4220,6 @@ function iqRowTr(q, r, no) {
     <td class="iq-rdcell">${r.status !== "wait" ? `<input type="date" class="iq-in iq-date" data-iqk="r:${k}:replyDate" value="${r.replyDate || ""}" aria-label="회신일" />` : late ? `<b class="iq-dn" title="기한 ${fmtMD(inqRowDue(q, r))}">D+${late}</b>` : `<span class="muted iq-due" title="회신 기한">~${fmtMD(inqRowDue(q, r))}</span>`}</td>
     <td>${iqClampTa(`r:${k}:detail`, r.detail, "상세내용")}</td>
     <td>${iqClampTa(`r:${k}:note`, r.note, "비고")}</td>
-    <td class="iq-fcell" data-iq-drop="${k}">${iqFilesCell(r, k)}</td>
     <td class="iq-rowact"><span class="iq-upd" title="${upd ? upd.toLocaleString("ko-KR") : ""}">${upd ? `${upd.getMonth() + 1}/${upd.getDate()}` : ""}</span><button type="button" class="iq-starbtn ${r.picked ? "on" : ""}" data-iq-pick="${k}" title="선정 업체 표시" aria-label="선정">★</button>${iqDelBtn("row:" + k, "×", "이 줄 삭제 (업체 정보는 남음)")}</td>
     <td class="iq-dcell"><button type="button" class="iq-detbtn ${iq.det[k] ? "on" : ""}" data-iq-det="${k}" aria-expanded="${!!iq.det[k]}" title="연락 회차 · 변경 이력">상세${r.contacts.length > 1 ? ` <b>${r.contacts.length}차</b>` : ""} ${iq.det[k] ? "▴" : "▾"}</button></td>
   </tr>${iq.det[k] ? iqDetailRow(q, r, k) : ""}`;
@@ -4251,65 +4251,8 @@ function iqFormulaFocus(e) {
   else if (el.value === el.dataset.f) el.value = el.dataset.v;
 }
 
-// ---- 첨부 (견적서 등): 파일은 이 브라우저(IndexedDB)에 보관, 백업 폴더를 정해 두었으면 거기에도 사본 ----
-function iqFilesDb(mode, fn) {
-  return new Promise((res, rej) => {
-    const rq = indexedDB.open("scheduler-files", 1);
-    rq.onupgradeneeded = () => rq.result.createObjectStore("f");
-    rq.onerror = () => rej(rq.error);
-    rq.onsuccess = () => { const tx = rq.result.transaction("f", mode); const x = fn(tx.objectStore("f")); tx.oncomplete = () => { rq.result.close(); res(x && x.result); }; tx.onerror = () => rej(tx.error); };
-  });
-}
-const iqFileIcon = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.5l-8.6 8.6a5.5 5.5 0 01-7.8-7.8l9-9a3.7 3.7 0 015.2 5.2l-9 9a1.8 1.8 0 01-2.6-2.6l8.3-8.3"/></svg>`;
-const iqFmtSize = (n) => (n >= 1048576 ? (n / 1048576).toFixed(1) + "MB" : Math.max(1, Math.round(n / 1024)) + "KB");
-function iqFilesCell(r, k) {
-  const fs = r.files || [];
-  return `<div class="iq-files">${fs.slice(0, 2).map((f) => `<button type="button" class="iq-fchip" data-iq-fopen="${f.id}" title="${esc(f.name)} · ${iqFmtSize(f.size)} — 눌러서 열기">${iqFileIcon}<span>${esc(f.name)}</span></button>`).join("")}
-    ${fs.length > 2 ? `<button type="button" class="iq-fmore" data-iq-det="${k}" title="전체 첨부는 '상세'에서">+${fs.length - 2}</button>` : ""}
-    <label class="iq-fadd" title="파일 첨부 (여러 개 가능 · 여기로 끌어다 놓아도 됨)">＋<input type="file" multiple data-iq-file="${k}" /></label></div>`;
-}
-async function iqAttach(k, fileList) {
-  const [qid, rid] = k.split(":"); const files = [...(fileList || [])]; if (!files.length) return;
-  const big = files.filter((f) => f.size > 30 * 1048576); if (big.length) toast(`30MB가 넘는 파일은 첨부하지 않았습니다: ${big.map((f) => f.name).join(", ")}`);
-  const ok = files.filter((f) => f.size <= 30 * 1048576); if (!ok.length) return;
-  const metas = [];
-  try {
-    for (const f of ok) { const id = "f" + uid(); await iqFilesDb("readwrite", (st) => st.put(f, id)); metas.push({ id, name: f.name, size: f.size, type: f.type, at: Date.now() }); iqBackupFile(f, id); }
-  } catch (err) { toast("파일을 저장하지 못했습니다: " + (err && err.message)); }
-  if (!metas.length) return;
-  const q = iqClone(iqQ(qid)); const r = q.rows.find((x) => x.id === rid); if (!r) return;
-  r.files = [...(r.files || []), ...metas]; iqLog(r, `첨부: ${metas.map((m) => m.name).join(", ")}`);
-  Store.saveInquiry(q); toast(`${metas.length}개 파일을 첨부했습니다`);
-}
-async function iqOpenFile(fid) {
-  let blob = null; try { blob = await iqFilesDb("readonly", (st) => st.get(fid)); } catch (_) {}
-  const meta = Store.state.inquiries.flatMap((q) => q.rows.flatMap((r) => r.files || [])).find((x) => x.id === fid) || { name: "첨부파일" };
-  if (!blob) { toast("이 기기에 파일이 없습니다 — 다른 기기에서 첨부했거나 브라우저 데이터가 지워졌습니다 (백업 폴더의 scheduler-attachments 확인)"); return; }
-  const url = URL.createObjectURL(blob);
-  if (/^(application\/pdf|image\/)/.test(blob.type || meta.type || "")) { const w = window.open(url, "_blank"); if (!w) location.href = url; }
-  else { const a = document.createElement("a"); a.href = url; a.download = meta.name; document.body.appendChild(a); a.click(); a.remove(); }
-  setTimeout(() => URL.revokeObjectURL(url), 60000);
-}
-function iqFilesDrop(list) { (list || []).forEach((f) => iqFilesDb("readwrite", (st) => st.delete(f.id)).catch(() => {})); }
-// 자동 백업 폴더가 있으면 scheduler-attachments 폴더에 사본 (권한 있을 때만, 실패해도 무시)
-async function iqBackupFile(file, id) {
-  try {
-    if (typeof fbGetDir !== "function") return; const dir = await fbGetDir(); if (!dir) return;
-    if ((await dir.queryPermission({ mode: "readwrite" })) !== "granted") return;
-    const sub = await dir.getDirectoryHandle("scheduler-attachments", { create: true });
-    const fh = await sub.getFileHandle(`${id}-${file.name.replace(/[\\/:*?"<>|]/g, "_")}`, { create: true });
-    const w = await fh.createWritable(); await w.write(file); await w.close();
-  } catch (_) {}
-}
-function iqFileChange(e) { const el = e.target; if (!el.dataset || !el.dataset.iqFile) return; iqAttach(el.dataset.iqFile, el.files); el.value = ""; }
-function iqFileDrag(e) {
-  const td = e.target.closest && e.target.closest("[data-iq-drop]"); if (!td || ui.view !== "vendors") return;
-  if (!e.dataTransfer || ![...(e.dataTransfer.types || [])].includes("Files")) return;
-  e.preventDefault();
-  if (e.type === "dragover") { td.classList.add("drop"); return; }
-  if (e.type === "dragleave") { td.classList.remove("drop"); return; }
-  if (e.type === "drop") { td.classList.remove("drop"); iqAttach(td.dataset.iqDrop, e.dataTransfer.files); }
-}
+// 첨부 기능은 내부 보안 정책으로 없앰 — 예전에 이 브라우저에 저장된 첨부 파일도 지움
+try { indexedDB.deleteDatabase("scheduler-files"); } catch (_) {}
 
 // 상세(펼침): 연락 회차 · 변경 이력 · 상세내용/비고 전체
 function iqDetailRow(q, r, k) {
@@ -4320,8 +4263,6 @@ function iqDetailRow(q, r, k) {
       ${r.contacts.map((c, i) => `<div class="iq-c"><b>${i + 1}차</b><input type="date" class="iq-in iq-date" data-iqk="rc:${k}:${i}" value="${c.date}" aria-label="${i + 1}차 연락일" /><button type="button" class="iq-icx" data-iq-rmc="${k}:${i}" aria-label="${i + 1}차 연락 지우기">×</button></div>`).join("") || `<span class="muted">연락 기록 없음</span>`}
       <span class="muted">회신 기한 = 마지막 연락 ${fmtMD(inqLastContact(q, r))} + ${q.gap}영업일 → ${fmtMD(inqRowDue(q, r))}</span></div>
     <div class="iq-detl"><b class="lab">변경 이력 · ${log.length}건</b>${log.length ? `<ul>${log.map((x) => `<li><span class="t">${fmtAt(x.at)}</span>${esc(x.text)}</li>`).join("")}</ul>` : `<span class="muted">아직 변경 기록이 없습니다</span>`}</div>
-    <div class="iq-detf"><b class="lab">첨부 · ${(r.files || []).length}개</b>${(r.files || []).length ? (r.files || []).map((f) => `<div class="iq-dfi"><button type="button" class="iq-fchip wide" data-iq-fopen="${f.id}" title="눌러서 열기">${iqFileIcon}<span>${esc(f.name)}</span></button><span class="muted">${iqFmtSize(f.size)} · ${fmtMD(ymd(new Date(f.at)))}</span>${iqDelBtn(`file:${k}:${f.id}`, "×", "첨부 삭제")}</div>`).join("") : `<span class="muted">첨부 없음</span>`}
-      <span class="muted">파일은 이 브라우저에 보관됩니다 · 자동 백업 폴더가 있으면 scheduler-attachments 폴더에도 사본</span></div>
     ${r.detail || r.note ? `<div class="iq-dett">${r.detail ? `<b class="lab">상세내용</b><p>${esc(r.detail)}</p>` : ""}${r.note ? `<b class="lab">비고</b><p>${esc(r.note)}</p>` : ""}</div>` : ""}
   </div></td></tr>`;
 }
@@ -4424,7 +4365,7 @@ function inqFieldChange(e) {
   const el = e.target, key = el.dataset && el.dataset.iqk;
   if (!key || ui.view !== "vendors") return;
   const [t, a, b, c] = key.split(":"), val = el.type === "checkbox" ? el.checked : el.value;
-  if (t === "ai") { const lab = String(val).trim(); if (lab) { const q = iqClone(iqQ(a)); const id = Store.addInqItem(lab); if (!q.items.includes(id)) q.items.push(id); iq.addItem = null; Store.saveInquiry(q); } return; }
+  if (t === "ai") return;                                                  // 항목 추가는 Enter 또는 ＋ 버튼으로
   if (iqPtrDown) { iqQuiet = true; iqPendingRender = true; }               // 다른 곳을 눌러 칸을 벗어난 경우 → 클릭이 끝난 뒤 다시 그림
   if (t === "v") { const v = vendorById(a); if (!v) return;
     if (b === "name") { const n = String(val).trim(); if (!n) { el.value = v.name; return; } const dup = vendorByName(n); if (dup && dup.id !== v.id) { toast("같은 이름의 업체가 이미 있습니다"); el.value = v.name; return; } }
@@ -4469,9 +4410,7 @@ function inqFieldKey(e) {
   if (!key || ui.view !== "vendors") return;
   if (key.startsWith("ai:") && e.key === "Enter") {                        // 확인 항목 추가
     e.preventDefault(); const lab = el.value.trim(); if (!lab) return;
-    const q = iqClone(iqQ(key.slice(3))); const id = Store.addInqItem(lab);
-    if (!q.items.includes(id)) q.items.push(id);
-    iq.addItem = null; Store.saveInquiry(q); return;
+    iqAddItemTo(key.slice(3), lab); return;
   }
   if (key.startsWith("ai:") && e.key === "Escape") { iq.addItem = null; render(); return; }
   // Enter(입력 칸) · Tab = 다음 칸, Shift+Tab = 이전 칸
@@ -4531,12 +4470,18 @@ function iqAddRow(qid, vendorId) {
   iqFocusNext = vendorId ? `r:${qid}:${r.id}:owner` : `r:${qid}:${r.id}:name`;
   Store.saveInquiry(q);
 }
+// 확인 항목 추가 (직접 입력한 이름 그대로 — 같은 이름이 사전에 있으면 그 항목을 씀)
+function iqAddItemTo(qid, label) {
+  const lab = String(label || "").trim(); if (!lab) return;
+  if (lab.replace(/\s+/g, "") === "가능여부") { toast("가능여부는 늘 첫 칸에 있습니다"); return; }
+  const q = iqClone(iqQ(qid)); const id = Store.addInqItem(lab);
+  if (q.items.includes(id)) { toast(`'${lab}'은(는) 이미 있는 항목입니다`); return; }
+  q.items.push(id); iq.addItem = null; Store.saveInquiry(q); toast(`'${lab}' 항목을 추가했습니다`);
+}
 function iqDoDelete(k) {
   const [t, a, b] = k.split(":");
-  if (t === "case") { const q = iqQ(a); if (q) iqFilesDrop(q.rows.flatMap((r) => r.files || [])); Store.deleteInquiry(a); toast(`'${(q && q.title) || "탐색 건"}'을(를) 삭제했습니다`); }
-  else if (t === "row") { const q = iqClone(iqQ(a)); const gone = q.rows.find((x) => x.id === b); if (gone) iqFilesDrop(gone.files || []); q.rows = q.rows.filter((x) => x.id !== b); Store.saveInquiry(q); toast("줄을 삭제했습니다 (업체 정보는 남아 있습니다)"); }
-  else if (t === "file") { const c = k.split(":")[3]; const q = iqClone(iqQ(a)); const r = q.rows.find((x) => x.id === b); if (!r) return; const f = (r.files || []).find((x) => x.id === c); if (!f) return;
-    r.files = r.files.filter((x) => x.id !== c); iqLog(r, `첨부 삭제: ${f.name}`); iqFilesDrop([f]); Store.saveInquiry(q); toast(`'${f.name}'을(를) 지웠습니다`); }
+  if (t === "case") { const q = iqQ(a); Store.deleteInquiry(a); toast(`'${(q && q.title) || "탐색 건"}'을(를) 삭제했습니다`); }
+  else if (t === "row") { const q = iqClone(iqQ(a)); q.rows = q.rows.filter((x) => x.id !== b); Store.saveInquiry(q); toast("줄을 삭제했습니다 (업체 정보는 남아 있습니다)"); }
   else if (t === "vendor") { const n = inqVendorCases(a).length; if (n) { toast(`탐색 건 ${n}개에서 쓰고 있어 삭제할 수 없습니다 — 그 줄을 먼저 지워 주세요`); return; }
     const v = vendorById(a); Store.deleteVendor(a); iq.vendor = null; toast(`'${v ? v.name : "업체"}'를 삭제했습니다`); }
 }
@@ -4553,8 +4498,11 @@ function inqClick(e) {
   const rc = t.closest("[data-iq-recontact]"); if (rc) { const [a, b] = rc.dataset.iqRecontact.split(":"); inqRecontact(a, b); return; }
   const rmc = t.closest("[data-iq-rmc]"); if (rmc) { const [a, b, i] = rmc.dataset.iqRmc.split(":"); const q = iqClone(iqQ(a)); const r = q.rows.find((x) => x.id === b); if (r) { const old = r.contacts[+i]; r.contacts.splice(+i, 1); iqLog(r, `${+i + 1}차 연락 삭제 (${fmtMD(old && old.date)})`); Store.saveInquiry(q); } return; }
   const dt = t.closest("[data-iq-det]"); if (dt) { const k = dt.dataset.iqDet; iq.det[k] = !iq.det[k]; render(); return; }
-  const fo = t.closest("[data-iq-fopen]"); if (fo) { e.preventDefault(); iqOpenFile(fo.dataset.iqFopen); return; }
   const so = t.closest("[data-iq-sort]"); if (so) { const k = so.dataset.iqSort, cur = iq.isort || { k: "vendor", d: 1 }; iq.isort = { k, d: cur.k === k ? -cur.d : 1 }; const t2 = document.getElementById("iq-itable"); if (t2) t2.innerHTML = iqItemTable(); return; }
+  const xl = t.closest("[data-iq-xlsx]"); if (xl) { iqExportXlsx(xl.dataset.iqXlsx); return; }
+  const ag = t.closest("[data-iq-additemgo]"); if (ag) { const inp = document.querySelector(`[data-iqk="ai:${ag.dataset.iqAdditemgo}"]`); const lab = inp ? inp.value.trim() : ""; if (!lab) { if (inp) inp.focus(); toast("추가할 항목 이름을 입력해 주세요"); return; } iqAddItemTo(ag.dataset.iqAdditemgo, lab); return; }
+  const ax = t.closest("[data-iq-additemx]"); if (ax) { iq.addItem = null; render(); return; }
+  const ap = t.closest("[data-iq-additempick]"); if (ap) { const [qa, id] = ap.dataset.iqAdditempick.split(":"); const q = iqClone(iqQ(qa)); if (!q.items.includes(id)) q.items.push(id); iq.addItem = null; Store.saveInquiry(q); return; }
   const adi = t.closest("[data-iq-additem]"); if (adi) { iq.addItem = adi.dataset.iqAdditem; iqFocusNext = `ai:${iq.addItem}`; render(); return; }
   const ox = t.closest("[data-iq-ox]"); if (ox) { const [a, b, val] = ox.dataset.iqOx.split(":"); const q = iqClone(iqQ(a)); const r = q.rows.find((x) => x.id === b); if (r) { const old = iqOxNorm(r.answers.ok); r.answers.ok = old === val ? "" : val; iqLog(r, `가능여부: ${old || "—"} → ${r.answers.ok || "—"}`); Store.saveInquiry(q); } return; }
   const pk = t.closest("[data-iq-pick]"); if (pk) { const [a, b] = pk.dataset.iqPick.split(":"); const q = iqClone(iqQ(a)); const r = q.rows.find((x) => x.id === b); if (r) { r.picked = !r.picked; iqLog(r, r.picked ? "★ 선정" : "선정 해제"); Store.saveInquiry(q); } return; }
@@ -4616,17 +4564,105 @@ function inqSearchInput(e) {
   iq.q = e.target.value; const body = document.getElementById("iq-body"); if (body) body.innerHTML = iqBodyHtml();
 }
 
+/* ---------- 엑셀(.xlsx): 탐색 건별 표 내려받기 (업체명 ~ 비고) ---------- */
+const IQ_CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+const iqCrc32 = (u8) => { let c = 0xffffffff; for (let i = 0; i < u8.length; i++) c = IQ_CRC[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
+// 압축 없는(저장) ZIP — xlsx 꾸러미용
+function iqZip(files) {
+  const enc = new TextEncoder(), parts = [], cent = []; let off = 0;
+  const d = new Date(), dosT = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1), dosD = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+  files.forEach(({ name, data }) => {
+    const nm = enc.encode(name), body = typeof data === "string" ? enc.encode(data) : data, crc = iqCrc32(body);
+    const lh = new DataView(new ArrayBuffer(30));
+    [[0, 0x04034b50, 4], [4, 20, 2], [6, 0x0800, 2], [8, 0, 2], [10, dosT, 2], [12, dosD, 2], [14, crc, 4], [18, body.length, 4], [22, body.length, 4], [26, nm.length, 2], [28, 0, 2]]
+      .forEach(([o, v, n]) => (n === 4 ? lh.setUint32(o, v, true) : lh.setUint16(o, v, true)));
+    const ch = new DataView(new ArrayBuffer(46));
+    [[0, 0x02014b50, 4], [4, 20, 2], [6, 20, 2], [8, 0x0800, 2], [10, 0, 2], [12, dosT, 2], [14, dosD, 2], [16, crc, 4], [20, body.length, 4], [24, body.length, 4], [28, nm.length, 2], [30, 0, 2], [32, 0, 2], [34, 0, 2], [36, 0, 2], [38, 0, 4], [42, off, 4]]
+      .forEach(([o, v, n]) => (n === 4 ? ch.setUint32(o, v, true) : ch.setUint16(o, v, true)));
+    parts.push(new Uint8Array(lh.buffer), nm, body); cent.push(new Uint8Array(ch.buffer), nm);
+    off += 30 + nm.length + body.length;
+  });
+  const csize = cent.reduce((n, x) => n + x.length, 0), end = new DataView(new ArrayBuffer(22));
+  [[0, 0x06054b50, 4], [4, 0, 2], [6, 0, 2], [8, files.length, 2], [10, files.length, 2], [12, csize, 4], [16, off, 4], [20, 0, 2]].forEach(([o, v, n]) => (n === 4 ? end.setUint32(o, v, true) : end.setUint16(o, v, true)));
+  return new Blob([...parts, ...cent, new Uint8Array(end.buffer)], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+}
+const iqX = (v) => String(v == null ? "" : v).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const iqColL = (i) => { let s = ""; i++; while (i) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; };
+// rows: [[{v, s}]] — s: 1 제목 · 2 머리 · 3 글자 · 4 숫자 · 5 안내
+function iqXlsx(sheetName, rows, widths, opt) {
+  const sheetRows = rows.map((row, ri) => `<row r="${ri + 1}">${row.map((c, ci) => { if (c == null || c.v == null || c.v === "") return c && c.s ? `<c r="${iqColL(ci)}${ri + 1}" s="${c.s}"/>` : "";
+    const ref = `${iqColL(ci)}${ri + 1}`; return typeof c.v === "number" ? `<c r="${ref}" s="${c.s || 0}"><v>${c.v}</v></c>` : `<c r="${ref}" s="${c.s || 0}" t="inlineStr"><is><t xml:space="preserve">${iqX(c.v)}</t></is></c>`; }).join("")}</row>`).join("");
+  const last = iqColL(widths.length - 1);
+  const sheet = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">`
+    + `<sheetViews><sheetView workbookViewId="0"><pane ySplit="${opt.headRow}" topLeftCell="A${opt.headRow + 1}" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><sheetFormatPr defaultRowHeight="16.5"/>`
+    + `<cols>${widths.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join("")}</cols><sheetData>${sheetRows}</sheetData>`
+    + (rows.length > opt.headRow ? `<autoFilter ref="A${opt.headRow}:${last}${rows.length}"/>` : "")
+    + (opt.merges && opt.merges.length ? `<mergeCells count="${opt.merges.length}">${opt.merges.map((m) => `<mergeCell ref="${m}"/>`).join("")}</mergeCells>` : "")
+    + `<pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/><pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>`;
+  const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">`
+    + `<fonts count="3"><font><sz val="10"/><name val="맑은 고딕"/></font><font><b/><sz val="10"/><name val="맑은 고딕"/></font><font><b/><sz val="14"/><name val="맑은 고딕"/></font></fonts>`
+    + `<fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE8EEF8"/><bgColor indexed="64"/></patternFill></fill></fills>`
+    + `<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FFC9D3E2"/></left><right style="thin"><color rgb="FFC9D3E2"/></right><top style="thin"><color rgb="FFC9D3E2"/></top><bottom style="thin"><color rgb="FFC9D3E2"/></bottom><diagonal/></border></borders>`
+    + `<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="6">`
+    + `<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>`
+    + `<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/>`
+    + `<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>`
+    + `<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>`
+    + `<xf numFmtId="3" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment vertical="top"/></xf>`
+    + `<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>`
+    + `</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+  const safe = (sheetName || "탐색").replace(/[\[\]:*?\/\\]/g, " ").slice(0, 31) || "탐색";
+  return iqZip([
+    { name: "[Content_Types].xml", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>` },
+    { name: "_rels/.rels", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>` },
+    { name: "xl/workbook.xml", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="${iqX(safe)}" sheetId="1" r:id="rId1"/></sheets>${rows.length > opt.headRow ? `<definedNames><definedName name="_xlnm._FilterDatabase" localSheetId="0" hidden="1">'${iqX(safe.replace(/'/g, "''"))}'!$A$${opt.headRow}:$${last}$${rows.length}</definedName></definedNames>` : ""}</workbook>` },
+    { name: "xl/_rels/workbook.xml.rels", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>` },
+    { name: "xl/styles.xml", data: styles },
+    { name: "xl/worksheets/sheet1.xml", data: sheet },
+  ]);
+}
+// '3,000' → 3000 (숫자만 있는 칸은 엑셀 숫자로 — 정렬·합계 가능)
+const iqXNum = (v) => { const t = String(v || "").trim(); return /^-?[\d,]+(\.\d+)?$/.test(t) && /\d/.test(t) ? Number(t.replace(/,/g, "")) : null; };
+function iqExportXlsx(qid) {
+  const q = iqQ(qid); if (!q) return;
+  const ix = iqItemsX(q);
+  const head = ["업체명", "담당자(콜마)", "업체 담당자", "휴대폰", "메일", "가능여부", ...ix.map(inqItemLabel), "회신 상태", "회신일", "상세내용", "비고"];
+  const widths = [18, 12, 12, 15, 24, 9, ...ix.map((k) => (IQ_NUM_ITEMS.includes(k) ? 12 : 18)), 10, 11, 40, 24];
+  const T = (v, s = 3) => ({ v, s }), N = (v) => { const n = iqXNum(v); return n == null ? T(v) : { v: n, s: 4 }; };
+  ttUse(null);
+  const rows = [
+    [T(`${q.title || "(목적 없음)"}`, 1)],
+    [T(`${q.category}${q.secret ? " · 대외비" : ""} · 문의 ${q.askedAt} · 회신 기한 +${q.gap}영업일 (${inqCaseDue(q)})${q.done ? " · 완료" : ""}`, 5)],
+    ...(q.common ? [[T(`공통 요청: ${q.common}`, 5)]] : []),
+    [],
+    head.map((h) => T(h, 2)),
+  ];
+  const headRow = rows.length;
+  q.rows.filter((r) => r.vendorId).forEach((r) => {
+    const v = vendorById(r.vendorId) || {};
+    rows.push([T(v.name), T(r.owner), T(v.person), T(v.phone), T(v.email), T(iqOxNorm(r.answers.ok)),
+      ...ix.map((k) => (IQ_NUM_ITEMS.includes(k) ? N(r.answers[k]) : T(r.answers[k]))),
+      T(INQ_STATUS[r.status] + (inqRowLate(q, r) ? ` (D+${inqRowLate(q, r)})` : "")), T(r.replyDate || ""), T(r.detail), T(r.note)]);
+  });
+  const lastCol = iqColL(head.length - 1), merges = [`A1:${lastCol}1`, `A2:${lastCol}2`, ...(q.common ? [`A3:${lastCol}3`] : [])];
+  const blob = iqXlsx(q.title || "탐색", rows, widths, { headRow, merges });
+  const name = `업체탐색_${(q.title || "탐색").replace(/[\\/:*?"<>|]/g, "_").slice(0, 40)}_${todayStr()}.xlsx`;
+  const url = URL.createObjectURL(blob), a = document.createElement("a"); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 3000);
+  toast(`'${q.title || "탐색 건"}' 표를 엑셀로 내려받았습니다`);
+}
+
 /* ---------- CSV ---------- */
 function inqExportCsv() {
   const itemIds = [...new Set(Store.state.inquiries.flatMap((q) => q.items))];
-  const head = ["카테고리", "목적", "대외비", "문의일", "회신기한", "업체명", "담당자(콜마)", "분야", "업체담당자", "휴대폰", "메일", "연락이력", "회신상태", "회신일", ...itemIds.map(inqItemLabel), "상세내용", "비고", "첨부", "선정", "탐색완료", "공통요청"];
+  const head = ["카테고리", "목적", "대외비", "문의일", "회신기한", "업체명", "담당자(콜마)", "분야", "업체담당자", "휴대폰", "메일", "연락이력", "회신상태", "회신일", ...itemIds.map(inqItemLabel), "상세내용", "비고", "선정", "탐색완료", "공통요청"];
   const cell = (v) => { const t = v == null ? "" : String(v); return /[",\r\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
   const lines = [head];
   Store.state.inquiries.forEach((q) => (q.rows.length ? q.rows : [null]).forEach((r) => {
     const v = r ? vendorById(r.vendorId) || {} : {};
     lines.push([q.category, q.title, q.secret ? "Y" : "", q.askedAt, r ? inqRowDue(q, r) : "", v.name || "", r ? r.owner : "", (v.tags || []).join(" "), v.person || "", v.phone || "", v.email || "",
       r ? r.contacts.map((c, i) => `${i + 1}차 ${c.date}${c.how ? " " + c.how : ""}`).join(" / ") : "", r ? INQ_STATUS[r.status] + (inqRowLate(q, r) ? ` D+${inqRowLate(q, r)}` : "") : "", r ? r.replyDate || "" : "",
-      ...itemIds.map((k) => (r ? r.answers[k] || "" : "")), r ? r.detail : "", r ? r.note : "", r ? (r.files || []).map((f) => f.name).join(" / ") : "", r && r.picked ? "★" : "", q.done ? "Y" : "", q.common]);
+      ...itemIds.map((k) => (r ? r.answers[k] || "" : "")), r ? r.detail : "", r ? r.note : "", r && r.picked ? "★" : "", q.done ? "Y" : "", q.common]);
   }));
   const csv = "﻿" + lines.map((l) => l.map(cell).join(",")).join("\r\n");
   const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
@@ -6746,8 +6782,6 @@ function wireGlobal() {
   document.addEventListener("change", inqAddToChange);
   document.addEventListener("keydown", inqFieldKey);
   document.addEventListener("focusin", iqFormulaFocus); document.addEventListener("focusout", iqFormulaFocus);   // 수식 칸
-  document.addEventListener("change", iqFileChange);                       // 첨부 파일 고르기
-  ["dragover", "dragleave", "drop"].forEach((ev) => document.addEventListener(ev, iqFileDrag));
   document.addEventListener("pointerdown", iqRzStart, true);               // 업체 탐색 표: 열 경계 끌어 너비 조절
   document.addEventListener("dblclick", (e) => { const rz = e.target.closest && e.target.closest("[data-iq-rz]"); if (!rz) return; delete iqColW[rz.dataset.iqRz]; try { localStorage.setItem(IQ_COLW_KEY, JSON.stringify(iqColW)); } catch (_) {} render(); });
   // 칸을 고친 채 버튼을 누를 때: 마우스를 떼기 전에 화면을 다시 그리면 클릭이 사라지므로, 뗀 뒤에 다시 그림
