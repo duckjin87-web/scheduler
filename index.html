@@ -1147,7 +1147,13 @@
   .pin-tk-pg{display:flex;align-items:center;justify-content:center;gap:4px;padding:2px 0 2px;}
   .pin-tk-pg i{width:5px;height:5px;border-radius:50%;background:var(--border-strong);}
   .pin-tk-pg i.on{background:var(--work);width:12px;border-radius:3px;}
-  .pin-tk-pg span{font-size:9.5px;color:var(--text-faint);margin-left:4px;font-variant-numeric:tabular-nums;}
+  .pin-tk-pg i{cursor:pointer;flex:none;}
+  .pin-tk-pg span{font-size:9.5px;color:var(--text-faint);margin:0 2px 0 4px;font-variant-numeric:tabular-nums;}
+  .pin-tk-nav{flex:none;width:22px;height:18px;padding:0;border:1px solid var(--border);border-radius:6px;background:var(--surface);
+    color:var(--text-dim);font-size:14px;font-weight:800;line-height:1;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;}
+  .pin-tk-nav:first-child{margin-right:4px;}
+  .pin-tk-nav:hover{border-color:var(--work);color:var(--work);}
+  .pin-tk-nav:active{transform:scale(.92);}
   .pin-sec{font-size:10px;font-weight:800;color:var(--text-faint);margin:2px 0 4px;}
   .pin-divider{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:800;color:var(--work);margin:10px 0 5px;}
   .pin-divider::before,.pin-divider::after{content:"";flex:1;height:1px;background:var(--border);}
@@ -2056,7 +2062,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-11-12 · 업체 탐색 첨부 삭제·확인 항목 ＋ 직접 입력·탐색 건별 엑셀 내려받기";
+const APP_VERSION = "2026-11-12 · 오늘 할 일 고정 접은 창 ‹ › 수동 넘기기";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -6128,7 +6134,7 @@ function pinTickerHtml() {
   return shown.map((x) => `<div class="pin-todo pin-tk k-${x.kind === "todo" ? "todo" : "ev"} ${x.cat || ""} pri-${x.pri}${x.late}" title="${esc(x.title)}">
       <div class="box" data-pin-${x.kind === "todo" ? "toggle" : "ev-toggle"}="${x.id}"></div>
       <div class="pin-tx" data-pin-edit-${x.kind}="${x.id}"><div class="t">${x.d ? `<span class="dd">D+${x.d}</span>` : ""}${x.kind === "event" ? catIcon(x.cat) + " " : ""}${esc(x.title)}</div></div>
-    </div>`).join("") + (pages > 1 ? `<div class="pin-tk-pg">${[...Array(pages)].map((_, i) => `<i class="${i === pinTickPage ? "on" : ""}"></i>`).join("")}<span>${pinTickPage + 1}/${pages}</span></div>` : "");
+    </div>`).join("") + (pages > 1 ? `<div class="pin-tk-pg"><button type="button" class="pin-tk-nav" data-pin-tk="-1" title="이전 묶음" aria-label="이전">‹</button>${[...Array(pages)].map((_, i) => `<i class="${i === pinTickPage ? "on" : ""}" data-pin-tkgo="${i}" title="${i + 1}번째 묶음"></i>`).join("")}<span>${pinTickPage + 1}/${pages}</span><button type="button" class="pin-tk-nav" data-pin-tk="1" title="다음 묶음" aria-label="다음">›</button></div>` : "");
 }
 function renderPinTicker() {
   const html = pinState.collapsed ? pinTickerHtml() : "";
@@ -6138,8 +6144,21 @@ function renderPinTicker() {
     if (t) { const before = t.innerHTML; t.innerHTML = html; if (pinState.collapsed && before !== html) pipFitCollapsed(); }
   }
 }
-setInterval(() => { if (pinState.open && pinState.collapsed) { pinTickPage++; renderPinTicker(); } }, PIN_TICK_MS);
+// 자동 넘김 — 손으로 넘기면 그 시점부터 다시 20초를 셈
+let pinTickTimer = null;
+function pinTickArm() {
+  clearInterval(pinTickTimer);
+  pinTickTimer = setInterval(() => { if (pinState.open && pinState.collapsed) { pinTickPage++; renderPinTicker(); } }, PIN_TICK_MS);
+}
+pinTickArm();
+function pinTickGo(page, rel) {
+  const pages = Math.max(1, Math.ceil(pinTickerItems().length / PIN_TICK_N));
+  pinTickPage = ((rel ? pinTickPage + page : page) % pages + pages) % pages;
+  renderPinTicker(); pinTickArm();
+}
 function pinBodyClick(e) {
+  const tk = e.target.closest("[data-pin-tk]"); if (tk) { pinTickGo(+tk.dataset.pinTk, true); return; }
+  const tg = e.target.closest("[data-pin-tkgo]"); if (tg) { pinTickGo(+tg.dataset.pinTkgo, false); return; }
   const io = e.target.closest("[data-inq-open]"); if (io) { inqOpenCase(io.dataset.inqOpen); return; }
   if (e.target.closest("[data-pin-donetoggle]")) { pinState.doneOpen = !pinState.doneOpen; savePin(); renderPin(); return; }
   const pj = e.target.closest("[data-proj]"); if (pj) { try { window.focus(); } catch (_) {} openProject(pj.dataset.proj); return; }
