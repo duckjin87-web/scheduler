@@ -1677,6 +1677,36 @@
   .iq-sm{padding:5px 10px !important;font-size:11.5px !important;}
   .iq-xs{padding:2px 7px !important;font-size:10.5px !important;margin-left:4px;}
   .iq-cb{padding:0 14px 12px;display:flex;flex-direction:column;gap:10px;}
+  /* 진행 관리 (관계자 · 링크 · 진행 기록) */
+  .iq-memo{border:1px solid var(--border);border-radius:12px;background:var(--surface-2);padding:8px 12px 10px;}
+  .iq-memo.fold{padding:6px 12px;}
+  .iq-mhead{display:flex;align-items:center;gap:10px;font-size:11.5px;min-width:0;}
+  .iq-mtg{border:0;background:transparent;font:inherit;font-size:12px;font-weight:800;color:var(--text);cursor:pointer;padding:2px 0;flex:none;}
+  .iq-mtg:hover{color:var(--work);}
+  .iq-msum{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-soft);}
+  .iq-msum b{color:var(--work);}
+  .iq-mgrid{display:grid;grid-template-columns:64px 1fr;gap:6px 10px;align-items:start;margin-top:8px;}
+  .iq-mlab{font-size:11px;font-weight:800;color:var(--text-faint);padding-top:6px;}
+  .iq-mlist{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-width:0;}
+  .iq-mchip{display:inline-flex;align-items:center;gap:2px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:1px 2px 1px 4px;max-width:100%;}
+  .iq-mchip .iq-in{padding:3px 5px;font-size:12px;}
+  .iq-mchip .iq-mrole{width:64px;font-weight:800;color:var(--work);}
+  .iq-mchip .iq-mname{width:90px;}
+  .iq-mchip .iq-murl{width:260px;color:var(--text-soft);}
+  .iq-mchip .iq-del{padding:2px 6px;}
+  .iq-lgo{flex:none;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;background:var(--work);color:#fff;font-weight:800;font-size:12px;text-decoration:none;}
+  .iq-lgo:hover{filter:brightness(1.1);}
+  .iq-mplus{flex:none;width:26px;height:26px;border-radius:8px;border:1.5px dashed var(--border-strong);background:transparent;color:var(--work);font-weight:800;font-size:14px;cursor:pointer;padding:0;}
+  .iq-mplus:hover{border-color:var(--work);}
+  .iq-hlist{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .iq-hrow{display:grid;grid-template-columns:118px 92px 1fr auto;gap:6px;align-items:start;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:3px 4px;}
+  .iq-hrow .iq-in{font-size:12px;}
+  .iq-hrow .iq-hwho{font-weight:700;}
+  .iq-hrow .iq-htext{min-height:26px;resize:none;white-space:pre-wrap;}
+  .iq-hrow .iq-del{margin-top:2px;}
+  .iq-hnone{font-size:11.5px;padding:4px 0;}
+  .iq-hadd{font-size:11.5px;padding:4px 10px;}
+  @media (max-width:700px){ .iq-mgrid{grid-template-columns:1fr;} .iq-mlab{padding-top:2px;} .iq-hrow{grid-template-columns:110px 1fr auto;} .iq-hrow .iq-htext{grid-column:1 / -1;grid-row:2;} .iq-mchip .iq-murl{width:180px;} }
   .iq-top{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:10px;}
   .iq-box{background:var(--surface-2);border-radius:12px;padding:9px 12px;display:flex;flex-direction:column;gap:5px;}
   .iq-box .lab{font-size:11px;font-weight:700;color:var(--text-soft);}
@@ -2066,7 +2096,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-11-16 · 오늘 할 일 고정 창 기본 정렬 지연순";
+const APP_VERSION = "2026-11-16 · 업체 탐색 진행 관리(관계자·링크·날짜별 진행 기록)";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -2439,11 +2469,25 @@ const Store = (() => {
       log: (Array.isArray(r.log) ? r.log : []).filter((x) => x && x.text).map((x) => ({ at: +x.at || Date.now(), text: str(x.text) })).slice(-60) };
   }
   function normalizeInquiry(q) {
+    if (!q.id) q = { ...q, id: uid() };
     const gap = parseInt(q.gap, 10);
     return { id: q.id || uid(), category: str(q.category).trim() || "가능처 탐색", title: str(q.title).trim(), secret: !!q.secret,
       askedAt: q.askedAt || todayStr(), gap: Number.isFinite(gap) ? Math.max(0, Math.min(15, gap)) : 2, common: str(q.common),
       items: Array.isArray(q.items) ? ["ok", ...q.items.filter((k) => k && k !== "ok")] : ["ok", "moq", "price", "limit"],
-      rows: (Array.isArray(q.rows) ? q.rows : []).map(normalizeInqRow), done: !!q.done, doneAt: q.doneAt || null, createdAt: q.createdAt || Date.now() };
+      rows: (Array.isArray(q.rows) ? q.rows : []).map(normalizeInqRow), done: !!q.done, doneAt: q.doneAt || null, createdAt: q.createdAt || Date.now(),
+      ...normalizeInqMemo(q) };
+  }
+  // 진행 관리: 관계자(역할·이름) · 링크(메일 · 타겟 제품 등) · 진행 기록(날짜 · 담당 · 내용)
+  //  처음엔 '영업 · 연구소' 관계자와 '메일 · 타겟 제품' 링크 칸을 빈 채로 둠 (id는 탐색 건 id로 고정 — 기기 간 동기화 때 겹치지 않게)
+  function normalizeInqMemo(q) {
+    const id0 = q.id || "";
+    const people = Array.isArray(q.people) ? q.people.filter(Boolean).map((x, i) => ({ id: str(x.id) || `${id0}-p${i + 1}`, role: str(x.role).trim(), name: str(x.name).trim() }))
+      : [{ id: `${id0}-p1`, role: "영업", name: "" }, { id: `${id0}-p2`, role: "연구소", name: "" }];
+    const links = Array.isArray(q.links) ? q.links.filter(Boolean).map((x, i) => ({ id: str(x.id) || `${id0}-l${i + 1}`, label: str(x.label).trim(), url: str(x.url).trim() }))
+      : [{ id: `${id0}-l1`, label: "메일", url: "" }, { id: `${id0}-l2`, label: "타겟 제품", url: "" }];
+    const hist = (Array.isArray(q.hist) ? q.hist : []).filter(Boolean).map((x, i) => ({ id: str(x.id) || `${id0}-h${i + 1}`, date: /^\d{4}-\d{2}-\d{2}$/.test(x.date) ? x.date : todayStr(),
+      who: str(x.who).trim(), text: str(x.text), at: +x.at || i })).sort((a, b) => a.date.localeCompare(b.date) || a.at - b.at);
+    return { people, links, hist };
   }
   // 같은 이름의 항목은 하나로 (기본 항목이 먼저) — 겹친 항목을 쓰던 탐색 건 · 답변은 남는 항목으로 옮김
   function normalizeInqItems(list, alias) {
@@ -4056,7 +4100,8 @@ const INQ_STATUS = { wait: "대기", reply: "회신", no: "불가", hold: "보�
 const IQ_UI_KEY = "scheduler:inq-ui";
 const iq = { view: "case", filter: "open", q: "", open: {}, vendor: null, item: "moq", paste: null, det: {} };
 try { Object.assign(iq, JSON.parse(localStorage.getItem(IQ_UI_KEY) || "{}")); iq.q = ""; iq.paste = null; iq.det = {}; } catch (_) {}
-const iqSave = () => { try { const { view, filter, open, vendor, item } = iq; localStorage.setItem(IQ_UI_KEY, JSON.stringify({ view, filter, open, vendor, item })); } catch (_) {} };
+if (!iq.mfold || typeof iq.mfold !== "object") iq.mfold = {};
+const iqSave = () => { try { const { view, filter, open, vendor, item, mfold } = iq; localStorage.setItem(IQ_UI_KEY, JSON.stringify({ view, filter, open, vendor, item, mfold })); } catch (_) {} };
 const IC_MAIL = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>`;
 let iqFocusNext = null;          // 다음 그리기 뒤 커서를 둘 칸 (data-iqk)
 let iqQuiet = false, iqPtrDown = false, iqPendingRender = false;   // 마우스를 누른 채 저장될 땐 화면을 바로 다시 그리지 않음
@@ -4099,7 +4144,7 @@ function inqLatestAnswers(vendorId, exceptQ) {
 }
 const inqVendorCases = (vendorId) => Store.state.inquiries.filter((q) => q.rows.some((r) => r.vendorId === vendorId));
 const iqNorm = (s) => String(s || "").toLowerCase();
-function iqCaseText(q) { return iqNorm([q.category, q.title, q.common].join(" ")); }
+function iqCaseText(q) { return iqNorm([q.category, q.title, q.common, ...(q.people || []).map((x) => x.role + " " + x.name), ...(q.links || []).map((x) => x.label + " " + x.url), ...(q.hist || []).map((x) => x.who + " " + x.text)].join(" ")); }
 function iqRowText(q, r) {
   const v = vendorById(r.vendorId) || {};
   return iqNorm([v.name, (v.tags || []).join(" "), v.person, v.phone, v.email, v.memo, r.owner, r.detail, r.note,
@@ -4181,7 +4226,7 @@ function iqCaseCard(q, rows) {
     const adding = iq.addItem === q.id, cw = (k) => (k === "add" && adding ? Math.max(250, iqColWidth(k)) : iqColWidth(k));
     const cols = iqCols(q), tw = cols.reduce((n, k) => n + cw(k), 0), ix = iqItemsX(q);
     const th = (key, label, extra = "") => `<th data-col="${key}" ${extra}>${label}${iqRz(key)}</th>`;
-    h += `<div class="iq-cb">
+    h += `<div class="iq-cb">${iqMemoHtml(q)}
       <div class="iq-table-w" data-iq-tw="${q.id}"><table class="iq-table fixed" style="width:${tw}px"><colgroup>${cols.map((k) => `<col data-col="${k}" style="width:${cw(k)}px" />`).join("")}</colgroup><thead>
         <tr>${th("no", "NO", 'class="no" rowspan="2"')}${th("c", "연락 이력", 'rowspan="2"')}${th("v", "업체명", 'rowspan="2"')}${th("o", "담당자<br><small>(콜마)</small>", 'rowspan="2"')}
           <th colspan="3" class="grp">업체 담당자</th><th colspan="${ix.length + 2}" class="grp">확인 항목</th><th colspan="2" class="grp">회신</th>
@@ -4203,6 +4248,51 @@ function iqCaseCard(q, rows) {
     </div>`;
   }
   return h + `</section>`;
+}
+// ---- 진행 관리 (탐색 건 단위) ----
+// 링크: http(s) 주소 · 메일 주소만 열기 버튼을 붙임 (그 밖의 글은 메모처럼 그대로 보관)
+function iqSafeUrl(u) {
+  const t = String(u || "").trim(); if (!t) return "";
+  if (/^https?:\/\/[^\s]+$/i.test(t)) return t;
+  if (/^mailto:[^\s]+$/i.test(t)) return t;
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(t)) return "mailto:" + t;
+  if (/^www\.[^\s]+$/i.test(t)) return "https://" + t;
+  return "";
+}
+function iqMemoHtml(q) {
+  const fold = !!iq.mfold[q.id], hs = q.hist || [], last = hs[hs.length - 1];
+  const names = [...new Set([...(q.people || []).map((x) => x.name), ...hs.map((x) => x.who)].filter(Boolean))];
+  const ppl = (q.people || []).map((x) => `<span class="iq-mchip"><input class="iq-in iq-mrole" data-iqk="p:${q.id}:${x.id}:role" value="${esc(x.role)}" placeholder="역할" autocomplete="off" aria-label="역할" /><input class="iq-in iq-mname" data-iqk="p:${q.id}:${x.id}:name" value="${esc(x.name)}" placeholder="이름" autocomplete="off" aria-label="${esc(x.role || "관계자")} 이름" />${iqDelBtn(`p:${q.id}:${x.id}`, "×", "이 관계자 빼기")}</span>`).join("");
+  const lnk = (q.links || []).map((x) => { const u = iqSafeUrl(x.url);
+    return `<span class="iq-mchip iq-lchip"><input class="iq-in iq-mrole" data-iqk="l:${q.id}:${x.id}:label" value="${esc(x.label)}" placeholder="이름" autocomplete="off" aria-label="링크 이름" /><input class="iq-in iq-murl" data-iqk="l:${q.id}:${x.id}:url" value="${esc(x.url)}" placeholder="주소 붙여넣기 (https://… · 메일 주소)" autocomplete="off" inputmode="url" aria-label="${esc(x.label || "링크")} 주소" />${u ? `<a class="iq-lgo" href="${esc(u)}" target="_blank" rel="noopener noreferrer" title="열기 — ${esc(u)}">↗</a>` : ""}${iqDelBtn(`l:${q.id}:${x.id}`, "×", "이 링크 빼기")}</span>`; }).join("");
+  const rows = hs.map((x) => `<div class="iq-hrow"><input type="date" class="iq-in iq-date" data-iqk="h:${q.id}:${x.id}:date" value="${x.date}" aria-label="날짜" />
+      <input class="iq-in iq-hwho" data-iqk="h:${q.id}:${x.id}:who" value="${esc(x.who)}" list="iq-ppl-${q.id}" placeholder="담당" autocomplete="off" aria-label="담당" />
+      <textarea class="iq-in iq-htext" data-iqk="h:${q.id}:${x.id}:text" rows="1" placeholder="내용 (여러 줄 가능 — Enter로 줄바꿈)" aria-label="내용">${esc(x.text)}</textarea>
+      ${iqDelBtn(`h:${q.id}:${x.id}`, "×", "이 기록 지우기")}</div>`).join("");
+  return `<div class="iq-memo ${fold ? "fold" : ""}">
+    <div class="iq-mhead"><button type="button" class="iq-mtg" data-iq-mfold="${q.id}" aria-expanded="${!fold}">${fold ? "▸" : "▾"} 진행 관리</button>
+      ${fold ? `<span class="iq-msum">${[(q.people || []).filter((x) => x.name).map((x) => `${esc(x.role)} ${esc(x.name)}`).join(" · "), last ? `<b>${fmtMD(last.date)}</b> ${esc(last.who)} ${esc(String(last.text).split("\n")[0].slice(0, 60))}` : ""].filter(Boolean).join(" &nbsp;|&nbsp; ") || "관계자 · 링크 · 진행 기록"}</span><span class="muted">기록 ${hs.length}건</span>`
+        : `<span class="muted">관계자 · 링크 · 날짜별 진행 기록 — 칸을 눌러 바로 입력</span>`}</div>
+    ${fold ? "" : `<div class="iq-mgrid">
+      <span class="iq-mlab">관계자</span><div class="iq-mlist">${ppl}<button type="button" class="iq-mplus" data-iq-addp="${q.id}" title="관계자 추가">＋</button></div>
+      <span class="iq-mlab">링크</span><div class="iq-mlist">${lnk}<button type="button" class="iq-mplus" data-iq-addl="${q.id}" title="링크 추가">＋</button></div>
+      <span class="iq-mlab">진행 기록</span><div class="iq-hlist">${rows || `<span class="muted iq-hnone">아직 기록이 없습니다 — '＋ 기록 추가'로 날짜별 진행 내용을 남기세요</span>`}
+        <div><button type="button" class="iq-add iq-hadd" data-iq-addh="${q.id}">＋ 기록 추가</button></div></div>
+    </div><datalist id="iq-ppl-${q.id}">${names.map((n) => `<option value="${esc(n)}"></option>`).join("")}</datalist>`}
+  </div>`;
+}
+// 진행 기록 내용 칸: 줄 수만큼 높이 (field-sizing 미지원 브라우저용)
+const IQ_FS = (() => { try { return CSS.supports("field-sizing", "content"); } catch (_) { return false; } })();
+function iqFit(el) { if (IQ_FS || !el) return; el.style.height = "auto"; el.style.height = el.scrollHeight + 2 + "px"; }
+function iqFitAll() { if (!IQ_FS) document.querySelectorAll(".iq-htext").forEach(iqFit); }
+document.addEventListener("input", (e) => { if (e.target.classList && e.target.classList.contains("iq-htext")) iqFit(e.target); });
+function iqMemoAdd(qid, kind) {
+  const q = iqClone(iqQ(qid)); if (!q) return;
+  const id = uid();
+  if (kind === "p") { q.people.push({ id, role: "", name: "" }); iqFocusNext = `p:${qid}:${id}:role`; }
+  else if (kind === "l") { q.links.push({ id, label: "", url: "" }); iqFocusNext = `l:${qid}:${id}:label`; }
+  else { const prev = q.hist[q.hist.length - 1]; q.hist.push({ id, date: todayStr(), who: prev ? prev.who : "", text: "", at: Date.now() }); iqFocusNext = `h:${qid}:${id}:text`; }
+  iq.mfold[qid] = false; iqSave(); Store.saveInquiry(q);
 }
 // 가능여부: O · X · △ (예전 값 가능/불가/협의도 같은 칸으로 읽음)
 const IQ_OX = [["O", "가능"], ["X", "불가"], ["△", "협의"]];
@@ -4383,6 +4473,12 @@ function inqFieldChange(e) {
     return; }
   const q0 = iqQ(a); if (!q0) return;
   const q = iqClone(q0);
+  if (t === "p" || t === "l" || t === "h") {                              // 진행 관리
+    const list = q[{ p: "people", l: "links", h: "hist" }[t]] || [], x = list.find((y) => y.id === b); if (!x) return;
+    if (t === "h" && c === "date") x.date = val || x.date;
+    else x[c] = t === "h" && c === "text" ? val : String(val).trim();
+    Store.saveInquiry(q); return;
+  }
   if (t === "c") {
     if (b === "catsel") { if (val === "__etc") { q.category = "기타"; iqFocusNext = `c:${q.id}:category`; } else q.category = val; Store.saveInquiry(q); return; }
     if (b === "category") { q.category = String(val).trim() || "기타"; Store.saveInquiry(q); return; }
@@ -4491,6 +4587,7 @@ function iqAddItemTo(qid, label) {
 function iqDoDelete(k) {
   const [t, a, b] = k.split(":");
   if (t === "case") { const q = iqQ(a); Store.deleteInquiry(a); toast(`'${(q && q.title) || "탐색 건"}'을(를) 삭제했습니다`); }
+  else if (t === "p" || t === "l" || t === "h") { const q = iqClone(iqQ(a)); if (!q) return; const f = { p: "people", l: "links", h: "hist" }[t]; q[f] = q[f].filter((x) => x.id !== b); Store.saveInquiry(q); }
   else if (t === "row") { const q = iqClone(iqQ(a)); q.rows = q.rows.filter((x) => x.id !== b); Store.saveInquiry(q); toast("줄을 삭제했습니다 (업체 정보는 남아 있습니다)"); }
   else if (t === "vendor") { const n = inqVendorCases(a).length; if (n) { toast(`탐색 건 ${n}개에서 쓰고 있어 삭제할 수 없습니다 — 그 줄을 먼저 지워 주세요`); return; }
     const v = vendorById(a); Store.deleteVendor(a); iq.vendor = null; toast(`'${v ? v.name : "업체"}'를 삭제했습니다`); }
@@ -4510,6 +4607,8 @@ function inqClick(e) {
   const dt = t.closest("[data-iq-det]"); if (dt) { const k = dt.dataset.iqDet; iq.det[k] = !iq.det[k]; render(); return; }
   const so = t.closest("[data-iq-sort]"); if (so) { const k = so.dataset.iqSort, cur = iq.isort || { k: "vendor", d: 1 }; iq.isort = { k, d: cur.k === k ? -cur.d : 1 }; const t2 = document.getElementById("iq-itable"); if (t2) t2.innerHTML = iqItemTable(); return; }
   const xl = t.closest("[data-iq-xlsx]"); if (xl) { iqExportXlsx(xl.dataset.iqXlsx); return; }
+  const mf = t.closest("[data-iq-mfold]"); if (mf) { const id = mf.dataset.iqMfold; iq.mfold[id] = !iq.mfold[id]; iqSave(); render(); return; }
+  const mp = t.closest("[data-iq-addp],[data-iq-addl],[data-iq-addh]"); if (mp) { const d = mp.dataset; if (d.iqAddp) iqMemoAdd(d.iqAddp, "p"); else if (d.iqAddl) iqMemoAdd(d.iqAddl, "l"); else iqMemoAdd(d.iqAddh, "h"); return; }
   const ag = t.closest("[data-iq-additemgo]"); if (ag) { const inp = document.querySelector(`[data-iqk="ai:${ag.dataset.iqAdditemgo}"]`); const lab = inp ? inp.value.trim() : ""; if (!lab) { if (inp) inp.focus(); toast("추가할 항목 이름을 입력해 주세요"); return; } iqAddItemTo(ag.dataset.iqAdditemgo, lab); return; }
   const ax = t.closest("[data-iq-additemx]"); if (ax) { iq.addItem = null; render(); return; }
   const ap = t.closest("[data-iq-additempick]"); if (ap) { const [qa, id] = ap.dataset.iqAdditempick.split(":"); const q = iqClone(iqQ(qa)); if (!q.items.includes(id)) q.items.push(id); iq.addItem = null; Store.saveInquiry(q); return; }
@@ -4600,13 +4699,14 @@ const iqX = (v) => String(v == null ? "" : v).replace(/[\u0000-\u0008\u000B\u000
 const iqColL = (i) => { let s = ""; i++; while (i) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; };
 // rows: [[{v, s}]] — s: 1 제목 · 2 머리 · 3 글자 · 4 숫자 · 5 안내
 function iqXlsx(sheetName, rows, widths, opt) {
-  const sheetRows = rows.map((row, ri) => `<row r="${ri + 1}">${row.map((c, ci) => { if (c == null || c.v == null || c.v === "") return c && c.s ? `<c r="${iqColL(ci)}${ri + 1}" s="${c.s}"/>` : "";
+  const fEnd = opt.tableEnd || rows.length, hts = opt.heights || {};
+  const sheetRows = rows.map((row, ri) => `<row r="${ri + 1}"${hts[ri + 1] ? ` ht="${hts[ri + 1]}" customHeight="1"` : ""}>${row.map((c, ci) => { if (c == null || c.v == null || c.v === "") return c && c.s ? `<c r="${iqColL(ci)}${ri + 1}" s="${c.s}"/>` : "";
     const ref = `${iqColL(ci)}${ri + 1}`; return typeof c.v === "number" ? `<c r="${ref}" s="${c.s || 0}"><v>${c.v}</v></c>` : `<c r="${ref}" s="${c.s || 0}" t="inlineStr"><is><t xml:space="preserve">${iqX(c.v)}</t></is></c>`; }).join("")}</row>`).join("");
   const last = iqColL(widths.length - 1);
   const sheet = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">`
     + `<sheetViews><sheetView workbookViewId="0"><pane ySplit="${opt.headRow}" topLeftCell="A${opt.headRow + 1}" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><sheetFormatPr defaultRowHeight="16.5"/>`
     + `<cols>${widths.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join("")}</cols><sheetData>${sheetRows}</sheetData>`
-    + (rows.length > opt.headRow ? `<autoFilter ref="A${opt.headRow}:${last}${rows.length}"/>` : "")
+    + (fEnd > opt.headRow ? `<autoFilter ref="A${opt.headRow}:${last}${fEnd}"/>` : "")
     + (opt.merges && opt.merges.length ? `<mergeCells count="${opt.merges.length}">${opt.merges.map((m) => `<mergeCell ref="${m}"/>`).join("")}</mergeCells>` : "")
     + `<pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/><pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>`;
   const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">`
@@ -4625,7 +4725,7 @@ function iqXlsx(sheetName, rows, widths, opt) {
   return iqZip([
     { name: "[Content_Types].xml", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>` },
     { name: "_rels/.rels", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>` },
-    { name: "xl/workbook.xml", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="${iqX(safe)}" sheetId="1" r:id="rId1"/></sheets>${rows.length > opt.headRow ? `<definedNames><definedName name="_xlnm._FilterDatabase" localSheetId="0" hidden="1">'${iqX(safe.replace(/'/g, "''"))}'!$A$${opt.headRow}:$${last}$${rows.length}</definedName></definedNames>` : ""}</workbook>` },
+    { name: "xl/workbook.xml", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="${iqX(safe)}" sheetId="1" r:id="rId1"/></sheets>${fEnd > opt.headRow ? `<definedNames><definedName name="_xlnm._FilterDatabase" localSheetId="0" hidden="1">'${iqX(safe.replace(/'/g, "''"))}'!$A$${opt.headRow}:$${last}$${fEnd}</definedName></definedNames>` : ""}</workbook>` },
     { name: "xl/_rels/workbook.xml.rels", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>` },
     { name: "xl/styles.xml", data: styles },
     { name: "xl/worksheets/sheet1.xml", data: sheet },
@@ -4644,9 +4744,12 @@ function iqExportXlsx(qid) {
     [T(`${q.title || "(목적 없음)"}`, 1)],
     [T(`${q.category}${q.secret ? " · 대외비" : ""} · 문의 ${q.askedAt} · 회신 기한 +${q.gap}영업일 (${inqCaseDue(q)})${q.done ? " · 완료" : ""}`, 5)],
     ...(q.common ? [[T(`공통 요청: ${q.common}`, 5)]] : []),
+    ...((q.people || []).some((x) => x.name) ? [[T(`관계자: ${q.people.filter((x) => x.name).map((x) => `${x.role ? x.role + " " : ""}${x.name}`).join(" · ")}`, 5)]] : []),
+    ...(q.links || []).filter((x) => x.url).map((x) => [T(`${x.label || "링크"}: ${x.url}`, 5)]),
     [],
     head.map((h) => T(h, 2)),
   ];
+  const metaN = rows.length - 2;                                            // 제목 아래 요약 줄 수 (병합)
   const headRow = rows.length;
   q.rows.filter((r) => r.vendorId).forEach((r) => {
     const v = vendorById(r.vendorId) || {};
@@ -4654,8 +4757,20 @@ function iqExportXlsx(qid) {
       ...ix.map((k) => (IQ_NUM_ITEMS.includes(k) ? N(r.answers[k]) : T(r.answers[k]))),
       T(INQ_STATUS[r.status] + (inqRowLate(q, r) ? ` (D+${inqRowLate(q, r)})` : "")), T(r.replyDate || ""), T(r.detail), T(r.note)]);
   });
-  const lastCol = iqColL(head.length - 1), merges = [`A1:${lastCol}1`, `A2:${lastCol}2`, ...(q.common ? [`A3:${lastCol}3`] : [])];
-  const blob = iqXlsx(q.title || "탐색", rows, widths, { headRow, merges });
+  const lastCol = iqColL(head.length - 1), merges = [...Array(metaN)].map((_, i) => `A${i + 1}:${lastCol}${i + 1}`);
+  const tableEnd = rows.length, heights = {};
+  if ((q.hist || []).length) {                                              // 진행 기록: 날짜 · 담당 · 내용(나머지 열을 합쳐 넓게)
+    rows.push([], [T("진행 기록", 2), T("담당", 2), T("내용", 2), ...head.slice(3).map(() => T("", 2))]);
+    merges.push(`C${rows.length}:${lastCol}${rows.length}`);
+    const wide = widths.slice(2).reduce((n, w) => n + w, 0);
+    q.hist.forEach((x) => {
+      rows.push([T(x.date), T(x.who), T(x.text), ...head.slice(3).map(() => T("", 3))]);
+      merges.push(`C${rows.length}:${lastCol}${rows.length}`);
+      const lines = String(x.text || "").split("\n").reduce((n, l) => n + Math.max(1, Math.ceil((l.length * 1.8) / wide)), 0);
+      if (lines > 1) heights[rows.length] = Math.min(400, 16.5 * lines + 3);
+    });
+  }
+  const blob = iqXlsx(q.title || "탐색", rows, widths, { headRow, merges, tableEnd, heights });
   const name = `업체탐색_${(q.title || "탐색").replace(/[\\/:*?"<>|]/g, "_").slice(0, 40)}_${todayStr()}.xlsx`;
   const url = URL.createObjectURL(blob), a = document.createElement("a"); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 3000);
@@ -4951,7 +5066,7 @@ function render() {
   else if (ui.view === "todo") content.innerHTML = renderTodo();
   else if (ui.view === "settings") content.innerHTML = renderSettings();
   else if (ui.view === "backup") content.innerHTML = renderBackup();
-  else if (ui.view === "vendors") { if (!iqQuiet) { const fs = iqCaptureFocus(); content.innerHTML = renderVendors(); iqRestoreFocus(fs); } }
+  else if (ui.view === "vendors") { if (!iqQuiet) { const fs = iqCaptureFocus(); content.innerHTML = renderVendors(); iqFitAll(); iqRestoreFocus(fs); } }
   else if (ui.view === "projects") content.innerHTML = renderProjects();
   else if (ui.view === "stats") content.innerHTML = renderStats();
   else if (ui.view === "timetable") {
