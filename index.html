@@ -1154,7 +1154,11 @@
   .pin-tk-nav:first-child{margin-right:4px;}
   .pin-tk-nav:hover{border-color:var(--work);color:var(--work);}
   .pin-tk-nav:active{transform:scale(.92);}
-  .pin-sec{font-size:10px;font-weight:800;color:var(--text-faint);margin:2px 0 4px;}
+  .pin-sec{font-size:10px;font-weight:800;color:var(--text-faint);margin:2px 0 4px;display:flex;align-items:center;gap:6px;}
+  .pin-sec > span{flex:1;min-width:0;}
+  .pin-sort{flex:none;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);border-radius:999px;
+    font:inherit;font-size:9.5px;font-weight:800;padding:1px 7px;cursor:pointer;line-height:1.5;}
+  .pin-sort:hover{border-color:var(--work);color:var(--work);}
   .pin-divider{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:800;color:var(--work);margin:10px 0 5px;}
   .pin-divider::before,.pin-divider::after{content:"";flex:1;height:1px;background:var(--border);}
   .pin-todo .dd{font-size:9px;font-weight:800;color:#fff;background:var(--urgent);padding:0 4px;border-radius:4px;margin-right:4px;}
@@ -2062,7 +2066,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-11-12 · 오늘 할 일 고정 접은 창 ‹ › 수동 넘기기";
+const APP_VERSION = "2026-11-16 · 오늘 할 일 고정 창 기본 정렬 지연순";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -4696,6 +4700,7 @@ function inqTodayHtml() {
 function inqPinHtml() {
   const today = todayStr(), xs = inqPending().filter((x) => x.late || x.due === today);
   if (!xs.length) return "";
+  if (pinByDelay()) xs.sort((a, b) => (b.late || 0) - (a.late || 0));
   return `<div class="pin-divider">회신 대기 · ${xs.length}</div>` + xs.map((x) => `<div class="pin-todo k-todo inq-pin ${x.late ? "pri-urgent" : "pri-high"}" data-inq-open="${x.q.id}" title="${esc(x.q.title)}">
       <span class="inq-ico">${IC_MAIL}</span><div class="pin-tx"><div class="t">${x.late ? `<span class="dd">D+${x.late}</span>` : ""}${esc(x.name)}</div><div class="m">${esc(x.q.title)}${x.late ? "" : " · 오늘 기한"}</div></div></div>`).join("");
 }
@@ -6067,19 +6072,32 @@ function importData() {
 /* ---------- 핀: 오늘 할 일 고정 ----------
    지원 브라우저(크롬 등)에서는 Document Picture-in-Picture로 '항상 위'에 뜨는
    실제 창을 띄웁니다. 미지원 시 앱 내부 플로팅 위젯으로 대체합니다. */
-const pinState = { open: false, collapsed: false, opacity: 100, x: null, y: null, doneOpen: false, keepOnClose: true, pipH: 400, fontScale: 100 };
+const pinState = { open: false, collapsed: false, opacity: 100, x: null, y: null, doneOpen: false, keepOnClose: true, pipH: 400, fontScale: 100, sort: "delay" };
 let pipWin = null;
 function pipSupported() { return "documentPictureInPicture" in window; }
 function loadPin() { try { const p = JSON.parse(localStorage.getItem("scheduler:pin") || "{}"); Object.assign(pinState, p); pinState.open = false; pinState.doneOpen = false; } catch (e) {} }
 function savePin() { try { localStorage.setItem("scheduler:pin", JSON.stringify(pinState)); } catch (e) {} }
 
 // 핀/항상위: 미완료 할 일(어제까지 못한 것 + 오늘 + 그 사이 추가) → 구분선 → 오늘 일정(이월 포함)
+// 정렬: 기본은 지연순(가장 오래 밀린 것부터) — 같은 지연이면 기존 순서(마감일·우선순위 / 시간)
+function pinTodoDelay(t, today) {
+  return t.rolledFrom ? daysBetween(t.rolledFrom, today) : t.due && t.due < today ? daysBetween(t.due, today) : 0;
+}
+function pinByDelay() { return pinState.sort !== "time"; }
+function pinTodosSorted(today) {
+  const xs = Store.state.todos.filter((t) => !t.done && (!t.due || t.due <= today))
+    .sort((a, b) => (a.due || "9999").localeCompare(b.due || "9999") || PRIO[a.priority].rank - PRIO[b.priority].rank);
+  return pinByDelay() ? xs.map((t, i) => [t, pinTodoDelay(t, today), i]).sort((a, b) => b[1] - a[1] || a[2] - b[2]).map((x) => x[0]) : xs;
+}
+function pinEventsSorted() {
+  const xs = todayAgendaEvents();
+  return pinByDelay() ? xs.map((e, i) => [e, i]).sort((a, b) => (b[0]._delay || 0) - (a[0]._delay || 0) || a[1] - b[1]).map((x) => x[0]) : xs;
+}
 function pinItemsHtml() {
   const today = todayStr();
-  const todos = Store.state.todos.filter((t) => !t.done && (!t.due || t.due <= today))
-    .sort((a, b) => (a.due || "9999").localeCompare(b.due || "9999") || PRIO[a.priority].rank - PRIO[b.priority].rank);
-  const events = todayAgendaEvents();
-  let h = `<div class="pin-sec">할 일 · ${todos.length}</div>`;
+  const todos = pinTodosSorted(today);
+  const events = pinEventsSorted();
+  let h = `<div class="pin-sec"><span>할 일 · ${todos.length}</span><button type="button" class="pin-sort" data-pin-sort title="정렬 바꾸기 — 지연순: 가장 오래 밀린 것부터 · 기본순: 마감일·시간순">${pinByDelay() ? "지연순" : "기본순"} ⇅</button></div>`;
   h += todos.length ? todos.map((t) => {
     const late = t.rolledFrom ? `<span class="dd">D+${daysBetween(t.rolledFrom, today)}</span>` : (t.due && t.due < today ? `<span class="dd">D+${daysBetween(t.due, today)}</span>` : "");
     return `<div class="pin-todo k-todo ${t.cat} pri-${t.priority}${lateCls(t)}" title="${esc(t.title)}${lateTitle(t)}">
@@ -6119,12 +6137,12 @@ const PIN_TICK_N = 5, PIN_TICK_MS = 20000;
 let pinTickPage = 0;
 function pinTickerItems() {
   const today = todayStr();
-  const todos = Store.state.todos.filter((t) => !t.done && (!t.due || t.due <= today))
-    .sort((a, b) => (a.due || "9999").localeCompare(b.due || "9999") || PRIO[a.priority].rank - PRIO[b.priority].rank)
-    .map((t) => ({ kind: "todo", id: t.id, title: t.title, pri: t.priority, cat: t.cat, late: lateCls(t),
-      d: t.rolledFrom ? daysBetween(t.rolledFrom, today) : t.due && t.due < today ? daysBetween(t.due, today) : 0 }));
-  const evs = todayAgendaEvents().map((e) => ({ kind: "event", id: e._base || e.id, title: e.title, pri: e.priority, cat: e.cat, late: lateCls(e), d: e._delay || 0 }));
-  return todos.concat(evs);
+  const todos = pinTodosSorted(today)
+    .map((t) => ({ kind: "todo", id: t.id, title: t.title, pri: t.priority, cat: t.cat, late: lateCls(t), d: pinTodoDelay(t, today) }));
+  const evs = pinEventsSorted().map((e) => ({ kind: "event", id: e._base || e.id, title: e.title, pri: e.priority, cat: e.cat, late: lateCls(e), d: e._delay || 0 }));
+  const all = todos.concat(evs);
+  // 지연순이면 할 일·일정을 섞어 가장 많이 밀린 것부터 (같으면 할 일 → 일정 순서 유지)
+  return pinByDelay() ? all.map((x, i) => [x, i]).sort((a, b) => b[0].d - a[0].d || a[1] - b[1]).map((x) => x[0]) : all;
 }
 function pinTickerHtml() {
   const all = pinTickerItems(), pages = Math.max(1, Math.ceil(all.length / PIN_TICK_N));
@@ -6160,6 +6178,7 @@ function pinBodyClick(e) {
   const tk = e.target.closest("[data-pin-tk]"); if (tk) { pinTickGo(+tk.dataset.pinTk, true); return; }
   const tg = e.target.closest("[data-pin-tkgo]"); if (tg) { pinTickGo(+tg.dataset.pinTkgo, false); return; }
   const io = e.target.closest("[data-inq-open]"); if (io) { inqOpenCase(io.dataset.inqOpen); return; }
+  if (e.target.closest("[data-pin-sort]")) { pinState.sort = pinByDelay() ? "time" : "delay"; pinTickPage = 0; savePin(); renderPin(); return; }
   if (e.target.closest("[data-pin-donetoggle]")) { pinState.doneOpen = !pinState.doneOpen; savePin(); renderPin(); return; }
   const pj = e.target.closest("[data-proj]"); if (pj) { try { window.focus(); } catch (_) {} openProject(pj.dataset.proj); return; }
   const tb = e.target.closest("[data-pin-toggle]"); if (tb) { Store.toggleTodo(tb.dataset.pinToggle); return; }
