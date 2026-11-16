@@ -1658,7 +1658,7 @@
   .iq-empty{padding:28px 10px;text-align:center;color:var(--text-soft);}
   .iq-case{background:var(--surface);border:1px solid var(--border);border-radius:16px;margin-bottom:12px;overflow:hidden;}
   .iq-case.done{background:var(--surface-2);}
-  .iq-ch{display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;flex-wrap:wrap;}
+  .iq-ch{display:flex;align-items:center;gap:6px;padding:11px 14px;cursor:pointer;flex-wrap:wrap;}
   .iq-tg{width:26px;height:26px;flex:none;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);font-weight:900;color:var(--work);line-height:1;}
   .iq-cat{display:inline-block;padding:2px 9px;border-radius:999px;background:var(--work-soft);color:var(--work);font-size:11px;font-weight:700;white-space:nowrap;margin-right:4px;}
   .iq-title{font-size:15px;}
@@ -1668,7 +1668,7 @@
   .iq-sp{flex:1 1 auto;}
   .iq-prog{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-soft);}
   .iq-prog b{color:var(--text);}
-  .iq-prog i{display:block;width:70px;height:6px;border-radius:3px;background:color-mix(in srgb, var(--text) 10%, transparent);position:relative;overflow:hidden;}
+  .iq-prog i{display:block;width:48px;height:6px;border-radius:3px;background:color-mix(in srgb, var(--text) 10%, transparent);position:relative;overflow:hidden;}
   .iq-prog i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--p);background:var(--done);border-radius:3px;}
   .iq-late,.iq-dn{display:inline-block;padding:1px 8px;border-radius:999px;background:var(--urgent);color:#fff;font-size:11px;font-weight:900;font-style:normal;}
   .iq-donebadge{padding:1px 8px;border-radius:999px;background:var(--done-soft);color:var(--done);font-size:11px;font-weight:800;}
@@ -1677,36 +1677,44 @@
   .iq-sm{padding:5px 10px !important;font-size:11.5px !important;}
   .iq-xs{padding:2px 7px !important;font-size:10.5px !important;margin-left:4px;}
   .iq-cb{padding:0 14px 12px;display:flex;flex-direction:column;gap:10px;}
-  /* 진행 관리 (관계자 · 링크 · 진행 기록) */
-  .iq-memo{border:1px solid var(--border);border-radius:12px;background:var(--surface-2);padding:8px 12px 10px;}
-  .iq-memo.fold{padding:6px 12px;}
-  .iq-mhead{display:flex;align-items:center;gap:10px;font-size:11.5px;min-width:0;}
-  .iq-mtg{border:0;background:transparent;font:inherit;font-size:12px;font-weight:800;color:var(--text);cursor:pointer;padding:2px 0;flex:none;}
-  .iq-mtg:hover{color:var(--work);}
-  .iq-msum{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-soft);}
-  .iq-msum b{color:var(--work);}
-  .iq-mgrid{display:grid;grid-template-columns:64px 1fr;gap:6px 10px;align-items:start;margin-top:8px;}
-  .iq-mlab{font-size:11px;font-weight:800;color:var(--text-faint);padding-top:6px;}
-  .iq-mlist{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-width:0;}
-  .iq-mchip{display:inline-flex;align-items:center;gap:2px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:1px 2px 1px 4px;max-width:100%;}
+  /* 진행 관리: 머리 줄 요약 버튼 + 펼침(관계자·링크 1줄, 진행 기록 한 줄씩) */
+  .iq-msum{display:inline-flex;align-items:center;gap:7px;flex:0 1 auto;min-width:150px;max-width:340px;height:30px;padding:0 12px;border:1.5px solid var(--border-strong);
+    border-radius:9px;background:var(--surface);font:inherit;font-size:12px;color:var(--text);cursor:pointer;white-space:nowrap;overflow:hidden;}
+  .iq-msum:hover,.iq-msum.on{border-color:var(--text);}
+  .iq-msum > b{flex:none;font-weight:800;}
+  .iq-msum .iq-mar{font-size:10px;color:var(--text-soft);}
+  .iq-msum .iq-mppl{min-width:0;overflow:hidden;text-overflow:ellipsis;color:var(--text-soft);}
+  .iq-msum .iq-msep{flex:none;width:1px;height:14px;background:var(--border-strong);}
+  .iq-msum .iq-mlast{flex:none;font-weight:800;color:var(--work);}
+  .iq-msum small{flex:none;font-size:10px;font-weight:800;color:var(--text-faint);}
+  .iq-memo{margin:0 14px 10px;padding:8px 10px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);display:flex;flex-direction:column;gap:6px;}
+  .iq-mline{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+  .iq-mdiv{width:1px;height:20px;background:var(--border-strong);margin:0 4px;}
+  .iq-mchip{display:inline-flex;align-items:center;gap:1px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:1px 2px 1px 4px;max-width:100%;}
   .iq-mchip .iq-in{padding:3px 5px;font-size:12px;}
-  .iq-mchip .iq-mrole{width:64px;font-weight:800;color:var(--work);}
-  .iq-mchip .iq-mname{width:90px;}
-  .iq-mchip .iq-murl{width:260px;color:var(--text-soft);}
+  .iq-mchip .iq-mrole{width:58px;font-weight:800;color:var(--work);}
+  .iq-mchip .iq-mname{width:72px;}
+  .iq-mchip .iq-murl{width:170px;color:var(--text-soft);text-overflow:ellipsis;}
+  .iq-mchip .iq-murl:focus{width:300px;}
   .iq-mchip .iq-del{padding:2px 6px;}
   .iq-lgo{flex:none;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;background:var(--work);color:#fff;font-weight:800;font-size:12px;text-decoration:none;}
   .iq-lgo:hover{filter:brightness(1.1);}
   .iq-mplus{flex:none;width:26px;height:26px;border-radius:8px;border:1.5px dashed var(--border-strong);background:transparent;color:var(--work);font-weight:800;font-size:14px;cursor:pointer;padding:0;}
   .iq-mplus:hover{border-color:var(--work);}
-  .iq-hlist{display:flex;flex-direction:column;gap:4px;min-width:0;}
-  .iq-hrow{display:grid;grid-template-columns:118px 92px 1fr auto;gap:6px;align-items:start;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:3px 4px;}
+  .iq-hlist{display:flex;flex-direction:column;gap:3px;}
+  .iq-hrow{display:grid;grid-template-columns:128px 84px minmax(0,1fr) auto;gap:6px;align-items:start;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:2px 4px;}
   .iq-hrow .iq-in{font-size:12px;}
   .iq-hrow .iq-hwho{font-weight:700;}
-  .iq-hrow .iq-htext{min-height:26px;resize:none;white-space:pre-wrap;}
-  .iq-hrow .iq-del{margin-top:2px;}
-  .iq-hnone{font-size:11.5px;padding:4px 0;}
-  .iq-hadd{font-size:11.5px;padding:4px 10px;}
-  @media (max-width:700px){ .iq-mgrid{grid-template-columns:1fr;} .iq-mlab{padding-top:2px;} .iq-hrow{grid-template-columns:110px 1fr auto;} .iq-hrow .iq-htext{grid-column:1 / -1;grid-row:2;} .iq-mchip .iq-murl{width:180px;} }
+  .iq-htw{position:relative;min-width:0;}
+  .iq-htw .iq-clamp{-webkit-line-clamp:1;padding:3px 52px 3px 5px;}
+  .iq-htw:focus-within .iq-hmore{display:none;}
+  .iq-hmore{position:absolute;right:4px;top:4px;font-size:10px;font-weight:800;color:var(--work);background:var(--surface-2);border-radius:999px;padding:1px 6px;pointer-events:none;}
+  .iq-hrow .iq-del{margin-top:1px;}
+  .iq-hnew{background:transparent;border-style:dashed;}
+  .iq-hnew .iq-htext{min-height:26px;resize:none;background:var(--surface);border-color:var(--border);}
+  .iq-hnew .iq-hadd{font-size:11.5px;padding:4px 10px;white-space:nowrap;}
+  @media (max-width:1500px) and (min-width:761px){ .iq-msum .iq-mppl{max-width:110px;} .iq-msum{min-width:0;} }
+  @media (max-width:760px){ .iq-msum{max-width:100%;} .iq-memo{margin:0 10px 10px;} .iq-hrow{grid-template-columns:118px minmax(0,1fr) auto;} .iq-hrow .iq-htw,.iq-hrow .iq-htext{grid-column:1 / -1;grid-row:2;} .iq-hnew .iq-hadd{grid-column:3;grid-row:1;} .iq-mdiv{display:none;} }
   .iq-top{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:10px;}
   .iq-box{background:var(--surface-2);border-radius:12px;padding:9px 12px;display:flex;flex-direction:column;gap:5px;}
   .iq-box .lab{font-size:11px;font-weight:700;color:var(--text-soft);}
@@ -1971,8 +1979,8 @@
   .iq-addcol{background:color-mix(in srgb, var(--text) 2%, transparent);}
   .iq-catsel{width:auto !important;max-width:120px;font-size:11.5px;font-weight:700;color:var(--work);background:var(--work-soft);border-radius:999px;padding:3px 6px;}
   .iq-catin{width:110px !important;text-align:left;}
-  .iq-titlein{flex:0 1 240px;max-width:300px;}
-  .iq-commonw{flex:1 1 260px;min-width:200px;max-width:520px;}
+  .iq-titlein{flex:0 1 auto;field-sizing:content;min-width:120px;max-width:300px;}
+  .iq-commonw{flex:1 1 140px;min-width:100px;max-width:520px;}
   .iq-commonw .iq-clamp{-webkit-line-clamp:1;background:var(--surface-2);border-radius:8px;}
   .iq-commonw .iq-clamp.empty{color:var(--text-faint);}
   .iq-sort{border:0;background:transparent;font:inherit;font-weight:700;color:inherit;cursor:pointer;padding:0;display:inline-flex;align-items:center;gap:4px;}
@@ -2096,7 +2104,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-11-16 · 업체 탐색 진행 관리(관계자·링크·날짜별 진행 기록)";
+const APP_VERSION = "2026-11-16 · 업체 탐색 진행 관리 간소화(머리 줄 요약·한 줄 배치·링크 3개)";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -4100,8 +4108,9 @@ const INQ_STATUS = { wait: "대기", reply: "회신", no: "불가", hold: "보�
 const IQ_UI_KEY = "scheduler:inq-ui";
 const iq = { view: "case", filter: "open", q: "", open: {}, vendor: null, item: "moq", paste: null, det: {} };
 try { Object.assign(iq, JSON.parse(localStorage.getItem(IQ_UI_KEY) || "{}")); iq.q = ""; iq.paste = null; iq.det = {}; } catch (_) {}
-if (!iq.mfold || typeof iq.mfold !== "object") iq.mfold = {};
-const iqSave = () => { try { const { view, filter, open, vendor, item, mfold } = iq; localStorage.setItem(IQ_UI_KEY, JSON.stringify({ view, filter, open, vendor, item, mfold })); } catch (_) {} };
+if (!iq.mopen || typeof iq.mopen !== "object") iq.mopen = {};
+delete iq.mfold; iq.hdraft = {};                                          // 진행 기록 입력 줄(아직 추가 전)의 내용
+const iqSave = () => { try { const { view, filter, open, vendor, item, mopen } = iq; localStorage.setItem(IQ_UI_KEY, JSON.stringify({ view, filter, open, vendor, item, mopen })); } catch (_) {} };
 const IC_MAIL = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>`;
 let iqFocusNext = null;          // 다음 그리기 뒤 커서를 둘 칸 (data-iqk)
 let iqQuiet = false, iqPtrDown = false, iqPendingRender = false;   // 마우스를 누른 채 저장될 땐 화면을 바로 다시 그리지 않음
@@ -4212,6 +4221,7 @@ function iqCaseCard(q, rows) {
       <select class="iq-in iq-catsel" data-iqk="c:${q.id}:catsel" aria-label="카테고리">${INQ_CAT_PRESET.map((c) => `<option ${q.category === c ? "selected" : ""}>${c}</option>`).join("")}<option value="__etc" ${isEtc ? "selected" : ""}>기타 (직접 입력)</option></select>
       ${isEtc ? `<input class="iq-in iq-catin" data-iqk="c:${q.id}:category" value="${q.category === "기타" ? "" : esc(q.category)}" placeholder="카테고리 입력" autocomplete="off" aria-label="카테고리 직접 입력" />` : ""}
       <input class="iq-in iq-titlein" data-iqk="c:${q.id}:title" value="${esc(q.title)}" placeholder="목적 입력 (예: 글라인더 하이드로겔)" autocomplete="off" aria-label="목적" />
+      ${iqMemoSumBtn(q)}
       <div class="iq-commonw" title="공통 요청 내용 — 모든 업체에 같이 보낸 사양 · 수량 · 납기">${iqClampTa(`c:${q.id}:common`, q.common, "공통 요청 내용", "공통 요청 내용 (사양 · 수량 · 납기)")}</div>
       <button type="button" class="iq-tgl ${q.secret ? "on secret" : ""}" data-iq-secret="${q.id}" title="대외비 표시">대외비</button>
       <span class="iq-meta">문의 <input type="date" class="iq-in iq-date" data-iqk="c:${q.id}:askedAt" value="${q.askedAt}" aria-label="문의일" /> · 기한 + <input class="iq-in iq-gap" data-iqk="c:${q.id}:gap" value="${q.gap}" inputmode="numeric" autocomplete="off" aria-label="회신 기한 영업일" />영업일 → <b>${fmtMD(inqCaseDue(q))}</b></span>
@@ -4221,12 +4231,12 @@ function iqCaseCard(q, rows) {
       <button type="button" class="iq-tgl ${q.done ? "on done" : ""}" data-iq-done="${q.id}" title="끝난 탐색 — 진행 중 목록과 알림에서 빠짐">${q.done ? "완료됨" : "완료"}</button>
       <button type="button" class="iq-tgl iq-xlsx" data-iq-xlsx="${q.id}" title="이 탐색 건 표를 엑셀(.xlsx)로 내려받기">엑셀</button>
       ${iqDelBtn("case:" + q.id, "삭제", "이 탐색 건 삭제 (업체 정보는 남음)")}
-    </div>`;
+    </div>${iq.mopen[q.id] ? iqMemoHtml(q) : ""}`;
   if (open) {
     const adding = iq.addItem === q.id, cw = (k) => (k === "add" && adding ? Math.max(250, iqColWidth(k)) : iqColWidth(k));
     const cols = iqCols(q), tw = cols.reduce((n, k) => n + cw(k), 0), ix = iqItemsX(q);
     const th = (key, label, extra = "") => `<th data-col="${key}" ${extra}>${label}${iqRz(key)}</th>`;
-    h += `<div class="iq-cb">${iqMemoHtml(q)}
+    h += `<div class="iq-cb">
       <div class="iq-table-w" data-iq-tw="${q.id}"><table class="iq-table fixed" style="width:${tw}px"><colgroup>${cols.map((k) => `<col data-col="${k}" style="width:${cw(k)}px" />`).join("")}</colgroup><thead>
         <tr>${th("no", "NO", 'class="no" rowspan="2"')}${th("c", "연락 이력", 'rowspan="2"')}${th("v", "업체명", 'rowspan="2"')}${th("o", "담당자<br><small>(콜마)</small>", 'rowspan="2"')}
           <th colspan="3" class="grp">업체 담당자</th><th colspan="${ix.length + 2}" class="grp">확인 항목</th><th colspan="2" class="grp">회신</th>
@@ -4259,41 +4269,67 @@ function iqSafeUrl(u) {
   if (/^www\.[^\s]+$/i.test(t)) return "https://" + t;
   return "";
 }
+const IQ_LINK_MAX = 3;
+// 머리 줄 요약: ▸ 진행 관리  영업 홍길동 · 연구소 김갑순 | 11/16
+function iqMemoSumBtn(q) {
+  const on = !!iq.mopen[q.id], hs = q.hist || [], last = hs[hs.length - 1];
+  const ppl = (q.people || []).filter((x) => x.name).map((x) => `${esc(x.role)} ${esc(x.name)}`).join(" · ");
+  return `<button type="button" class="iq-msum ${on ? "on" : ""}" data-iq-mopen="${q.id}" aria-expanded="${on}" title="${on ? "진행 관리 닫기" : "진행 관리 열기 — 관계자 · 링크 · 날짜별 진행 기록"}${last ? `\n최근 ${last.date} ${esc(last.who)} ${esc(String(last.text).split("\n")[0].slice(0, 80))}` : ""}">
+    <b class="iq-mar">${on ? "▾" : "▸"}</b><b>진행 관리</b>${ppl ? `<span class="iq-mppl">${ppl}</span>` : ""}${last ? `<span class="iq-msep"></span><span class="iq-mlast">${fmtMD(last.date)}</span>${hs.length > 1 ? `<small>${hs.length}</small>` : ""}` : ""}</button>`;
+}
+// 펼침: 1줄 = 관계자 + 링크(최대 3개) · 그 아래 진행 기록(한 줄씩, 누르면 아래로 펼쳐 전체 내용) · 맨 아래 새 기록 입력 줄
 function iqMemoHtml(q) {
-  const fold = !!iq.mfold[q.id], hs = q.hist || [], last = hs[hs.length - 1];
+  const hs = q.hist || [], d = iq.hdraft[q.id] || {};
   const names = [...new Set([...(q.people || []).map((x) => x.name), ...hs.map((x) => x.who)].filter(Boolean))];
   const ppl = (q.people || []).map((x) => `<span class="iq-mchip"><input class="iq-in iq-mrole" data-iqk="p:${q.id}:${x.id}:role" value="${esc(x.role)}" placeholder="역할" autocomplete="off" aria-label="역할" /><input class="iq-in iq-mname" data-iqk="p:${q.id}:${x.id}:name" value="${esc(x.name)}" placeholder="이름" autocomplete="off" aria-label="${esc(x.role || "관계자")} 이름" />${iqDelBtn(`p:${q.id}:${x.id}`, "×", "이 관계자 빼기")}</span>`).join("");
-  const lnk = (q.links || []).map((x) => { const u = iqSafeUrl(x.url);
-    return `<span class="iq-mchip iq-lchip"><input class="iq-in iq-mrole" data-iqk="l:${q.id}:${x.id}:label" value="${esc(x.label)}" placeholder="이름" autocomplete="off" aria-label="링크 이름" /><input class="iq-in iq-murl" data-iqk="l:${q.id}:${x.id}:url" value="${esc(x.url)}" placeholder="주소 붙여넣기 (https://… · 메일 주소)" autocomplete="off" inputmode="url" aria-label="${esc(x.label || "링크")} 주소" />${u ? `<a class="iq-lgo" href="${esc(u)}" target="_blank" rel="noopener noreferrer" title="열기 — ${esc(u)}">↗</a>` : ""}${iqDelBtn(`l:${q.id}:${x.id}`, "×", "이 링크 빼기")}</span>`; }).join("");
-  const rows = hs.map((x) => `<div class="iq-hrow"><input type="date" class="iq-in iq-date" data-iqk="h:${q.id}:${x.id}:date" value="${x.date}" aria-label="날짜" />
+  const links = q.links || [];
+  const lnk = links.map((x) => { const u = iqSafeUrl(x.url);
+    return `<span class="iq-mchip iq-lchip"><input class="iq-in iq-mrole" data-iqk="l:${q.id}:${x.id}:label" value="${esc(x.label)}" placeholder="이름" autocomplete="off" aria-label="링크 이름" /><input class="iq-in iq-murl" data-iqk="l:${q.id}:${x.id}:url" value="${esc(x.url)}" placeholder="주소 붙여넣기 (https://…)" autocomplete="off" inputmode="url" aria-label="${esc(x.label || "링크")} 주소" title="${esc(x.url)}" />${u ? `<a class="iq-lgo" href="${esc(u)}" target="_blank" rel="noopener noreferrer" title="열기 — ${esc(u)}">↗</a>` : ""}${iqDelBtn(`l:${q.id}:${x.id}`, "×", "이 링크 빼기")}</span>`; }).join("");
+  const rows = hs.map((x) => { const n = String(x.text || "").split("\n").length;
+    return `<div class="iq-hrow"><input type="date" class="iq-in iq-date" data-iqk="h:${q.id}:${x.id}:date" value="${x.date}" aria-label="날짜" />
       <input class="iq-in iq-hwho" data-iqk="h:${q.id}:${x.id}:who" value="${esc(x.who)}" list="iq-ppl-${q.id}" placeholder="담당" autocomplete="off" aria-label="담당" />
-      <textarea class="iq-in iq-htext" data-iqk="h:${q.id}:${x.id}:text" rows="1" placeholder="내용 (여러 줄 가능 — Enter로 줄바꿈)" aria-label="내용">${esc(x.text)}</textarea>
-      ${iqDelBtn(`h:${q.id}:${x.id}`, "×", "이 기록 지우기")}</div>`).join("");
-  return `<div class="iq-memo ${fold ? "fold" : ""}">
-    <div class="iq-mhead"><button type="button" class="iq-mtg" data-iq-mfold="${q.id}" aria-expanded="${!fold}">${fold ? "▸" : "▾"} 진행 관리</button>
-      ${fold ? `<span class="iq-msum">${[(q.people || []).filter((x) => x.name).map((x) => `${esc(x.role)} ${esc(x.name)}`).join(" · "), last ? `<b>${fmtMD(last.date)}</b> ${esc(last.who)} ${esc(String(last.text).split("\n")[0].slice(0, 60))}` : ""].filter(Boolean).join(" &nbsp;|&nbsp; ") || "관계자 · 링크 · 진행 기록"}</span><span class="muted">기록 ${hs.length}건</span>`
-        : `<span class="muted">관계자 · 링크 · 날짜별 진행 기록 — 칸을 눌러 바로 입력</span>`}</div>
-    ${fold ? "" : `<div class="iq-mgrid">
-      <span class="iq-mlab">관계자</span><div class="iq-mlist">${ppl}<button type="button" class="iq-mplus" data-iq-addp="${q.id}" title="관계자 추가">＋</button></div>
-      <span class="iq-mlab">링크</span><div class="iq-mlist">${lnk}<button type="button" class="iq-mplus" data-iq-addl="${q.id}" title="링크 추가">＋</button></div>
-      <span class="iq-mlab">진행 기록</span><div class="iq-hlist">${rows || `<span class="muted iq-hnone">아직 기록이 없습니다 — '＋ 기록 추가'로 날짜별 진행 내용을 남기세요</span>`}
-        <div><button type="button" class="iq-add iq-hadd" data-iq-addh="${q.id}">＋ 기록 추가</button></div></div>
-    </div><datalist id="iq-ppl-${q.id}">${names.map((n) => `<option value="${esc(n)}"></option>`).join("")}</datalist>`}
+      <div class="iq-htw">${iqClampTa(`h:${q.id}:${x.id}:text`, x.text, "내용", "내용")}${n > 1 ? `<span class="iq-hmore" title="누르면 아래로 펼쳐 전체 내용">+${n - 1}줄</span>` : ""}</div>
+      ${iqDelBtn(`h:${q.id}:${x.id}`, "×", "이 기록 지우기")}</div>`; }).join("");
+  return `<div class="iq-memo">
+    <div class="iq-mline">${ppl}<button type="button" class="iq-mplus" data-iq-addp="${q.id}" title="관계자 추가">＋</button><span class="iq-mdiv"></span>${lnk}${links.length < IQ_LINK_MAX ? `<button type="button" class="iq-mplus" data-iq-addl="${q.id}" title="링크 추가 (최대 ${IQ_LINK_MAX}개)">＋</button>` : ""}</div>
+    ${rows ? `<div class="iq-hlist">${rows}</div>` : ""}
+    <div class="iq-hrow iq-hnew"><input type="date" class="iq-in iq-date" data-iqk="hn:${q.id}:date" value="${d.date || todayStr()}" aria-label="새 기록 날짜" />
+      <input class="iq-in iq-hwho" data-iqk="hn:${q.id}:who" value="${esc(d.who != null ? d.who : (hs[hs.length - 1] || {}).who || "")}" list="iq-ppl-${q.id}" placeholder="담당" autocomplete="off" aria-label="새 기록 담당" />
+      <textarea class="iq-in iq-htext" data-iqk="hn:${q.id}:text" rows="1" placeholder="내용 (여러 줄 가능 — Enter 줄바꿈 · Ctrl+Enter 기록 추가)" aria-label="새 기록 내용">${esc(d.text || "")}</textarea>
+      <button type="button" class="iq-add iq-hadd" data-iq-addh="${q.id}">＋ 기록 추가</button></div>
+    <datalist id="iq-ppl-${q.id}">${names.map((n) => `<option value="${esc(n)}"></option>`).join("")}</datalist>
   </div>`;
 }
-// 진행 기록 내용 칸: 줄 수만큼 높이 (field-sizing 미지원 브라우저용)
-const IQ_FS = (() => { try { return CSS.supports("field-sizing", "content"); } catch (_) { return false; } })();
-function iqFit(el) { if (IQ_FS || !el) return; el.style.height = "auto"; el.style.height = el.scrollHeight + 2 + "px"; }
-function iqFitAll() { if (!IQ_FS) document.querySelectorAll(".iq-htext").forEach(iqFit); }
-document.addEventListener("input", (e) => { if (e.target.classList && e.target.classList.contains("iq-htext")) iqFit(e.target); });
 function iqMemoAdd(qid, kind) {
   const q = iqClone(iqQ(qid)); if (!q) return;
   const id = uid();
   if (kind === "p") { q.people.push({ id, role: "", name: "" }); iqFocusNext = `p:${qid}:${id}:role`; }
-  else if (kind === "l") { q.links.push({ id, label: "", url: "" }); iqFocusNext = `l:${qid}:${id}:label`; }
-  else { const prev = q.hist[q.hist.length - 1]; q.hist.push({ id, date: todayStr(), who: prev ? prev.who : "", text: "", at: Date.now() }); iqFocusNext = `h:${qid}:${id}:text`; }
-  iq.mfold[qid] = false; iqSave(); Store.saveInquiry(q);
+  else if (kind === "l") { if (q.links.length >= IQ_LINK_MAX) { toast(`링크는 ${IQ_LINK_MAX}개까지 넣을 수 있습니다`); return; } q.links.push({ id, label: "", url: "" }); iqFocusNext = `l:${qid}:${id}:label`; }
+  else {                                                                    // 입력 줄 내용을 기록으로
+    const g = (f) => { const el = document.querySelector(`[data-iqk="hn:${qid}:${f}"]`); return el ? el.value : (iq.hdraft[qid] || {})[f] || ""; };
+    const text = g("text").replace(/\s+$/, ""), who = g("who").trim(), date = g("date") || todayStr();
+    if (!text.trim()) { toast("기록할 내용을 입력해 주세요"); const el = document.querySelector(`[data-iqk="hn:${qid}:text"]`); if (el) el.focus(); return; }
+    q.hist.push({ id, date, who, text, at: Date.now() });
+    iq.hdraft[qid] = { who };                                               // 다음 기록: 오늘 날짜 · 같은 담당
+    iqFocusNext = `hn:${qid}:text`;
+  }
+  iq.mopen[qid] = true; iqSave(); Store.saveInquiry(q);
 }
+// 입력 줄은 저장 전까지 임시로 보관 (화면을 다시 그려도 남도록)
+function iqDraftInput(e) {
+  const k = e.target && e.target.dataset && e.target.dataset.iqk; if (!k || !k.startsWith("hn:")) return;
+  const [, qid, f] = k.split(":"); (iq.hdraft[qid] = iq.hdraft[qid] || {})[f] = e.target.value;
+}
+document.addEventListener("input", iqDraftInput);
+document.addEventListener("change", iqDraftInput, true);
+// 진행 기록 내용 칸: 줄 수만큼 높이 (field-sizing 미지원 브라우저용)
+const IQ_FS = (() => { try { return CSS.supports("field-sizing", "content"); } catch (_) { return false; } })();
+function iqFit(el) { if (IQ_FS || !el) return; el.style.height = "auto"; el.style.height = el.scrollHeight + 2 + "px"; }
+function iqFitAll() { if (!IQ_FS) document.querySelectorAll(".iq-htext").forEach(iqFit); }
+const iqIsHta = (el) => el && el.tagName === "TEXTAREA" && el.closest && el.closest(".iq-memo");
+document.addEventListener("input", (e) => { if (iqIsHta(e.target)) iqFit(e.target); });
+document.addEventListener("focusin", (e) => { if (iqIsHta(e.target)) iqFit(e.target); });
+document.addEventListener("focusout", (e) => { if (iqIsHta(e.target) && !e.target.classList.contains("iq-htext")) e.target.style.height = ""; });
 // 가능여부: O · X · △ (예전 값 가능/불가/협의도 같은 칸으로 읽음)
 const IQ_OX = [["O", "가능"], ["X", "불가"], ["△", "협의"]];
 const iqOxNorm = (v) => { const t = String(v || "").trim(); if (!t) return ""; if (/^(o|ㅇ|가능)/i.test(t)) return "O"; if (/^(x|불가|안\s?됨)/i.test(t)) return "X"; if (/^(△|세모|협의|검토)/.test(t)) return "△"; return t; };
@@ -4465,7 +4501,7 @@ function inqFieldChange(e) {
   const el = e.target, key = el.dataset && el.dataset.iqk;
   if (!key || ui.view !== "vendors") return;
   const [t, a, b, c] = key.split(":"), val = el.type === "checkbox" ? el.checked : el.value;
-  if (t === "ai") return;                                                  // 항목 추가는 Enter 또는 ＋ 버튼으로
+  if (t === "ai" || t === "hn") return;                                    // 항목 추가 · 새 진행 기록은 버튼(또는 Enter / Ctrl+Enter)으로
   if (iqPtrDown) { iqQuiet = true; iqPendingRender = true; }               // 다른 곳을 눌러 칸을 벗어난 경우 → 클릭이 끝난 뒤 다시 그림
   if (t === "v") { const v = vendorById(a); if (!v) return;
     if (b === "name") { const n = String(val).trim(); if (!n) { el.value = v.name; return; } const dup = vendorByName(n); if (dup && dup.id !== v.id) { toast("같은 이름의 업체가 이미 있습니다"); el.value = v.name; return; } }
@@ -4519,6 +4555,7 @@ function inqFieldKey(e) {
     iqAddItemTo(key.slice(3), lab); return;
   }
   if (key.startsWith("ai:") && e.key === "Escape") { iq.addItem = null; render(); return; }
+  if (key.startsWith("hn:") && e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); iqMemoAdd(key.split(":")[1], "h"); return; }
   // Enter(입력 칸) · Tab = 다음 칸, Shift+Tab = 이전 칸
   //  저장하며 표를 다시 그리므로: 갈 칸을 먼저 정해 두고 → 저장(blur) → 다시 그린 표에서 그 칸으로
   if ((e.key === "Enter" && el.tagName === "INPUT") || e.key === "Tab") {
@@ -4607,7 +4644,7 @@ function inqClick(e) {
   const dt = t.closest("[data-iq-det]"); if (dt) { const k = dt.dataset.iqDet; iq.det[k] = !iq.det[k]; render(); return; }
   const so = t.closest("[data-iq-sort]"); if (so) { const k = so.dataset.iqSort, cur = iq.isort || { k: "vendor", d: 1 }; iq.isort = { k, d: cur.k === k ? -cur.d : 1 }; const t2 = document.getElementById("iq-itable"); if (t2) t2.innerHTML = iqItemTable(); return; }
   const xl = t.closest("[data-iq-xlsx]"); if (xl) { iqExportXlsx(xl.dataset.iqXlsx); return; }
-  const mf = t.closest("[data-iq-mfold]"); if (mf) { const id = mf.dataset.iqMfold; iq.mfold[id] = !iq.mfold[id]; iqSave(); render(); return; }
+  const mf = t.closest("[data-iq-mopen]"); if (mf) { const id = mf.dataset.iqMopen; iq.mopen[id] = !iq.mopen[id]; iqSave(); render(); return; }
   const mp = t.closest("[data-iq-addp],[data-iq-addl],[data-iq-addh]"); if (mp) { const d = mp.dataset; if (d.iqAddp) iqMemoAdd(d.iqAddp, "p"); else if (d.iqAddl) iqMemoAdd(d.iqAddl, "l"); else iqMemoAdd(d.iqAddh, "h"); return; }
   const ag = t.closest("[data-iq-additemgo]"); if (ag) { const inp = document.querySelector(`[data-iqk="ai:${ag.dataset.iqAdditemgo}"]`); const lab = inp ? inp.value.trim() : ""; if (!lab) { if (inp) inp.focus(); toast("추가할 항목 이름을 입력해 주세요"); return; } iqAddItemTo(ag.dataset.iqAdditemgo, lab); return; }
   const ax = t.closest("[data-iq-additemx]"); if (ax) { iq.addItem = null; render(); return; }
