@@ -747,6 +747,13 @@
   .sync-msg{font-size:12px;color:var(--late-crit);margin-top:6px;min-height:0;}
   .sync-msg:empty{display:none;}
   .sync-adv{display:block;}
+  .sync-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:10px;}
+  .sync-opt{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font:inherit;cursor:pointer;}
+  .sync-opt:hover{border-color:var(--work);}
+  .sync-opt b{font-size:13px;} .sync-opt span{font-size:12px;color:var(--text-soft);} .sync-opt small{font-size:11px;color:var(--text-faint);line-height:1.4;}
+  .sync-choose{border-left:3px solid var(--late-warn);}
+  .sync-sql{display:block;width:100%;box-sizing:border-box;margin:8px 0;font:11px/1.45 ui-monospace,Consolas,monospace;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);color:var(--text);padding:8px;resize:vertical;}
+  .btn-sub.armed{background:var(--urgent);color:#fff;border-color:var(--urgent);}
   .sync-adv summary{cursor:pointer;font-size:12px;color:var(--text-faint);font-weight:700;}
   .sync-list{display:flex;flex-direction:column;gap:4px;margin-top:8px;max-height:260px;overflow:auto;}
   .sync-li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);font-size:12.5px;}
@@ -1702,6 +1709,17 @@
   .iq-mplus{flex:none;width:26px;height:26px;border-radius:8px;border:1.5px dashed var(--border-strong);background:transparent;color:var(--work);font-weight:800;font-size:14px;cursor:pointer;padding:0;}
   .iq-mplus:hover{border-color:var(--work);}
   .iq-hlist{display:flex;flex-direction:column;gap:3px;}
+  .iq-memo.drop{outline:2px dashed var(--work);outline-offset:-2px;background:color-mix(in srgb, var(--work) 8%, var(--surface-2));}
+  .iq-alab{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;color:var(--text-faint);margin-right:2px;}
+  .iq-alab svg,.iq-mclip svg{width:13px;height:13px;stroke:currentColor;}
+  .iq-achip{display:inline-flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:1px 2px 1px 2px;max-width:100%;}
+  .iq-achip.up{opacity:.65;}
+  .iq-aopen{display:inline-flex;align-items:baseline;gap:5px;border:0;background:transparent;font:inherit;font-size:12px;font-weight:700;color:var(--work);cursor:pointer;padding:3px 6px;max-width:220px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+  .iq-aopen:hover{text-decoration:underline;}
+  .iq-aopen small{font-size:10px;font-weight:600;color:var(--text-faint);}
+  .iq-achip .iq-del{padding:2px 6px;}
+  .iq-ahint{font-size:11.5px;}
+  .iq-msum .iq-mclip{flex:none;display:inline-flex;align-items:center;gap:2px;font-size:11px;font-weight:800;color:var(--text-soft);}
   .iq-hrow{display:grid;grid-template-columns:128px 84px minmax(0,1fr) auto;gap:6px;align-items:start;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:2px 4px;}
   .iq-hrow .iq-in{font-size:12px;}
   .iq-hrow .iq-hwho{font-weight:700;}
@@ -2104,7 +2122,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-11-16 · 업체 탐색 진행 관리 간소화(머리 줄 요약·한 줄 배치·링크 3개)";
+const APP_VERSION = "2026-11-17 · PC·휴대폰 연동(Supabase) 다시 켜기 · 업체 탐색 진행 관리 첨부";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -2495,7 +2513,8 @@ const Store = (() => {
       : [{ id: `${id0}-l1`, label: "메일", url: "" }, { id: `${id0}-l2`, label: "타겟 제품", url: "" }];
     const hist = (Array.isArray(q.hist) ? q.hist : []).filter(Boolean).map((x, i) => ({ id: str(x.id) || `${id0}-h${i + 1}`, date: /^\d{4}-\d{2}-\d{2}$/.test(x.date) ? x.date : todayStr(),
       who: str(x.who).trim(), text: str(x.text), at: +x.at || i })).sort((a, b) => a.date.localeCompare(b.date) || a.at - b.at);
-    return { people, links, hist };
+    const files = (Array.isArray(q.files) ? q.files : []).filter((x) => x && x.path && x.name).map((x) => ({ id: str(x.id) || uid(), name: str(x.name), size: +x.size || 0, type: str(x.type), path: str(x.path), at: +x.at || 0 }));
+    return { people, links, hist, files };
   }
   // 같은 이름의 항목은 하나로 (기본 항목이 먼저) — 겹친 항목을 쓰던 탐색 건 · 답변은 남는 항목으로 옮김
   function normalizeInqItems(list, alias) {
@@ -2627,6 +2646,8 @@ const Store = (() => {
     // 저장된 내용이 있는데 읽지 못했으면 예시로 덮어쓰기 전에 원본을 따로 보관 (설정 → 이 기기 자동 백업에서 복원 시도)
     if (raw) { try { localStorage.setItem(KEY + ":broken", raw); loadBroken = true; } catch (_) {} }
     seed(); persist();
+    // 처음 열 때 넣은 예시 항목 — PC·휴대폰 연동에서 '예시만 있는 기기'는 빈 기기로 봄
+    try { localStorage.setItem(KEY + ":seedids", JSON.stringify([...state.events, ...state.todos, ...state.projects, ...state.orders].map((x) => x.id))); } catch (_) {}
   }
   function persist() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
   function emit() { persist(); subs.forEach((f) => f(state)); }
@@ -4109,7 +4130,7 @@ const IQ_UI_KEY = "scheduler:inq-ui";
 const iq = { view: "case", filter: "open", q: "", open: {}, vendor: null, item: "moq", paste: null, det: {} };
 try { Object.assign(iq, JSON.parse(localStorage.getItem(IQ_UI_KEY) || "{}")); iq.q = ""; iq.paste = null; iq.det = {}; } catch (_) {}
 if (!iq.mopen || typeof iq.mopen !== "object") iq.mopen = {};
-delete iq.mfold; iq.hdraft = {};                                          // 진행 기록 입력 줄(아직 추가 전)의 내용
+delete iq.mfold; iq.hdraft = {}; iq.uploading = {};                                          // 진행 기록 입력 줄(아직 추가 전)의 내용
 const iqSave = () => { try { const { view, filter, open, vendor, item, mopen } = iq; localStorage.setItem(IQ_UI_KEY, JSON.stringify({ view, filter, open, vendor, item, mopen })); } catch (_) {} };
 const IC_MAIL = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>`;
 let iqFocusNext = null;          // 다음 그리기 뒤 커서를 둘 칸 (data-iqk)
@@ -4153,7 +4174,7 @@ function inqLatestAnswers(vendorId, exceptQ) {
 }
 const inqVendorCases = (vendorId) => Store.state.inquiries.filter((q) => q.rows.some((r) => r.vendorId === vendorId));
 const iqNorm = (s) => String(s || "").toLowerCase();
-function iqCaseText(q) { return iqNorm([q.category, q.title, q.common, ...(q.people || []).map((x) => x.role + " " + x.name), ...(q.links || []).map((x) => x.label + " " + x.url), ...(q.hist || []).map((x) => x.who + " " + x.text)].join(" ")); }
+function iqCaseText(q) { return iqNorm([q.category, q.title, q.common, ...(q.people || []).map((x) => x.role + " " + x.name), ...(q.links || []).map((x) => x.label + " " + x.url), ...(q.hist || []).map((x) => x.who + " " + x.text), ...(q.files || []).map((x) => x.name)].join(" ")); }
 function iqRowText(q, r) {
   const v = vendorById(r.vendorId) || {};
   return iqNorm([v.name, (v.tags || []).join(" "), v.person, v.phone, v.email, v.memo, r.owner, r.detail, r.note,
@@ -4275,7 +4296,7 @@ function iqMemoSumBtn(q) {
   const on = !!iq.mopen[q.id], hs = q.hist || [], last = hs[hs.length - 1];
   const ppl = (q.people || []).filter((x) => x.name).map((x) => `${esc(x.role)} ${esc(x.name)}`).join(" · ");
   return `<button type="button" class="iq-msum ${on ? "on" : ""}" data-iq-mopen="${q.id}" aria-expanded="${on}" title="${on ? "진행 관리 닫기" : "진행 관리 열기 — 관계자 · 링크 · 날짜별 진행 기록"}${last ? `\n최근 ${last.date} ${esc(last.who)} ${esc(String(last.text).split("\n")[0].slice(0, 80))}` : ""}">
-    <b class="iq-mar">${on ? "▾" : "▸"}</b><b>진행 관리</b>${ppl ? `<span class="iq-mppl">${ppl}</span>` : ""}${last ? `<span class="iq-msep"></span><span class="iq-mlast">${fmtMD(last.date)}</span>${hs.length > 1 ? `<small>${hs.length}</small>` : ""}` : ""}</button>`;
+    <b class="iq-mar">${on ? "▾" : "▸"}</b><b>진행 관리</b>${ppl ? `<span class="iq-mppl">${ppl}</span>` : ""}${last ? `<span class="iq-msep"></span><span class="iq-mlast">${fmtMD(last.date)}</span>${hs.length > 1 ? `<small>${hs.length}</small>` : ""}` : ""}${(q.files || []).length ? `<span class="iq-mclip" title="첨부 ${q.files.length}개">${IC_CLIP}${q.files.length}</span>` : ""}</button>`;
 }
 // 펼침: 1줄 = 관계자 + 링크(최대 3개) · 그 아래 진행 기록(한 줄씩, 누르면 아래로 펼쳐 전체 내용) · 맨 아래 새 기록 입력 줄
 function iqMemoHtml(q) {
@@ -4290,8 +4311,9 @@ function iqMemoHtml(q) {
       <input class="iq-in iq-hwho" data-iqk="h:${q.id}:${x.id}:who" value="${esc(x.who)}" list="iq-ppl-${q.id}" placeholder="담당" autocomplete="off" aria-label="담당" />
       <div class="iq-htw">${iqClampTa(`h:${q.id}:${x.id}:text`, x.text, "내용", "내용")}${n > 1 ? `<span class="iq-hmore" title="누르면 아래로 펼쳐 전체 내용">+${n - 1}줄</span>` : ""}</div>
       ${iqDelBtn(`h:${q.id}:${x.id}`, "×", "이 기록 지우기")}</div>`; }).join("");
-  return `<div class="iq-memo">
+  return `<div class="iq-memo" data-iq-drop="${q.id}">
     <div class="iq-mline">${ppl}<button type="button" class="iq-mplus" data-iq-addp="${q.id}" title="관계자 추가">＋</button><span class="iq-mdiv"></span>${lnk}${links.length < IQ_LINK_MAX ? `<button type="button" class="iq-mplus" data-iq-addl="${q.id}" title="링크 추가 (최대 ${IQ_LINK_MAX}개)">＋</button>` : ""}</div>
+    ${iqAttLine(q)}
     ${rows ? `<div class="iq-hlist">${rows}</div>` : ""}
     <div class="iq-hrow iq-hnew"><input type="date" class="iq-in iq-date" data-iqk="hn:${q.id}:date" value="${d.date || todayStr()}" aria-label="새 기록 날짜" />
       <input class="iq-in iq-hwho" data-iqk="hn:${q.id}:who" value="${esc(d.who != null ? d.who : (hs[hs.length - 1] || {}).who || "")}" list="iq-ppl-${q.id}" placeholder="담당" autocomplete="off" aria-label="새 기록 담당" />
@@ -4300,6 +4322,82 @@ function iqMemoHtml(q) {
     <datalist id="iq-ppl-${q.id}">${names.map((n) => `<option value="${esc(n)}"></option>`).join("")}</datalist>
   </div>`;
 }
+// ---- 첨부 (Supabase Storage 'attachments' · 로그인한 본인만) ----
+const IC_CLIP = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5l-8.6 8.6a5 5 0 01-7.1-7.1l8.6-8.6a3.3 3.3 0 014.7 4.7l-8.6 8.6a1.7 1.7 0 01-2.4-2.4l7.9-7.9"/></svg>`;
+const ATT_BUCKET = "attachments", ATT_MAX = 20 * 1024 * 1024;
+const attSize = (n) => (n >= 1048576 ? (n / 1048576).toFixed(1) + "MB" : Math.max(1, Math.round(n / 1024)) + "KB");
+const attBase = () => sync.url.replace(/\/+$/, "") + "/storage/v1/object/";
+const attPathUrl = (path) => path.split("/").map(encodeURIComponent).join("/");
+async function attHeaders(extra) { await syncEnsureToken(); return { apikey: sync.key, Authorization: "Bearer " + sync.session.access_token, ...(extra || {}) }; }
+const attErr = async (r) => { let j = null; try { j = await r.json(); } catch (_) {} const m = (j && (j.message || j.error)) || `HTTP ${r.status}`;
+  return new Error(/bucket not found/i.test(m) ? "첨부 저장소가 아직 없습니다 — 상단 구름 버튼 → '첨부 저장소 설정'의 SQL을 한 번 실행해 주세요"
+    : /row-level security|unauthorized|403/i.test(m + r.status) ? "첨부 저장소 권한이 없습니다 — '첨부 저장소 설정'의 SQL을 실행했는지 확인해 주세요"
+    : /payload too large|maximum allowed size|413/i.test(m + r.status) ? `파일이 너무 큽니다 (${attSize(ATT_MAX)}까지)` : m); };
+async function attUpload(qid, file) {
+  const id = uid(), ext = ((file.name || "").match(/\.[A-Za-z0-9]{1,8}$/) || [""])[0].toLowerCase();
+  const path = `${sync.session.user.id}/${qid}/${id}${ext}`;
+  const r = await fetch(attBase() + ATT_BUCKET + "/" + attPathUrl(path), { method: "POST", headers: await attHeaders({ "Content-Type": file.type || "application/octet-stream", "x-upsert": "false" }), body: file });
+  if (!r.ok) throw await attErr(r);
+  return { id, name: file.name || "첨부" + ext, size: file.size || 0, type: file.type || "", path, at: Date.now() };
+}
+async function attGet(f) {
+  const r = await fetch(attBase() + "authenticated/" + ATT_BUCKET + "/" + attPathUrl(f.path), { headers: await attHeaders(), cache: "no-store" });
+  if (!r.ok) throw await attErr(r);
+  return r.blob();
+}
+async function attDel(paths) {
+  if (!paths.length || !sync.session) return;
+  try { await fetch(attBase() + ATT_BUCKET, { method: "DELETE", headers: await attHeaders({ "Content-Type": "application/json" }), body: JSON.stringify({ prefixes: paths }) }); } catch (_) {}
+}
+function iqAttLine(q) {
+  const fs = q.files || [], up = iq.uploading[q.id] || [];
+  return `<div class="iq-mline iq-aline"><span class="iq-alab">${IC_CLIP}첨부</span>
+    ${fs.map((f) => `<span class="iq-achip"><button type="button" class="iq-aopen" data-iq-aopen="${q.id}:${f.id}" title="${esc(f.name)} · ${attSize(f.size)} · ${f.at ? new Date(f.at).toLocaleDateString("ko-KR") : ""} — 눌러서 열기">${esc(f.name)}<small>${attSize(f.size)}</small></button>${iqDelBtn(`f:${q.id}:${f.id}`, "×", "이 첨부 지우기 (서버 파일도 삭제)")}</span>`).join("")}
+    ${up.map((n) => `<span class="iq-achip up"><span class="iq-aopen">${esc(n)}<small>올리는 중…</small></span></span>`).join("")}
+    <button type="button" class="iq-mplus" data-iq-addf="${q.id}" title="${sync.session ? `파일 첨부 (파일당 ${attSize(ATT_MAX)}까지 · 여기로 끌어다 놓아도 됨)` : "첨부는 PC·휴대폰 연동에 로그인하면 쓸 수 있습니다"}">＋</button>
+    ${!fs.length && !up.length ? `<span class="muted iq-ahint">${sync.session ? "견적서 · 사양서 등 — ＋ 또는 끌어다 놓기" : "PC·휴대폰 연동(상단 구름 버튼)에 로그인하면 첨부를 쓸 수 있습니다"}</span>` : ""}</div>`;
+}
+function iqAttPick(qid) {
+  if (!sync.session) { toast("첨부는 PC·휴대폰 연동에 로그인해야 쓸 수 있습니다 — 상단 구름 버튼에서 로그인"); return; }
+  let inp = document.getElementById("iq-attfile");
+  if (!inp) { inp = document.createElement("input"); inp.type = "file"; inp.multiple = true; inp.id = "iq-attfile"; inp.hidden = true; document.body.appendChild(inp);
+    inp.addEventListener("change", () => { const files = [...inp.files]; inp.value = ""; iqAttUpload(inp.dataset.qid, files); }); }
+  inp.dataset.qid = qid; inp.click();
+}
+async function iqAttUpload(qid, files) {
+  if (!files.length) return;
+  if (!sync.session) { toast("첨부는 PC·휴대폰 연동에 로그인해야 쓸 수 있습니다 — 상단 구름 버튼에서 로그인"); return; }
+  const big = files.filter((f) => f.size > ATT_MAX); files = files.filter((f) => f.size <= ATT_MAX);
+  if (big.length) toast(`${big.map((f) => f.name).join(", ")} — 파일이 너무 큽니다 (${attSize(ATT_MAX)}까지)`);
+  if (!files.length) return;
+  iq.uploading[qid] = [...(iq.uploading[qid] || []), ...files.map((f) => f.name)]; iq.mopen[qid] = true; render();
+  const done = [];
+  for (const f of files) {
+    try { done.push(await attUpload(qid, f)); }
+    catch (e) { toast(`'${f.name}' 올리지 못했습니다 — ${e instanceof TypeError ? "인터넷 연결 없음" : e.message}`); }
+    finally { const u = iq.uploading[qid] || [], i = u.indexOf(f.name); if (i >= 0) u.splice(i, 1); }
+  }
+  const q = iqClone(iqQ(qid));
+  if (!q) { attDel(done.map((x) => x.path)); render(); return; }               // 그사이 탐색 건이 지워짐
+  if (done.length) { q.files = [...(q.files || []), ...done]; Store.saveInquiry(q); toast(`첨부 ${done.length}개를 올렸습니다`); } else render();
+}
+async function iqAttOpen(qid, fid) {
+  const q = iqQ(qid), f = q && (q.files || []).find((x) => x.id === fid); if (!f) return;
+  if (!sync.session) { toast("첨부를 열려면 PC·휴대폰 연동에 로그인해 주세요"); return; }
+  const view = /^(image\/|application\/pdf|text\/plain)/.test(f.type);
+  const w = view ? window.open("", "_blank") : null;                        // 팝업 차단을 피하려고 누른 순간 창을 먼저 엶
+  try {
+    toast(`'${f.name}' 여는 중…`);
+    const url = URL.createObjectURL(await attGet(f));
+    if (w) w.location.href = url;
+    else { const a = document.createElement("a"); a.href = url; a.download = f.name; document.body.appendChild(a); a.click(); a.remove(); }
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  } catch (e) { if (w) w.close(); toast(`'${f.name}' 열지 못했습니다 — ${e instanceof TypeError ? "인터넷 연결 없음" : e.message}`); }
+}
+// 진행 관리 칸에 파일을 끌어다 놓기
+document.addEventListener("dragover", (e) => { const m = e.target.closest && e.target.closest("[data-iq-drop]"); if (!m || !e.dataTransfer || ![...e.dataTransfer.types].includes("Files")) return; e.preventDefault(); m.classList.add("drop"); });
+document.addEventListener("dragleave", (e) => { const m = e.target.closest && e.target.closest("[data-iq-drop]"); if (m && !m.contains(e.relatedTarget)) m.classList.remove("drop"); });
+document.addEventListener("drop", (e) => { const m = e.target.closest && e.target.closest("[data-iq-drop]"); if (!m || !e.dataTransfer || !e.dataTransfer.files.length) return; e.preventDefault(); m.classList.remove("drop"); iqAttUpload(m.dataset.iqDrop, [...e.dataTransfer.files]); });
 function iqMemoAdd(qid, kind) {
   const q = iqClone(iqQ(qid)); if (!q) return;
   const id = uid();
@@ -4623,8 +4721,10 @@ function iqAddItemTo(qid, label) {
 }
 function iqDoDelete(k) {
   const [t, a, b] = k.split(":");
-  if (t === "case") { const q = iqQ(a); Store.deleteInquiry(a); toast(`'${(q && q.title) || "탐색 건"}'을(를) 삭제했습니다`); }
+  if (t === "case") { const q = iqQ(a); if (q && (q.files || []).length) attDel(q.files.map((x) => x.path)); Store.deleteInquiry(a); toast(`'${(q && q.title) || "탐색 건"}'을(를) 삭제했습니다`); }
   else if (t === "p" || t === "l" || t === "h") { const q = iqClone(iqQ(a)); if (!q) return; const f = { p: "people", l: "links", h: "hist" }[t]; q[f] = q[f].filter((x) => x.id !== b); Store.saveInquiry(q); }
+  else if (t === "f") { const q = iqClone(iqQ(a)); if (!q) return; const f = (q.files || []).find((x) => x.id === b); if (!f) return;
+    q.files = q.files.filter((x) => x.id !== b); Store.saveInquiry(q); attDel([f.path]); toast(`'${f.name}' 첨부를 지웠습니다`); }
   else if (t === "row") { const q = iqClone(iqQ(a)); q.rows = q.rows.filter((x) => x.id !== b); Store.saveInquiry(q); toast("줄을 삭제했습니다 (업체 정보는 남아 있습니다)"); }
   else if (t === "vendor") { const n = inqVendorCases(a).length; if (n) { toast(`탐색 건 ${n}개에서 쓰고 있어 삭제할 수 없습니다 — 그 줄을 먼저 지워 주세요`); return; }
     const v = vendorById(a); Store.deleteVendor(a); iq.vendor = null; toast(`'${v ? v.name : "업체"}'를 삭제했습니다`); }
@@ -4645,6 +4745,8 @@ function inqClick(e) {
   const so = t.closest("[data-iq-sort]"); if (so) { const k = so.dataset.iqSort, cur = iq.isort || { k: "vendor", d: 1 }; iq.isort = { k, d: cur.k === k ? -cur.d : 1 }; const t2 = document.getElementById("iq-itable"); if (t2) t2.innerHTML = iqItemTable(); return; }
   const xl = t.closest("[data-iq-xlsx]"); if (xl) { iqExportXlsx(xl.dataset.iqXlsx); return; }
   const mf = t.closest("[data-iq-mopen]"); if (mf) { const id = mf.dataset.iqMopen; iq.mopen[id] = !iq.mopen[id]; iqSave(); render(); return; }
+  const af = t.closest("[data-iq-addf]"); if (af) { iqAttPick(af.dataset.iqAddf); return; }
+  const ao = t.closest("[data-iq-aopen]"); if (ao) { const [a, b] = ao.dataset.iqAopen.split(":"); iqAttOpen(a, b); return; }
   const mp = t.closest("[data-iq-addp],[data-iq-addl],[data-iq-addh]"); if (mp) { const d = mp.dataset; if (d.iqAddp) iqMemoAdd(d.iqAddp, "p"); else if (d.iqAddl) iqMemoAdd(d.iqAddl, "l"); else iqMemoAdd(d.iqAddh, "h"); return; }
   const ag = t.closest("[data-iq-additemgo]"); if (ag) { const inp = document.querySelector(`[data-iqk="ai:${ag.dataset.iqAdditemgo}"]`); const lab = inp ? inp.value.trim() : ""; if (!lab) { if (inp) inp.focus(); toast("추가할 항목 이름을 입력해 주세요"); return; } iqAddItemTo(ag.dataset.iqAdditemgo, lab); return; }
   const ax = t.closest("[data-iq-additemx]"); if (ax) { iq.addItem = null; render(); return; }
@@ -4783,6 +4885,7 @@ function iqExportXlsx(qid) {
     ...(q.common ? [[T(`공통 요청: ${q.common}`, 5)]] : []),
     ...((q.people || []).some((x) => x.name) ? [[T(`관계자: ${q.people.filter((x) => x.name).map((x) => `${x.role ? x.role + " " : ""}${x.name}`).join(" · ")}`, 5)]] : []),
     ...(q.links || []).filter((x) => x.url).map((x) => [T(`${x.label || "링크"}: ${x.url}`, 5)]),
+    ...((q.files || []).length ? [[T(`첨부: ${q.files.map((x) => x.name).join(", ")}`, 5)]] : []),
     [],
     head.map((h) => T(h, 2)),
   ];
@@ -4881,17 +4984,16 @@ function inqTabCount() { const n = inqPending().filter((x) => x.late).length; do
 
 /* ---------- 렌더: 백업 (상단 구름 버튼) ---------- */
 function renderBackup() {
-  return `<div class="view-head" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><h2>백업</h2><button class="btn-sub" id="set-close">닫기</button></div>
-    ${fbSettingsHtml().replace('style="margin-top:20px"', "")}
+  return `<div class="view-head" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><h2>클라우드 · 백업</h2><button class="btn-sub" id="set-close">닫기</button></div>
+    ${syncSettingsHtml()}
+    ${fbSettingsHtml()}
     ${snapSettingsHtml()}
     <p class="panel-title" style="margin-top:20px">직접 백업 · 복원</p>
     <div class="set-group">
       <div class="set-row"><div><div class="lab">백업 내보내기</div><div class="desc">일정·할 일·프로젝트·출고 건을 JSON 파일로 저장</div></div><button class="btn-sub" id="set-export">내보내기</button></div>
       <div class="set-row"><div><div class="lab">백업 가져오기</div><div class="desc">JSON 파일에서 복원 (현재 데이터 대체)</div></div><button class="btn-sub" id="set-import">가져오기</button></div>
     </div>
-    ${sync.session ? `<p class="panel-title" style="margin-top:20px">예전 클라우드 연결</p><div class="set-group">
-      <div class="set-row"><div><div class="lab">${esc(sync.session.user.email || "")} 로 서버 동기화가 아직 켜져 있습니다</div><div class="desc">더 쓰지 않으시면 연결을 해제하세요 (이 기기 데이터는 그대로)</div></div>
-        <button class="btn-sub" id="sync-logout" type="button">연결 해제</button></div></div>` : ""}`;
+`;
 }
 /* ---------- 렌더: 설정 ---------- */
 function renderSettings() {
@@ -5804,24 +5906,25 @@ function snapRestore(at) {
    · 서버가 그사이 바뀌었으면(다른 기기) 덮어쓰지 않고 조건부 저장 → 충돌 시 이 기기 내용을 저장하고 서버 내용은 스냅샷으로 보관
    · 인터넷이 끊기면 이 기기에 저장해 두었다가 연결되면 올림 */
 const SUPA_DEFAULT = { url: "https://gmavpmckcvpiabvznnmq.supabase.co", key: "sb_publishable_f3lZ5Q9CK2HLnEpzy3R4pw_ZwaoGWqh" };
-const SYNC_KEY = "scheduler:sync";
+const SYNC_KEY = "scheduler:sync", SYNC_POLL_MS = 15 * 1000;
 const sync = { url: SUPA_DEFAULT.url, key: SUPA_DEFAULT.key, session: null, lastServerAt: null, dirty: false, lastOkAt: 0,
   status: "off", msg: "", busy: null, again: false, applying: false, timer: null };
 function syncLoad() {
   try { const s = JSON.parse(localStorage.getItem(SYNC_KEY) || "{}");
-    ["url", "key", "session", "lastServerAt", "dirty", "lastOkAt"].forEach((k) => { if (s[k] != null) sync[k] = s[k]; }); } catch (_) {}
-  sync.status = sync.session ? (sync.dirty ? "pending" : "ok") : "off";
+    ["url", "key", "session", "lastServerAt", "dirty", "lastOkAt", "choice"].forEach((k) => { if (s[k] != null) sync[k] = s[k]; }); } catch (_) {}
+  sync.status = sync.session ? (sync.choice ? "choose" : sync.dirty ? "pending" : "ok") : "off";
 }
 function syncSave() {
-  try { localStorage.setItem(SYNC_KEY, JSON.stringify({ url: sync.url, key: sync.key, session: sync.session, lastServerAt: sync.lastServerAt, dirty: sync.dirty, lastOkAt: sync.lastOkAt })); } catch (_) {}
+  try { localStorage.setItem(SYNC_KEY, JSON.stringify({ url: sync.url, key: sync.key, session: sync.session, lastServerAt: sync.lastServerAt, dirty: sync.dirty, lastOkAt: sync.lastOkAt, choice: sync.choice || null })); } catch (_) {}
 }
 function syncSetStatus(st, msg) { sync.status = st; sync.msg = msg || ""; syncPaint(); }
 function syncPaint() {
   const s = document.getElementById("sync-state"); if (s) s.innerHTML = syncStateHtml();
+  if (typeof bkPaint === "function") bkPaint();
 }
 function syncStateHtml() {
   const t = sync.lastOkAt ? new Date(sync.lastOkAt).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
-  const lab = { off: "꺼짐", ok: "동기화됨", pending: "저장 대기", syncing: "동기화 중", offline: "오프라인", error: "오류" }[sync.status];
+  const lab = { off: "꺼짐", ok: "동기화됨", pending: "저장 대기", syncing: "동기화 중", offline: "오프라인", error: "오류", choose: "기준 데이터 선택 필요" }[sync.status];
   return `<span class="sync-dot" data-st="${sync.status}"></span>${lab} · 마지막 동기화 ${t}${sync.status === "error" && sync.msg ? ` · ${esc(sync.msg)}` : ""}`;
 }
 
@@ -5861,12 +5964,41 @@ const syncErrText = (e) => e instanceof TypeError ? "인터넷 연결 없음"
 
 async function syncLogin(email, password) {
   const j = await supaFetch("/auth/v1/token?grant_type=password", { method: "POST", body: { email, password }, auth: false });
-  syncSetSession(j); sync.lastServerAt = null; syncSave();               // 이 기기에선 처음 연결 → 서버 내용 기준으로 맞춤
-  await syncNow({ first: true });
+  syncSetSession(j); sync.lastServerAt = null; sync.choice = null; syncSave();
+  await syncFirstConnect();
+}
+// 이 기기에서 처음 연결: 서버가 비었으면 올리고, 이 기기가 비었으면 받아오고, 둘 다 있으면 어느 쪽을 기준으로 할지 고름
+async function syncFirstConnect() {
+  syncSetStatus("syncing");
+  const full = (await supaFetch(`${rowUrl()}&select=data,updated_at`))[0];
+  const local = JSON.parse(Store.exportJSON());
+  if (!full) { await syncPushTo(null); }
+  else if (!fbCount(local) || syncSeedOnly(local)) { syncApply(full, fbCount(local) ? "연결 전 이 기기 (예시)" : null); toast("서버에 저장된 데이터를 불러왔습니다"); }
+  else if (JSON.stringify(syncCanon(full.data)) === JSON.stringify(syncCanon(local))) { sync.lastServerAt = full.updated_at; syncBaseSet(full.data); sync.dirty = false; }
+  else { sync.choice = { at: full.updated_at, srv: snapCount(full.data), loc: snapCount(local) }; syncSave(); syncSetStatus("choose"); return; }
+  sync.lastOkAt = Date.now(); syncSave(); syncSetStatus(sync.dirty ? "pending" : "ok");
+}
+// 이 기기에 처음 열 때 들어간 예시 항목만 있는지
+function syncSeedOnly(d) {
+  let ids; try { ids = new Set(JSON.parse(localStorage.getItem("scheduler:v1:seedids") || "[]")); } catch (_) { return false; }
+  if (!ids.size || (d.vendors || []).length || (d.inquiries || []).length) return false;
+  return [...(d.events || []), ...(d.todos || []), ...(d.projects || []), ...(d.orders || [])].every((x) => ids.has(x.id));
+}
+const syncCanon = (d) => { const o = {}; ["events", "todos", "projects", "orders", "vendors", "inquiries", "inqItems"].forEach((k) => (o[k] = d[k] || [])); return o; };
+// 기준 고르기: local = 이 기기 내용을 서버에 · server = 서버 내용을 이 기기에 · merge = 양쪽 항목을 모두 남김(같은 항목은 이 기기 쪽)
+async function syncChoose(kind) {
+  const full = (await supaFetch(`${rowUrl()}&select=data,updated_at`))[0];
+  if (kind === "server" && full) syncApply(full, "서버 기준 선택 전 이 기기");
+  else {
+    if (full) snapTake(kind === "merge" ? "합치기 전 서버 내용" : "덮어쓰기 전 서버 내용", full.data);
+    if (kind === "merge" && full) { snapTake("합치기 전 이 기기"); const m = syncMerge3({}, JSON.parse(Store.exportJSON()), full.data); sync.applying = true; try { Store.replaceAll(m); } finally { sync.applying = false; } }
+    sync.dirtyAt = Date.now(); await syncPushTo(null);
+  }
+  sync.choice = null; sync.dirty = false; sync.lastOkAt = Date.now(); syncSave(); syncSetStatus("ok");
 }
 async function syncLogout() {
   try { if (sync.session) await supaFetch("/auth/v1/logout", { method: "POST" }); } catch (_) {}
-  sync.session = null; sync.lastServerAt = null; sync.dirty = false; syncSave(); syncSetStatus("off");
+  sync.session = null; sync.lastServerAt = null; sync.dirty = false; sync.choice = null; syncSave(); syncSetStatus("off");
 }
 const rowUrl = () => `/rest/v1/schedules?user_id=eq.${sync.session.user.id}`;
 // 마지막으로 서버와 맞춘 내용(기준본) — 두 기기가 동시에 바꿨을 때 항목 단위로 합치는 데 씀
@@ -5912,6 +6044,7 @@ async function syncPushTo(lastAt) {
 }
 async function syncRun({ first } = {}) {
   if (!sync.session) { syncSetStatus("off"); return; }
+  if (sync.choice) { syncSetStatus("choose"); return; }                    // 기준을 고르기 전엔 주고받지 않음
   syncSetStatus("syncing");
   try {
     const head = await supaFetch(`${rowUrl()}&select=updated_at`);
@@ -5955,6 +6088,7 @@ function syncNow(opt) {
 function syncOnLocalChange() {
   if (sync.applying || !sync.session) return;
   sync.dirty = true; sync.dirtyAt = Date.now(); syncSave();
+  if (sync.choice) return;
   if (sync.status !== "syncing") syncSetStatus("pending");
   clearTimeout(sync.timer); sync.timer = setTimeout(() => syncNow(), 2000);
 }
@@ -5972,21 +6106,34 @@ function syncInit() {
   syncLoad(); syncPaint();
   Store.subscribe(syncOnLocalChange);
   if (sync.session) syncNow();
-  setInterval(() => { if (sync.session && !document.hidden) syncNow(); }, 60 * 1000);
+  setInterval(() => { if (sync.session && !document.hidden) syncNow(); }, SYNC_POLL_MS);
   window.addEventListener("online", () => { if (sync.session) syncNow(); });
   window.addEventListener("focus", () => { if (sync.session) syncNow(); });
   document.addEventListener("visibilitychange", () => { if (!document.hidden && sync.session) syncNow(); });
 }
 
-// 설정 화면: 클라우드 동기화 + 복원
+// 클라우드 화면 맨 위: PC·휴대폰 연동 (Supabase)
+const ATT_SQL = `-- 업체 탐색 첨부 저장소 (처음 한 번 · Supabase → SQL Editor에서 실행)
+insert into storage.buckets (id, name, public, file_size_limit)
+values ('attachments', 'attachments', false, 20971520)
+on conflict (id) do nothing;
+drop policy if exists "att_select_own" on storage.objects;
+drop policy if exists "att_insert_own" on storage.objects;
+drop policy if exists "att_delete_own" on storage.objects;
+create policy "att_select_own" on storage.objects for select to authenticated
+  using (bucket_id = 'attachments' and (storage.foldername(name))[1] = (select auth.uid())::text);
+create policy "att_insert_own" on storage.objects for insert to authenticated
+  with check (bucket_id = 'attachments' and (storage.foldername(name))[1] = (select auth.uid())::text);
+create policy "att_delete_own" on storage.objects for delete to authenticated
+  using (bucket_id = 'attachments' and (storage.foldername(name))[1] = (select auth.uid())::text);`;
+let syncArm = null, syncArmT = null;                                      // 로그아웃 · 복원: 두 번 눌러 확인 (창 없이)
+const syncArmBtn = (id, label, extra = "") => `<button class="btn-sub ${syncArm === id ? "armed" : ""}" ${extra || `id="${id}"`} type="button">${syncArm === id ? "한 번 더 누르면 실행" : label}</button>`;
 function syncSettingsHtml() {
-  const snaps = snapList().slice().reverse();
-  const fmt = (t) => new Date(t).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" });
   const cnt = (n) => `일정 ${n.e} · 할 일 ${n.t} · 프로젝트 ${n.p} · 출고 ${n.o}${n.q ? ` · 탐색 ${n.q}` : ""}`;
-  let h = `<p class="panel-title" style="margin-top:20px">클라우드 동기화 (Supabase)</p><div class="set-group">`;
+  let h = `<p class="panel-title">PC · 휴대폰 연동 <small class="muted">Supabase</small></p><div class="set-group">`;
   if (!sync.session) {
-    h += `<div class="set-row sync-login"><div style="flex:1;min-width:0"><div class="lab">로그인하면 일정이 서버에 저장되고 다른 PC·휴대폰과 같이 쓸 수 있습니다</div>
-        <div class="desc">Supabase에서 만든 계정(이메일·비밀번호)으로 로그인 · 기기마다 한 번</div>
+    h += `<div class="set-row sync-login"><div style="flex:1;min-width:0"><div class="lab">같은 계정으로 PC와 휴대폰에서 로그인하면 서버 데이터를 기준으로 자동으로 맞춰집니다</div>
+        <div class="desc">바꾸면 2초 뒤 서버에 저장 · 다른 기기에서 바뀐 내용은 15초 안에(앱으로 돌아오면 바로) 반영 · 인터넷이 끊겨도 이 기기에 저장했다가 연결되면 올림</div>
         <form class="sync-form" id="sync-form" autocomplete="on">
           <input id="sync-email" type="email" placeholder="이메일" autocomplete="username" required />
           <input id="sync-pw" type="password" placeholder="비밀번호" autocomplete="current-password" required />
@@ -5997,13 +6144,26 @@ function syncSettingsHtml() {
         <input id="sync-url" value="${esc(sync.url)}" placeholder="Project URL" /><input id="sync-key" value="${esc(sync.key)}" placeholder="Publishable key" />
         <button class="btn-sub" id="sync-save-cfg" type="button">저장</button></div></details>`;
   } else {
-    h += `<div class="set-row"><div><div class="lab">${esc(sync.session.user.email || "")}</div><div class="desc" id="sync-state">${syncStateHtml()}</div></div>
-        <div style="display:flex;gap:6px"><button class="btn-sub" id="sync-now" type="button">지금 동기화</button><button class="btn-sub" id="sync-logout" type="button">로그아웃</button></div></div>
-      <div class="set-row" style="align-items:flex-start"><div style="flex:1;min-width:0"><div class="lab">서버 백업에서 복원</div><div class="desc">서버가 하루 1번 이전 상태를 보관합니다 (최근 60일)</div>
+    h += `<div class="set-row"><div style="min-width:0"><div class="lab">${esc(sync.session.user.email || "")}</div><div class="desc" id="sync-state">${syncStateHtml()}</div></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn-sub" id="sync-now" type="button" ${sync.choice ? "disabled" : ""}>지금 동기화</button>${syncArmBtn("sync-logout", "로그아웃")}</div></div>`;
+    if (sync.choice) {
+      const c = sync.choice, at = new Date(c.at).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" });
+      h += `<div class="set-row sync-choose"><div style="flex:1;min-width:0"><div class="lab">이 기기와 서버에 서로 다른 데이터가 있습니다 — 어느 쪽을 기준으로 할까요?</div>
+        <div class="desc">고르기 전까지는 주고받지 않습니다 · 어느 쪽을 골라도 다른 쪽 내용은 '이 기기 자동 백업'에 보관됩니다</div>
+        <div class="sync-opts">
+          <button type="button" class="sync-opt" data-sync-choose="local"><b>이 기기 기준</b><span>${cnt(c.loc)}</span><small>이 기기 내용을 서버에 올림 — 평소 쓰던 메인 PC라면 이것</small></button>
+          <button type="button" class="sync-opt" data-sync-choose="server"><b>서버 기준</b><span>${cnt(c.srv)}</span><small>서버(${at} 저장) 내용을 이 기기로 받아옴</small></button>
+          <button type="button" class="sync-opt" data-sync-choose="merge"><b>합치기</b><span>양쪽 항목 모두 남김</span><small>같은 항목이 다르면 이 기기 쪽 · 지운 항목이 되살아날 수 있음</small></button>
+        </div></div></div>`;
+    }
+    h += `<div class="set-row" style="align-items:flex-start"><div style="flex:1;min-width:0"><div class="lab">서버 백업에서 복원</div><div class="desc">서버가 하루 1번 이전 상태를 보관합니다 (최근 60일)</div>
         <div class="sync-list" id="sync-backups"><button class="btn-sub" id="sync-load-backups" type="button">백업 목록 보기</button></div></div></div>`;
   }
-  h += `</div>`;
-  return h + snapSettingsHtml();
+  h += `<details class="set-row sync-adv"><summary>업체 탐색 첨부 저장소 설정 (처음 한 번)</summary>
+      <div class="desc" style="margin-top:6px">Supabase → <b>SQL Editor</b>에 아래를 붙여넣고 <b>Run</b> — 첨부 파일은 로그인한 본인만 열 수 있는 비공개 저장소에 들어갑니다 (파일당 20MB까지)</div>
+      <textarea class="sync-sql" id="sync-sql" readonly rows="8">${esc(ATT_SQL)}</textarea>
+      <button class="btn-sub" id="sync-sql-copy" type="button">SQL 복사</button></details>`;
+  return h + `</div>`;
 }
 // 이 기기(브라우저) 안 자동 사본 목록
 function snapSettingsHtml() {
@@ -6018,7 +6178,7 @@ function snapSettingsHtml() {
   return h;
 }
 async function syncSettingsClick(e) {
-  const t = e.target.closest("#sync-login,#sync-now,#sync-logout,#sync-load-backups,#sync-save-cfg,[data-snap],[data-srv-backup],#snap-broken");
+  const t = e.target.closest("#sync-login,#sync-now,#sync-logout,#sync-load-backups,#sync-save-cfg,[data-snap],[data-srv-backup],#snap-broken,[data-sync-choose],#sync-sql-copy");
   if (!t || (ui.view !== "settings" && ui.view !== "backup")) return;
   e.preventDefault();
   const msg = (x) => { const m = document.getElementById("sync-msg"); if (m) m.textContent = x; };
@@ -6027,9 +6187,13 @@ async function syncSettingsClick(e) {
       const em = document.getElementById("sync-email").value.trim(), pw = document.getElementById("sync-pw").value;
       if (!em || !pw) { msg("이메일과 비밀번호를 넣어 주세요"); return; }
       t.disabled = true; msg("로그인 중…");
-      await syncLogin(em, pw); toast("로그인했습니다 — 이제 일정이 서버에 저장됩니다"); render();
+      await syncLogin(em, pw); render(); toast(sync.choice ? "로그인했습니다 — 어느 쪽 데이터를 기준으로 할지 골라 주세요" : "로그인했습니다 — 이제 PC·휴대폰이 같은 데이터로 맞춰집니다");
     } else if (t.id === "sync-now") { await syncNow(); toast(sync.status === "ok" ? "동기화했습니다" : syncStateHtml().replace(/<[^>]+>/g, "")); render(); }
-    else if (t.id === "sync-logout") { if (!confirm("클라우드 연결을 해제할까요? 이 기기의 데이터는 그대로 남고, 서버와 동기화만 멈춥니다.")) return; await syncLogout(); render(); toast("클라우드 연결을 해제했습니다"); }
+    else if (t.id === "sync-logout") { clearTimeout(syncArmT); if (syncArm !== "sync-logout") { syncArm = "sync-logout"; render(); syncArmT = setTimeout(() => { syncArm = null; if (ui.view === "backup") render(); }, 3000); return; }
+      syncArm = null; await syncLogout(); render(); toast("로그아웃했습니다 — 이 기기 데이터는 그대로 남고 서버와 주고받기만 멈춥니다"); }
+    else if (t.dataset.syncChoose) { t.disabled = true; const k = t.dataset.syncChoose; await syncChoose(k); render();
+      toast({ local: "이 기기 내용을 서버에 올렸습니다 — 이제 다른 기기도 이 내용으로 맞춰집니다", server: "서버 내용을 불러왔습니다", merge: "양쪽 내용을 합쳐 서버에 저장했습니다" }[k]); }
+    else if (t.id === "sync-sql-copy") { const ta = document.getElementById("sync-sql"); try { await navigator.clipboard.writeText(ATT_SQL); } catch (_) { ta.select(); document.execCommand("copy"); } toast("SQL을 복사했습니다 — Supabase SQL Editor에 붙여넣고 Run"); }
     else if (t.id === "sync-save-cfg") { sync.url = document.getElementById("sync-url").value.trim(); sync.key = document.getElementById("sync-key").value.trim(); syncSave(); toast("연결 정보를 저장했습니다"); }
     else if (t.id === "sync-load-backups") {
       const box = document.getElementById("sync-backups"); box.textContent = "불러오는 중…";
@@ -6165,10 +6329,16 @@ function fbPaint() { const s = document.getElementById("fb-state"); if (s) s.inn
 // 상단 백업 버튼 점: 초록 = 오늘 백업됨 · 주황 = 오늘 아직 · 빨강 = 오류 · 흐림 = 꺼짐
 function bkPaint() {
   const b = document.getElementById("sync-btn"); if (!b) return;
+  b.classList.toggle("on", ui.view === "backup");
+  if (sync.session) {
+    const st = sync.status === "choose" ? "pending" : sync.status;
+    b.dataset.st = st; b.title = "PC·휴대폰 연동 — " + syncStateHtml().replace(/<[^>]+>/g, "");
+    return;
+  }
   const st = fb.mode === "off" ? "off" : fb.err ? "error" : fb.lastDay === todayStr() ? "ok" : "pending";
   const when = fb.lastAt ? new Date(fb.lastAt).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
-  b.dataset.st = st; b.classList.toggle("on", ui.view === "backup");
-  b.title = { off: "백업 — 자동 백업 꺼짐", error: "백업 — 오류: " + fb.err, ok: `백업 — 오늘 백업됨 (${when})`, pending: "백업 — 오늘 백업 아직" }[st];
+  b.dataset.st = st;
+  b.title = { off: "클라우드 · 백업 — 자동 백업 꺼짐", error: "백업 — 오류: " + fb.err, ok: `백업 — 오늘 백업됨 (${when}) · PC·휴대폰 연동은 꺼짐`, pending: "백업 — 오늘 백업 아직 · PC·휴대폰 연동은 꺼짐" }[st];
 }
 function fbStateHtml() {
   const when = fb.lastAt ? new Date(fb.lastAt).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
