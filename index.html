@@ -2278,7 +2278,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-11-23 · 캘린더 30분 음영 · 알림 기본 30분 전 · 변동형 주 삭제 · 목록 버튼 · 한 줄 요약";
+const APP_VERSION = "2026-11-23 · 변동형 공급 · 재고에 출고량 기준 투입량";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -3442,7 +3442,7 @@ function vorCalc(v) {
   const excess = v.po ? Math.max(0, shipped + open - v.po) : 0;
   const sup = v.sup.map((s) => { const per = voPer(v, s), inTot = Object.values(s.in).reduce((a, b) => a + b, 0);
     const need = Math.max(0, v.po - v.before) * per, short = per ? need - s.open - inTot : null;
-    return { s, per, inTot, need, short, stock: voStockAt(v, s, today) }; });
+    return { s, per, inTot, need, short, stock: voStockAt(v, s, today), ...voUsedTo(v, s, today) }; });
   return { shipped, open, remain: v.po - shipped, excess, overAt, lateN, lateMax, sup, pct: v.po ? Math.min(100, (shipped / v.po) * 100) : 0 };
 }
 // 그날까지의 재고 = 기초 + 입고 누계 − (실출고, 없으면 요청) × 1ea당 사용량
@@ -3451,6 +3451,12 @@ function voStockStart(v, s) {
   const ins = Object.keys(s.in).sort();
   if (ins.length) return ins[0];
   return s.open ? Object.keys(v.days).sort()[0] || null : null;
+}
+// 출고량 기준 투입량: 재고를 세기 시작한 날(없으면 처음)부터 오늘까지 (실출고, 없으면 요청) × 1ea당 사용량
+function voUsedTo(v, s, upTo) {
+  const per = voPer(v, s), st0 = voStockStart(v, s); let qty = 0;
+  Object.keys(v.days).forEach((d) => { if ((!st0 || d >= st0) && d <= upTo) { const x = v.days[d]; qty += x.act != null ? x.act : x.req; } });
+  return { usedQty: qty, used: qty * per };
 }
 function voStockAt(v, s, upTo) {
   const per = voPer(v, s), st0 = voStockStart(v, s); if (!st0 || upTo < st0) return null;
@@ -3589,14 +3595,15 @@ function vorWeekHtml(v, w0, c) {
 function vorSupplyHtml(v, c) {
   const id = v.id;
   return `<div class="vo-sec"><div class="vo-sech"><b>공급 · 재고</b><span class="muted">반제품은 kg · 직납 자재는 실제 수량 — 날짜별 입고는 위 표의 아래 줄에 · 필요량 = (총 발주 − 시작 전 출고) × 1ea당 사용량</span></div>
-    <table class="vo-sup"><thead><tr><th>항목</th><th>1ea당 사용량</th><th>기초 재고</th><th>입고 누계</th><th>남은 발주 필요량</th><th>부족 / 여유</th><th>오늘 재고</th><th></th></tr></thead><tbody>
-    ${c.sup.map(({ s, per, inTot, need, short, stock }) => { const sk = (f) => `sm:${id}:${s.id}:${f}`, u = voUnit(s);
+    <table class="vo-sup"><thead><tr><th>항목</th><th>1ea당 사용량</th><th>기초 재고</th><th>입고 누계</th><th>남은 발주 필요량</th><th>부족 / 여유</th><th title="오늘까지 출고 수량(실출고, 없으면 요청) × 1ea당 사용량">출고량 기준 투입량</th><th>오늘 재고</th><th></th></tr></thead><tbody>
+    ${c.sup.map(({ s, per, inTot, need, short, stock, used, usedQty }) => { const sk = (f) => `sm:${id}:${s.id}:${f}`, u = voUnit(s);
       return `<tr><td>${s.kind === "bulk" ? `<b>${esc(s.name)}</b> <small class="muted">kg</small>` : voIn(sk("name"), s.name, `placeholder="자재 이름" aria-label="자재 이름" size="${Math.max(6, s.name.length * 2)}"`)}</td>
         <td>${s.kind === "bulk" ? (v.fillG ? `${voF(per * 1000, 2)}g = ${voF(per, 4)}kg <small class="muted">충전용량</small>` : `<small class="muted">위 충전용량(g) 입력</small>`) : voIn(sk("per"), s.per ? String(s.per) : "", `inputmode="decimal" placeholder="0.1 = 10개당 1개" aria-label="1ea당 소요량" size="${s.per ? Math.max(4, String(s.per).length + 1) : 14}"`)}</td>
         <td>${voIn(sk("open"), s.open ? voF(s.open, 2) : "", `inputmode="decimal" placeholder="0" aria-label="기초 재고" size="${Math.max(4, voF(s.open, 2).length + 1)}"`)}</td>
         <td class="num">${voF(inTot, 2)} ${u}${s.kind === "bulk" && per ? `<small class="muted"> ≈ ${voF(inTot / per)}ea</small>` : ""}</td>
         <td class="num">${per ? `${voF(need, 1)} ${u}` : "—"}</td>
         <td class="num">${short == null ? "—" : short > 0 ? `<b class="vo-bad">${voF(short, 1)} ${u} 부족</b>${s.kind === "bulk" ? `<small class="muted"> ≈ ${voF(short / per)}ea분</small>` : ""}` : `<span class="vo-ok">${voF(-short, 1)} ${u} 여유</span>`}</td>
+        <td class="num">${per ? `${voF(used, 1)} ${u}<small class="muted"> ← 출고 ${voF(usedQty)}ea</small>` : "—"}</td>
         <td class="num ${per && stock < 0 ? "vo-bad" : ""}">${per && stock != null ? `${voF(stock, 1)} ${u}` : "—"}</td>
         <td>${s.kind === "bulk" ? "" : `<button type="button" class="vo-x ${voArm === `sup:${id}:${s.id}` ? "armed" : ""}" data-vo-del="sup:${id}:${s.id}" aria-label="자재 빼기">${voArm === `sup:${id}:${s.id}` ? "삭제 확인" : "×"}</button>`}</td></tr>`; }).join("")}
     </tbody></table><button type="button" class="btn-sub" data-vo-addmat="${id}">＋ 직납 자재 추가</button></div>`;
@@ -3848,8 +3855,8 @@ function vorExportXlsx(id) {
     v.sup.forEach((s) => rows.push([T(`${s.name} 입고(${voUnit(s)})`), ...cols.map((d) => N(s.in[d] || "")), N(cols.reduce((n, d) => n + (s.in[d] || 0), 0) || "")]));
     rows.push([]);
   }
-  if (v.sup.length) { rows.push([T("공급 · 재고", 2), T("1ea당 사용량", 2), T("기초 재고", 2), T("입고 누계", 2), T("필요량", 2), T("부족(−여유)", 2), T("오늘 재고", 2)]);
-    c.sup.forEach(({ s, per, inTot, need, short, stock }) => rows.push([T(`${s.name} (${voUnit(s)})`), N(per ? +per.toFixed(4) : ""), N(s.open || ""), N(inTot || ""), N(per ? Math.round(need * 10) / 10 : ""), N(short == null ? "" : Math.round(short * 10) / 10), N(per && stock != null ? Math.round(stock * 10) / 10 : "")])); }
+  if (v.sup.length) { rows.push([T("공급 · 재고", 2), T("1ea당 사용량", 2), T("기초 재고", 2), T("입고 누계", 2), T("필요량", 2), T("부족(−여유)", 2), T("출고량 기준 투입량", 2), T("오늘 재고", 2)]);
+    c.sup.forEach(({ s, per, inTot, need, short, stock, used }) => rows.push([T(`${s.name} (${voUnit(s)})`), N(per ? +per.toFixed(4) : ""), N(s.open || ""), N(inTot || ""), N(per ? Math.round(need * 10) / 10 : ""), N(short == null ? "" : Math.round(short * 10) / 10), N(per ? Math.round(used * 10) / 10 : ""), N(per && stock != null ? Math.round(stock * 10) / 10 : "")])); }
   const blob = iqXlsx(v.item || "변동형", rows, [16, ...Array(ncol - 2).fill(12), 13], { headRow: 4, merges, tableEnd: 4 });
   const name = `변동형출고_${(v.item || "품목").replace(/[\\/:*?"<>|]/g, "_").slice(0, 40)}_${todayStr()}.xlsx`;
   const url = URL.createObjectURL(blob), a = document.createElement("a"); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
