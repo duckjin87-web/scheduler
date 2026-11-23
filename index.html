@@ -392,6 +392,131 @@
   :root{ --tt-weigh:#7C6FB0; --tt-mat:#2A8FBF; --tt-mfg:#3A6B70; --tt-move:#6B7480; --tt-prod:#4C8C5A; --tt-part:#B5651D; --tt-ship:#C2772A; --tt-judge:#A0476E; --tt-setup:#7A8C3E; }
   .tt-actions{display:flex;gap:8px;flex-wrap:wrap;}
   .tt-kpis{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+  /* ---- 타임테이블 변동형 (PO 분납) ---- */
+  .vo-tabs{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+  .vo-tabs .seg button b{font-weight:800;margin-left:3px;}
+  .vo-warn{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;margin-left:5px;border-radius:999px;background:var(--urgent);color:#fff;font-size:10px;font-style:normal;font-weight:800;padding:0 4px;}
+  .vo-tabs .muted{font-size:12px;}
+  :root{ --kol:#FBF0B8; --kol-line:#E2C94F; --kol-ink:#4A3B00; }
+  :root[data-theme="dark"]{ --kol:#4A4120; --kol-line:#7A6A2A; --kol-ink:#F4E6A6; }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --kol:#4A4120; --kol-line:#7A6A2A; --kol-ink:#F4E6A6; } }
+  .vo-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(440px,1fr));gap:12px;margin-bottom:12px;}
+  .vo-card{border:1px solid var(--border);background:var(--surface);border-radius:14px;padding:13px 15px;display:flex;flex-direction:column;gap:9px;cursor:pointer;min-width:0;}
+  .vo-card:hover{border-color:var(--work-line);}
+  .vo-card.done{opacity:.6;}
+  .vo-ch{display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap;}
+  .vo-ch .muted{font-size:12px;}
+  .vo-nm{font-size:15px;}
+  .vo-tag{display:inline-flex;font-size:10.5px;font-weight:800;border-radius:999px;padding:2px 9px;background:var(--work);color:#fff;white-space:nowrap;}
+  .vo-tag.done{background:var(--done);}
+  .vo-bar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--surface-2);}
+  .vo-bar i{display:block;height:100%;}
+  .vo-bar .sh{background:var(--done);} .vo-bar .op{background:color-mix(in srgb, var(--work) 45%, var(--surface));} .vo-bar .ex{background:var(--urgent);}
+  .vo-nums{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--text-soft);}
+  .vo-nums b{color:var(--text);} .vo-nums b.ok,.vo-ok{color:var(--done);}
+  .vo-bad{color:var(--urgent);}
+  .vo-mini{display:flex;gap:5px;}
+  .vo-md{flex:1 1 0;min-width:0;border:1px solid var(--border);border-radius:8px;padding:4px 6px;display:flex;flex-direction:column;gap:1px;font-size:10.5px;color:var(--text-soft);}
+  .vo-md span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .vo-md b{font-size:13px;color:var(--text);} .vo-md small{font-size:10px;min-height:12px;}
+  .vo-md.kol{background:var(--kol);border-color:var(--kol-line);} .vo-md.kol b,.vo-md.kol span{color:var(--kol-ink);}
+  .vo-md.today{box-shadow:inset 0 0 0 2px var(--work);}
+  .vo-md.shipped b{color:var(--done);}
+  .vo-warns{display:flex;gap:6px;flex-wrap:wrap;}
+  .vo-w{font-size:11px;font-weight:800;border-radius:999px;padding:2px 9px;}
+  .vo-w.bad{background:var(--urgent-soft);color:var(--urgent);} .vo-w.warn{background:var(--high-soft);color:var(--high);}
+  .vo-donebtn{margin:4px 0 10px;}
+  .vo-head{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
+  .vo-back{align-self:flex-start;border:0;background:transparent;color:var(--work);font:inherit;font-size:12.5px;font-weight:800;cursor:pointer;padding:2px 0;}
+  .vo-titlerow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .vo-acts{display:flex;gap:6px;margin-left:auto;}
+  .vo-in{border:1px solid transparent;background:transparent;border-radius:7px;padding:4px 6px;font:inherit;font-size:13px;color:var(--text);width:100%;min-width:0;box-sizing:border-box;outline:none;}
+  .vo-in:hover{border-color:var(--border);}
+  .vo-in:focus{border-color:var(--work);background:var(--surface);box-shadow:0 0 0 3px color-mix(in srgb, var(--work) 14%, transparent);}
+  .vo-title{font-size:21px;font-weight:800;width:auto;flex:0 1 420px;}
+  .vo-fields{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;}
+  .vo-fields label{display:flex;flex-direction:column;gap:3px;font-size:11px;font-weight:800;color:var(--text-soft);background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:6px 8px 4px;}
+  .vo-fields label small{font-weight:600;color:var(--text-faint);}
+  .vo-fields .vo-in{font-size:14px;font-weight:700;padding:3px 4px;}
+  .vo-kpis .tt-kpi small{font-size:11px;}
+  .tt-kpi.bad small{color:var(--urgent);}
+  .vo-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+  .vo-legend{font-size:11.5px;color:var(--text-soft);display:inline-flex;align-items:center;gap:5px;margin-left:auto;}
+  .vo-legend .sw{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid var(--border-strong);}
+  .vo-legend .sw.kol{background:var(--kol);border-color:var(--kol-line);} .vo-legend .sw.mk{background:var(--surface);margin-left:6px;}
+  .vo-pastbtn{display:block;margin:6px 0 10px;border:1.5px dashed var(--border-strong);background:transparent;color:var(--work);font:inherit;font-size:12px;font-weight:800;border-radius:9px;padding:6px 12px;cursor:pointer;}
+  .vo-wk{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow-x:auto;}
+  .vo-wk.cur{border-color:var(--work-line);box-shadow:0 0 0 2px color-mix(in srgb, var(--work) 12%, transparent);}
+  .vo-wk table{border-collapse:separate;border-spacing:0;width:100%;table-layout:fixed;min-width:680px;font-size:12.5px;}
+  .vo-wk col.c-lab{width:118px;} .vo-wk col.c-sum{width:118px;}
+  .vo-wk th,.vo-wk td{border-bottom:1px solid var(--border);border-right:1px solid color-mix(in srgb, var(--border) 60%, transparent);padding:3px 5px;text-align:right;vertical-align:middle;}
+  .vo-wk thead th{background:var(--surface-2);font-size:11.5px;font-weight:700;color:var(--text-soft);text-align:center;padding:6px 5px;}
+  .vo-wk thead th b{color:var(--text);}
+  .vo-wk thead th.wl{text-align:left;color:var(--text);font-weight:800;}
+  .vo-wk thead th.wl small{color:var(--work);font-weight:800;}
+  .vo-wk thead th.kol{background:var(--kol);color:var(--kol-ink);} .vo-wk thead th.kol b{color:var(--kol-ink);}
+  .vo-wk thead th.today{box-shadow:inset 0 -3px 0 var(--work);}
+  .vo-wk thead th.hol{color:var(--hol);} .vo-wk thead th small{font-size:10px;}
+  .vo-wk tbody th{text-align:left;font-size:11.5px;font-weight:800;color:var(--text-soft);background:var(--surface);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .vo-wk tbody th small{font-weight:600;color:var(--text-faint);}
+  .vo-wk td .vo-in{text-align:right;font-size:13.5px;font-weight:700;padding:4px 5px;}
+  .vo-wk td.sum,.vo-wk th.sum{background:var(--surface-2);font-weight:700;}
+  .vo-wk td.sum small{display:block;font-size:10.5px;color:var(--text-soft);font-weight:600;} .vo-wk td.sum small.bad{color:var(--urgent);font-weight:800;}
+  .vo-wk tr.r-req td.kol{background:var(--kol);} .vo-wk tr.r-req td.kol .vo-in{color:var(--kol-ink);}
+  .vo-wk tr.r-req th{color:var(--text);}
+  .vo-wk tr.r-plt td,.vo-wk tr.r-plt th{font-size:11.5px;color:var(--text-soft);padding-top:1px;padding-bottom:1px;}
+  .vo-wk tr.r-car td{text-align:center;padding-top:2px;padding-bottom:4px;}
+  .vo-car{border:1px solid var(--border-strong);background:var(--surface);color:var(--text-soft);border-radius:999px;font:inherit;font-size:10.5px;font-weight:800;padding:1px 9px;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .vo-car.kol{background:var(--kol);border-color:var(--kol-line);color:var(--kol-ink);}
+  .vo-car.sm{cursor:default;font-size:10px;padding:0 7px;}
+  .vo-wk tr.r-act th,.vo-wk tr.r-act td{border-top:2px solid color-mix(in srgb, var(--done) 45%, transparent);background:color-mix(in srgb, var(--done) 7%, var(--surface));}
+  .vo-wk tr.r-act th{color:var(--done);}
+  .vo-wk tr.r-act td .vo-in{color:var(--done);}
+  .vo-wk tr.r-act td.late{background:color-mix(in srgb, var(--urgent) 9%, var(--surface));}
+  .vo-wk tr.r-act td.late .vo-in::placeholder{color:var(--urgent);font-weight:800;opacity:1;}
+  .vo-wk tr.r-act td.sum{background:color-mix(in srgb, var(--done) 12%, var(--surface-2));}
+  .vo-diff{display:block;font-size:10px;font-weight:800;color:var(--high);line-height:1.1;}
+  .vo-wk tr.r-sup th,.vo-wk tr.r-sup td{font-size:12px;}
+  .vo-wk tr.r-sup.first th,.vo-wk tr.r-sup.first td{border-top:2px dashed var(--border-strong);}
+  .vo-wk tr.r-sup td .vo-in{font-size:12.5px;font-weight:600;}
+  .vo-wk tbody tr:last-child th,.vo-wk tbody tr:last-child td{border-bottom:0;}
+  .vo-paste{background:var(--surface);border:1.5px solid var(--work-line);border-radius:12px;padding:12px 14px;margin-bottom:12px;display:flex;flex-direction:column;gap:10px;}
+  .vo-pf{display:grid;grid-template-columns:1fr 1fr 2fr;gap:8px;}
+  .vo-pf label,.vo-pl{display:flex;flex-direction:column;gap:3px;font-size:11px;font-weight:800;color:var(--text-soft);}
+  .vo-pf .vo-in,.vo-pl .vo-in{border-color:var(--border);background:var(--surface-2);font-size:13px;font-weight:500;padding:7px 9px;}
+  .vo-ta{font-family:ui-monospace,Consolas,monospace !important;font-size:12.5px !important;resize:vertical;line-height:1.5;}
+  .vo-hint{font-size:12px;}
+  .vo-prevh{display:flex;gap:10px;align-items:baseline;font-size:13px;margin-bottom:4px;} .vo-prevh .muted{font-size:12px;}
+  .vo-dt{border-collapse:collapse;width:100%;font-size:12.5px;}
+  .vo-dt th{background:var(--surface-2);font-size:11.5px;font-weight:800;color:var(--text-soft);padding:5px 8px;text-align:right;}
+  .vo-dt td{padding:5px 8px;border-bottom:1px solid var(--border);text-align:right;}
+  .vo-dt th:first-child,.vo-dt td:first-child,.vo-dt th:last-child,.vo-dt td:last-child{text-align:left;}
+  .vo-dt td.up{color:var(--work);font-weight:700;} .vo-dt td.down{color:var(--urgent);font-weight:700;}
+  .vo-dt tr.st-same td,.vo-dt tr.st-keep td{color:var(--text-soft);}
+  .vo-st{display:inline-flex;font-size:10.5px;font-weight:800;border-radius:999px;padding:1px 8px;}
+  .vo-st.new{background:var(--work-soft);color:var(--work);} .vo-st.chg{background:var(--high-soft);color:var(--high);} .vo-st.del{background:var(--urgent-soft);color:var(--urgent);} .vo-st.same{background:var(--surface-2);color:var(--text-soft);}
+  .vo-prevs{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;margin-top:8px;} .vo-sp{flex:1;}
+  .vo-sec{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin:12px 0;display:flex;flex-direction:column;gap:8px;overflow-x:auto;}
+  .vo-sech{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;} .vo-sech .muted{font-size:11.5px;}
+  .vo-sup{border-collapse:collapse;width:100%;min-width:860px;font-size:12.5px;}
+  .vo-sup th{background:var(--surface-2);font-size:11px;font-weight:800;color:var(--text-soft);padding:5px 7px;text-align:left;}
+  .vo-sup td{padding:3px 7px;border-bottom:1px solid var(--border);}
+  .vo-sup td.num{text-align:right;white-space:nowrap;}
+  .vo-sup td small{font-size:10.5px;}
+  .vo-x{border:1px solid transparent;background:transparent;color:var(--text-faint);border-radius:7px;font:inherit;font-size:12px;font-weight:800;padding:2px 8px;cursor:pointer;}
+  .vo-x.armed,.btn-sub.vo-del.armed{background:var(--urgent);border-color:var(--urgent);color:#fff;}
+  .vo-rounds{display:flex;flex-direction:column;gap:4px;}
+  .vo-round{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;padding:6px 9px;border-radius:8px;background:var(--surface-2);}
+  .vo-log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;font-size:12px;max-height:260px;overflow:auto;}
+  .vo-log li span{display:inline-block;min-width:82px;color:var(--text-faint);font-variant-numeric:tabular-nums;}
+  .week-grid .band-cell .cal-chip.vo-chip{color:var(--text);border:1.5px solid color-mix(in srgb, var(--done) 55%, transparent);background:var(--surface);cursor:pointer;}
+  .week-grid .band-cell .cal-chip.vo-chip.kol{background:var(--kol);border-color:var(--kol-line);color:var(--kol-ink);}
+  .week-grid .band-cell .cal-chip.vo-chip.late{color:var(--urgent);border-color:color-mix(in srgb, var(--urgent) 55%, transparent);background:color-mix(in srgb, var(--urgent) 7%, var(--surface));}
+  .week-grid .band-cell .cal-chip.vo-chip.done{opacity:.55;}
+  .cal-chip.vo-chip small{opacity:.75;font-weight:600;margin-left:2px;}
+  .vo-ico{display:inline-flex;font-size:9px;font-weight:800;border-radius:4px;padding:0 4px;margin-right:3px;background:var(--done);color:#fff;}
+  .cal-chip.vo-chip.late .vo-ico{background:var(--urgent);}
+  @media (max-width:900px){ .vo-fields{grid-template-columns:repeat(2,minmax(0,1fr));} .vo-cards{grid-template-columns:1fr;} .vo-pf{grid-template-columns:1fr 1fr;} .vo-pf .wide{grid-column:1 / -1;} .vo-legend{margin-left:0;} .vo-acts{margin-left:0;} }
   .tt-kpi{flex:1 1 110px;min-width:0;border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:7px 11px;}
   .tt-kpi .k{font-size:10.5px;color:var(--text-faint);font-weight:700;white-space:nowrap;}
   .tt-kpi .v{font-size:18px;font-weight:800;line-height:1.3;font-variant-numeric:tabular-nums;}
@@ -2122,7 +2247,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-11-17 · PC·휴대폰 연동(Supabase) 다시 켜기 · 업체 탐색 진행 관리 첨부";
+const APP_VERSION = "2026-11-23 · 타임테이블 변동형(PO 분납 · 수시 출고) 1단계";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -2478,7 +2603,7 @@ const ST_ARCHIVE_MAX = 2000;                // 통계용 완료 기록 보관 �
 const INQ_ITEMS_DEFAULT = [{ id: "ok", label: "가능여부" }, { id: "moq", label: "MOQ" }, { id: "price", label: "예상단가" }, { id: "limit", label: "제한사항" }];
 const Store = (() => {
   const KEY = "scheduler:v1";
-  let state = { version: 2, events: [], todos: [], projects: [], orders: [], archive: [], vendors: [], inquiries: [], inqItems: INQ_ITEMS_DEFAULT.map((x) => ({ ...x })) };
+  let state = { version: 2, events: [], todos: [], projects: [], orders: [], archive: [], vendors: [], inquiries: [], inqItems: INQ_ITEMS_DEFAULT.map((x) => ({ ...x })), vorders: [] };
   // ---- 업체 탐색 ----
   const str = (v) => (v == null ? "" : String(v));
   function normalizeVendor(v) {
@@ -2535,7 +2660,7 @@ const Store = (() => {
   }
   const inqPart = (p) => { const alias = {}; const inqItems = normalizeInqItems(p.inqItems, alias);
     return { vendors: Array.isArray(p.vendors) ? p.vendors.map(normalizeVendor).filter((v) => v.name) : [],
-      inquiries: Array.isArray(p.inquiries) ? p.inquiries.map((q) => normalizeInquiry(inqApplyAlias(q, alias))) : [], inqItems }; };
+      inquiries: Array.isArray(p.inquiries) ? p.inquiries.map((q) => normalizeInquiry(inqApplyAlias(q, alias))) : [], inqItems, vorders: Array.isArray(p.vorders) ? p.vorders.map(normalizeVorder) : [] }; };
   let loadBroken = false;
   const subs = [];
 
@@ -2570,6 +2695,27 @@ const Store = (() => {
 
   // 타임테이블 출고 건: 자재셋팅일·제조예정일은 입력, 이동·생산·납품은 규칙으로 계산 (ttPlan)
   const TT_STEP_KEYS = ["weigh", "mfg", "judge", "mat", "move", "prod", "ship"];
+  // 변동형 출고 (PO 분납 · 수시 출고): 총 발주량 안에서 날짜별 출고 요청 · 실출고 · 공급(반제품 kg · 직납 자재)
+  //  days[YYYY-MM-DD] = { req: 출고 요청, kol: 콜마배차(아니면 생산업체 배차), act: 실출고(null = 아직) }
+  //  sup[] = { kind: bulk(반제품, kg · 충전용량으로 ea 환산) | mat(직납 자재, ea · 소요량/ea), open: 기초 재고, in[날짜] = 입고(이동) 수량 }
+  function normalizeVorder(v) {
+    const n = (x) => { const f = parseFloat(String(x == null ? "" : x).replace(/,/g, "")); return Number.isFinite(f) && f >= 0 ? f : 0; };
+    const okD = (d) => /^\d{4}-\d{2}-\d{2}$/.test(d);
+    const id = v.id || uid(), days = {};
+    if (v.days && typeof v.days === "object") Object.keys(v.days).forEach((d) => { if (!okD(d)) return; const x = v.days[d] || {};
+      const req = Math.round(n(x.req)), act = x.act === null || x.act === undefined || x.act === "" ? null : Math.round(n(x.act));
+      if (req || act != null) days[d] = { req, kol: !!x.kol, act }; });
+    const sup = (Array.isArray(v.sup) ? v.sup : [{ id: id + "-bulk", kind: "bulk" }]).filter(Boolean).map((x, i) => { const inn = {};
+      if (x.in && typeof x.in === "object") Object.keys(x.in).forEach((d) => { const q = n(x.in[d]); if (q && okD(d)) inn[d] = q; });
+      const bulk = x.kind === "bulk";
+      return { id: str(x.id) || `${id}-s${i + 1}`, kind: bulk ? "bulk" : "mat", name: str(x.name).trim() || (bulk ? "반제품(벌크)" : "자재"), vendor: str(x.vendor).trim(), per: n(x.per), open: n(x.open), in: inn }; });
+    return { id, item: str(v.item).trim() || "새 품목", client: str(v.client).trim(), po: Math.round(n(v.po)), before: Math.round(n(v.before)), plt: Math.round(n(v.plt)),
+      maker: str(v.maker).trim(), fillG: n(v.fillG), sat: !!v.sat, done: !!v.done, note: str(v.note), days, sup,
+      rounds: (Array.isArray(v.rounds) ? v.rounds : []).filter(Boolean).map((r) => ({ id: str(r.id) || uid(), no: str(r.no), at: r.at || null, src: str(r.src), from: r.from || null, to: r.to || null,
+        add: +r.add || 0, chg: +r.chg || 0, del: +r.del || 0, delta: +r.delta || 0, sum: +r.sum || 0 })),
+      log: (Array.isArray(v.log) ? v.log : []).filter((x) => x && x.text).map((x) => ({ at: +x.at || Date.now(), text: str(x.text) })).slice(-80),
+      createdAt: v.createdAt || Date.now() };
+  }
   function normalizeOrder(o) {
     const num = (v, d) => { const x = parseInt(String(v == null ? "" : v).replace(/[^\d]/g, ""), 10); return Number.isFinite(x) && x > 0 ? x : d; };
     const done = {}; TT_STEP_KEYS.forEach((k) => (done[k] = !!(o.done && o.done[k])));
@@ -2745,7 +2891,11 @@ const Store = (() => {
     rollover() { const today = todayStr(); let n = 0; state.todos.forEach((t) => { if (!t.done && !t.projectId && t.due && t.due < today) { t.rolledFrom = t.due; t.due = today; n++; } }); if (n) emit(); return n; },
     replaceAll(next) { if (next && Array.isArray(next.events) && Array.isArray(next.todos)) { state = { version: 2, events: next.events.map(normalizeEvent), todos: next.todos.map(normalizeTodo), projects: Array.isArray(next.projects) ? next.projects.map(normalizeProject) : [], orders: Array.isArray(next.orders) ? next.orders.map(normalizeOrder) : [], archive: Array.isArray(next.archive) ? next.archive.slice(-ST_ARCHIVE_MAX) : [], ...inqPart(next) }; emit(); return true; } return false; },
     exportJSON() { return JSON.stringify({ version: 2, events: state.events, todos: state.todos, projects: state.projects, orders: state.orders, archive: state.archive || [],
-      vendors: state.vendors, inquiries: state.inquiries, inqItems: state.inqItems }, null, 2); },
+      vendors: state.vendors, inquiries: state.inquiries, inqItems: state.inqItems, vorders: state.vorders || [] }, null, 2); },
+    // ---- 변동형 출고 (PO 분납) ----
+    normalizeVorder,
+    saveVorder(v) { const n = normalizeVorder(v); const i = state.vorders.findIndex((x) => x.id === n.id); if (i >= 0) state.vorders[i] = n; else state.vorders.push(n); emit(); return n.id; },
+    deleteVorder(id) { state.vorders = state.vorders.filter((x) => x.id !== id); emit(); },
     // ---- 업체 탐색 ----
     normalizeInquiry, normalizeInqRow,
     saveInquiry(q) { const n = normalizeInquiry(q); const i = state.inquiries.findIndex((x) => x.id === n.id); if (i >= 0) state.inquiries[i] = n; else state.inquiries.push(n); emit(); return n.id; },
@@ -2956,6 +3106,7 @@ function renderToday() {
   html += `<p class="panel-title">오늘 일정 · ${evs.length}건</p>`;
   html += evs.length ? `<div class="agenda">${evs.map(eventRow).join("")}</div>` : `<div class="empty">오늘 일정이 없습니다.</div>`;
   html += inqTodayHtml();                                                 // 업체 탐색: 오늘 기한 · 회신 지연
+  html += vorTodayHtml();                                                 // 타임테이블 변동형: 오늘 출고 요청 · 실출고 미입력
   html += `<p class="panel-title" style="margin-top:22px">오늘 마감 할 일 · ${dueToday.length}건</p>`;
   html += dueToday.length ? `<div class="agenda">${dueToday.map(todoRow).join("")}</div>` : `<div class="empty">${IC.check}오늘 마감 할 일이 없습니다.</div>`;
   if (overdue.length) {
@@ -3069,6 +3220,7 @@ function renderWeek() {
     allday: eventsOn(ds).filter((e) => e.allDay && !hiddenDone(e) && !inProject(e)),      // 프로젝트 단계는 프로젝트 줄에 표시
     todos: visibleTodos().filter((t) => t.due === ds && !hiddenDone(t) && !inProject(t)),
     inq: inqBandItems(ds),                                                                 // 업체 탐색 회신 기한 · 지연
+    vor: vorItemsOn(ds),                                                                   // 타임테이블 변동형 출고 요청 · 실출고 미입력
   });
   const alldayChip = (e) => `<div class="cal-chip allday pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}${projCls(e)}${lateCls(e)}" title="${esc(e.title)}${lateTitle(e)}"${projStyle(e)} draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span><span class="ci">${catIcon(e.cat)}</span>${projDot(e.projectId)}${esc(e.title)}</div>`;
   const todoChip = (t) => `<div class="cal-chip todo ${t.done ? "done" : ""}${projCls(t)}${lateCls(t)}" title="${esc(t.title)}${lateTitle(t)}"${projStyle(t)} draggable="true" data-drag="todo" data-id="${t.id}" data-edit-todo="${t.id}"><span class="cal-check ${t.done ? "done" : ""}" data-toggle="${t.id}">${t.done ? IC.check : ""}</span>${projDot(t.projectId)}${esc(t.title)}</div>`;
@@ -3084,6 +3236,7 @@ function renderWeek() {
       const chips = [];
       if (kind !== "todo") b.allday.forEach((e) => chips.push({ done: e.done, html: alldayChip(e) }));
       if (kind !== "allday") b.inq.forEach((x) => chips.push({ done: false, html: inqChipHtml(x) }));   // 회신 기한·지연은 접혀도 보이게 맨 앞
+      if (kind !== "allday") b.vor.forEach((x) => chips.push({ done: x.done, html: vorChipHtml(x) }));
       if (kind !== "allday") b.todos.forEach((t) => chips.push({ done: t.done, html: todoChip(t) }));
       chips.sort((a, b2) => a.done - b2.done);                       // 완료한 항목은 뒤로
       const LIMIT = 3, open = !!ui.bandOpen[key], extra = chips.length - LIMIT;
@@ -3095,13 +3248,13 @@ function renderWeek() {
   };
   if (prefs.splitBand) {
     const has = (k) => week.some((d) => bandOf(ymd(d))[k].length);
-    const showTodo = has("todos") || has("inq");
+    const showTodo = has("todos") || has("inq") || has("vor");
     const hasHol = week.some((d) => holidayName(ymd(d)));
     if (has("allday") || hasHol) grid += bandRow("종일", "allday");  // 종일 일정·공휴일이 있는 주에만 줄 표시
     if (showTodo) grid += bandRow("할 일", "todo");                  // 할 일이 하나도 없는 주에는 줄을 숨겨 공간 절약
   } else {
     const hasHol = week.some((d) => holidayName(ymd(d)));
-    if (week.some((d) => { const b = bandOf(ymd(d)); return b.allday.length || b.todos.length || b.inq.length; }) || hasHol) grid += bandRow("종일<br>·할일", "all");
+    if (week.some((d) => { const b = bandOf(ymd(d)); return b.allday.length || b.todos.length || b.inq.length || b.vor.length; }) || hasHol) grid += bandRow("종일<br>·할일", "all");
   }
   // 시간 행 — 시간 범위(시작~종료)만큼 세로로 채워지는 블록으로 표시
   const CELL_H = calRowH();
@@ -3232,7 +3385,419 @@ function ttWarnings(o, pl, conf) {
 // 출고 건 한 줄 요약용: 최초 계획 대비 가장 많이 밀린 공정
 function ttWorstDelay(o, steps) { let best = null; steps.forEach((st) => { if (st.done) return; const n = ttDelay(o, st); if (n && (!best || n > best.n)) best = { n, st }; }); return best; }
 
+/* ---------- 타임테이블 · 변동형 (PO 분납 · 수시 출고) ----------
+   총 발주량 안에서 출고 요청이 차수별로 들어오고(붙여넣기 → 변경 비교 → 적용), 날마다 요청 · PLT(올림) · 배차(콜마 / 생산업체) · 실출고를 따로 기록
+   공급: 반제품은 kg(충전용량 g/ea로 환산), 직납 자재는 실제 수량(소요량/ea) — 남은 발주 기준 부족량과 주별 재고 */
+const VO_KEY = "scheduler:vor-ui";
+const vo = { kind: "sched", open: null, more: {}, past: {}, paste: null, draft: {}, focusNext: null, doneOpen: false };
+try { const s = JSON.parse(localStorage.getItem(VO_KEY) || "{}"); ["kind", "open", "more"].forEach((k) => { if (s[k] != null) vo[k] = s[k]; }); } catch (_) {}
+const voSave = () => { try { localStorage.setItem(VO_KEY, JSON.stringify({ kind: vo.kind, open: vo.open, more: vo.more })); } catch (_) {} };
+let voArm = null, voArmT = null;
+const vorById = (id) => (Store.state.vorders || []).find((x) => x.id === id);
+const voN = (v) => { const f = parseFloat(String(v == null ? "" : v).replace(/[,\s]/g, "")); return Number.isFinite(f) && f >= 0 ? f : null; };
+const voF = (n, dp = 0) => (n == null || n === "" ? "" : (+n).toLocaleString("en-US", { maximumFractionDigits: dp }));
+const voPlt = (v, q) => (v.plt && q ? Math.ceil(q / v.plt) : 0);                       // 완파레트 적재 수량 기준, 소수점은 무조건 올림
+const voMaker = (v) => v.maker || "생산업체";
+const voPer = (v, s) => (s.kind === "bulk" ? (v.fillG ? v.fillG / 1000 : 0) : s.per);  // ea 1개당 사용량 (반제품: kg)
+const voUnit = (s) => (s.kind === "bulk" ? "kg" : "ea");
+const voMD = (d) => { const x = parseYMD(d); return `${x.getMonth() + 1}/${x.getDate()}`; };
+function vorCalc(v) {
+  const today = todayStr(), ds = Object.keys(v.days).sort();
+  let shipped = v.before, open = 0, lateN = 0, lateMax = 0, cum = v.before, overAt = null;
+  ds.forEach((d) => { const x = v.days[d];
+    if (x.act != null) shipped += x.act;
+    else if (x.req) { open += x.req; if (d < today) { lateN++; lateMax = Math.max(lateMax, Math.max(1, bizDiff(d, today))); } }
+    cum += x.act != null ? x.act : x.req; if (!overAt && v.po && cum > v.po) overAt = d; });
+  const excess = v.po ? Math.max(0, shipped + open - v.po) : 0;
+  const sup = v.sup.map((s) => { const per = voPer(v, s), inTot = Object.values(s.in).reduce((a, b) => a + b, 0);
+    const need = Math.max(0, v.po - v.before) * per, short = per ? need - s.open - inTot : null;
+    return { s, per, inTot, need, short, stock: voStockAt(v, s, today) }; });
+  return { shipped, open, remain: v.po - shipped, excess, overAt, lateN, lateMax, sup, pct: v.po ? Math.min(100, (shipped / v.po) * 100) : 0 };
+}
+// 그날까지의 재고 = 기초 + 입고 누계 − (실출고, 없으면 요청) × 1ea당 사용량
+//  재고 계산은 첫 입고일부터 (기초 재고는 그날 아침 기준) — 입고 기록 전 출고분까지 빼서 음수가 나오지 않게
+function voStockStart(v, s) {
+  const ins = Object.keys(s.in).sort();
+  if (ins.length) return ins[0];
+  return s.open ? Object.keys(v.days).sort()[0] || null : null;
+}
+function voStockAt(v, s, upTo) {
+  const per = voPer(v, s), st0 = voStockStart(v, s); if (!st0 || upTo < st0) return null;
+  let st = s.open;
+  Object.keys(s.in).forEach((d) => { if (d <= upTo) st += s.in[d]; });
+  Object.keys(v.days).forEach((d) => { if (d >= st0 && d <= upTo) { const x = v.days[d]; st -= (x.act != null ? x.act : x.req) * per; } });
+  return st;
+}
+function vorLog(v, text) { v.log = [...(v.log || []), { at: Date.now(), text }].slice(-80); }
+const vorClone = (v) => JSON.parse(JSON.stringify(v));
+
+/* ---- 화면 ---- */
+function vorTabsHtml() {
+  const vs = Store.state.vorders || [], act = vs.filter((v) => !v.done);
+  const warn = act.filter((v) => { const c = vorCalc(v); return c.excess || c.lateN || c.sup.some((x) => x.short > 0); }).length;
+  return `<div class="vo-tabs"><div class="seg" role="tablist" aria-label="관리 방식">
+    <button type="button" class="${vo.kind !== "var" ? "active" : ""}" data-vo-kind="sched">일정형 <b>${Store.state.orders.length}</b></button>
+    <button type="button" class="${vo.kind === "var" ? "active" : ""}" data-vo-kind="var">변동형 · PO 분납 <b>${act.length}</b>${warn ? `<i class="vo-warn" title="확인 필요 ${warn}건">${warn}</i>` : ""}</button></div>
+    <span class="muted">${vo.kind === "var" ? "총 발주량 안에서 출고 요청이 여러 번 · 반제품 · 자재가 수시로 들어오는 품목" : "한 번 생산 → 출고 · 셋팅일 기준 자동 계산"}</span></div>`;
+}
 function renderTimetable() {
+  if (vo.kind !== "var") return vorTabsHtml() + renderTimetableSched();
+  const v = vo.open && vorById(vo.open);
+  return vorTabsHtml() + (v ? vorDetailHtml(v) : vorListHtml());
+}
+function vorWeekCols(v, w0) { return [...Array(v.sat ? 6 : 5)].map((_, i) => ymd(addDays(parseYMD(w0), i))); }
+function vorListHtml() {
+  const q = (ui.search || "").trim().toLowerCase();
+  const vs = (Store.state.vorders || []).filter((v) => !q || [v.item, v.client, v.maker].join(" ").toLowerCase().includes(q));
+  const act = vs.filter((v) => !v.done), done = vs.filter((v) => v.done);
+  const wk0 = ymd(startOfWeek(new Date())), wk1 = ymd(addDays(startOfWeek(new Date()), 6));
+  let qty = 0, plt = 0, kol = 0;
+  act.forEach((v) => Object.keys(v.days).forEach((d) => { const x = v.days[d]; if (d >= wk0 && d <= wk1 && x.req) { qty += x.req; plt += voPlt(v, x.req); if (x.kol) kol++; } }));
+  const warnN = act.filter((v) => { const c = vorCalc(v); return c.excess || c.lateN || c.sup.some((x) => x.short > 0); }).length;
+  let h = `<div class="view-head"><div><h2>타임테이블 · 변동형</h2><div class="sub">PO 분납 · 수시 출고 — 출고 요청은 차수별로 붙여넣고, 날마다 요청 · PLT · 배차 · 실출고를 따로 기록합니다</div></div>
+    <div class="tt-actions"><button class="btn-primary" data-vo-new>＋ 변동형 출고 건</button></div></div>`;
+  if (!vs.length && !q) return h + `<div class="tt-empty"><b>아직 변동형 출고 건이 없습니다</b>
+      <p>총 발주량 · PLT 적재 수량 · 생산업체 · 충전용량을 넣고, 고객 출고 요청을 엑셀에서 그대로 붙여넣으면 주 단위 표로 정리됩니다. 요청이 발주를 넘거나, 날짜가 지났는데 실출고가 없거나, 반제품 · 자재가 모자라면 알려 줍니다.</p>
+      <div class="row"><button class="btn-primary" data-vo-new>＋ 변동형 출고 건</button></div></div>`;
+  h += `<div class="tt-kpis">
+    <div class="tt-kpi"><div class="k">이번 주 출고 요청</div><div class="v">${voF(qty)}<small>ea</small></div></div>
+    <div class="tt-kpi"><div class="k">이번 주 PLT</div><div class="v">${plt}<small>PLT</small></div></div>
+    <div class="tt-kpi"><div class="k">이번 주 콜마배차</div><div class="v">${kol}<small>회</small></div></div>
+    <div class="tt-kpi ${warnN ? "bad" : ""}"><div class="k">확인 필요</div><div class="v">${warnN}건</div></div>
+    <div class="tt-kpi"><div class="k">진행 중</div><div class="v">${act.length}건</div></div></div>`;
+  h += `<div class="vo-cards">${act.map(vorCardHtml).join("") || `<div class="muted">진행 중인 변동형 출고 건이 없습니다.</div>`}</div>`;
+  if (done.length) h += `<button type="button" class="btn-sub vo-donebtn" data-vo-doneopen>완료 ${done.length}건 ${vo.doneOpen ? "▲" : "▼"}</button>${vo.doneOpen ? `<div class="vo-cards">${done.map(vorCardHtml).join("")}</div>` : ""}`;
+  return h;
+}
+function vorCardHtml(v) {
+  const c = vorCalc(v), today = todayStr(), w0 = ymd(startOfWeek(new Date()));
+  const shipW = v.po ? Math.min(100, (c.shipped / v.po) * 100) : 0, openW = v.po ? Math.min(100 - shipW, (Math.min(c.open, Math.max(0, c.remain)) / v.po) * 100) : 0;
+  const exW = v.po ? Math.min(100 - shipW - openW, (c.excess / v.po) * 100) : 0;
+  const shortS = c.sup.filter((x) => x.short > 0);
+  return `<div class="vo-card ${v.done ? "done" : ""}" data-vo-open="${v.id}">
+    <div class="vo-ch"><span class="vo-tag">변동형</span><b class="vo-nm">${esc(v.item)}</b><span class="muted">${esc([v.client, v.po ? `총 발주 ${voF(v.po)}` : "총 발주 미입력", v.maker].filter(Boolean).join(" · "))}</span></div>
+    <div class="vo-bar" title="출고 ${voF(c.shipped)} · 요청(미출고) ${voF(c.open)} · 발주 잔량 ${voF(c.remain)}"><i class="sh" style="width:${shipW}%"></i><i class="op" style="width:${openW}%"></i><i class="ex" style="width:${exW}%"></i></div>
+    <div class="vo-nums"><span><b class="ok">출고 ${voF(c.shipped)}</b>${v.po ? ` (${c.pct.toFixed(1)}%)` : ""}</span><span><b>요청 ${voF(c.open)}</b></span><span>발주 잔량 ${voF(c.remain)}</span></div>
+    <div class="vo-mini">${vorWeekCols(v, w0).map((d) => { const x = v.days[d] || {}; return `<div class="vo-md ${x.kol && x.req ? "kol" : ""} ${d === today ? "today" : ""} ${x.act != null ? "shipped" : ""}"><span>${DOW[parseYMD(d).getDay()]} ${voMD(d)}</span><b>${x.act != null ? "✓ " + voF(x.act) : x.req ? voF(x.req) : "—"}</b><small>${x.req ? [v.plt ? voPlt(v, x.req) + " PLT" : "", x.kol ? "콜마" : esc(voMaker(v))].filter(Boolean).join(" · ") : ""}</small></div>`; }).join("")}</div>
+    ${c.excess || c.lateN || shortS.length ? `<div class="vo-warns">${c.excess ? `<span class="vo-w bad">요청이 발주보다 ${voF(c.excess)} 많음${c.overAt ? ` (${voMD(c.overAt)}부터)` : ""}</span>` : ""}${c.lateN ? `<span class="vo-w bad">실출고 미입력 ${c.lateN}건 · D+${c.lateMax}</span>` : ""}${shortS.map((x) => `<span class="vo-w warn">${esc(x.s.name)} ${voF(x.short, 1)}${voUnit(x.s)} 부족</span>`).join("")}</div>` : ""}
+  </div>`;
+}
+const voIn = (key, val, attrs = "") => `<input class="vo-in" data-vok="${key}" value="${esc(val)}" autocomplete="off" ${attrs} />`;
+function vorDetailHtml(v) {
+  const c = vorCalc(v), id = v.id, today = todayStr(), maker = esc(voMaker(v));
+  const k = (f) => `h:${id}:${f}`;
+  let h = `<div class="vo-head"><button type="button" class="vo-back" data-vo-back>‹ 변동형 목록</button>
+    <div class="vo-titlerow"><input class="vo-in vo-title" data-vok="${k("item")}" value="${esc(v.item)}" placeholder="품목" aria-label="품목" autocomplete="off" />
+      <span class="vo-tag">변동형 · PO 분납</span>${v.done ? `<span class="vo-tag done">완료</span>` : ""}
+      <div class="vo-acts"><button type="button" class="btn-sub" data-vo-xlsx="${id}">엑셀</button><button type="button" class="btn-sub ${v.done ? "on" : ""}" data-vo-done="${id}">${v.done ? "진행 중으로" : "완료"}</button>
+        <button type="button" class="btn-sub vo-del ${voArm === "vo:" + id ? "armed" : ""}" data-vo-del="vo:${id}">${voArm === "vo:" + id ? "삭제 확인" : "삭제"}</button></div></div>
+    <div class="vo-fields">
+      <label>고객사${voIn(k("client"), v.client, 'placeholder="고객사"')}</label>
+      <label>총 발주량 (PO)${voIn(k("po"), voF(v.po), 'inputmode="numeric" placeholder="200,000"')}</label>
+      <label>시작 전 출고 수량${voIn(k("before"), voF(v.before), 'inputmode="numeric" placeholder="0"')}</label>
+      <label>PLT 적재 수량 <small>ea / 완파레트</small>${voIn(k("plt"), voF(v.plt), 'inputmode="numeric" placeholder="예: 4,200"')}</label>
+      <label>생산업체 <small>배차 이름</small>${voIn(k("maker"), v.maker, 'placeholder="예: ○○업체"')}</label>
+      <label>충전용량 <small>g / ea</small>${voIn(k("fillG"), voF(v.fillG, 2), 'inputmode="decimal" placeholder="예: 3.5"')}</label>
+    </div></div>`;
+  h += `<div class="tt-kpis vo-kpis">
+    <div class="tt-kpi"><div class="k">총 발주량</div><div class="v">${v.po ? voF(v.po) : "—"}</div></div>
+    <div class="tt-kpi"><div class="k">출고 누계 (실적)</div><div class="v vo-ok">${voF(c.shipped)}</div><small class="muted">${v.po ? c.pct.toFixed(1) + "%" : ""}</small></div>
+    <div class="tt-kpi"><div class="k">요청 확정 · 미출고</div><div class="v">${voF(c.open)}</div></div>
+    <div class="tt-kpi"><div class="k">발주 잔량</div><div class="v">${v.po ? voF(c.remain) : "—"}</div></div>
+    ${c.excess ? `<div class="tt-kpi bad"><div class="k">요청 초과 (추가 PO 확인)</div><div class="v">${voF(c.excess)}</div><small>${c.overAt ? `${voMD(c.overAt)} 요청분부터 총 발주 넘음` : ""}</small></div>` : ""}
+    ${c.lateN ? `<div class="tt-kpi bad"><div class="k">실출고 미입력</div><div class="v">${c.lateN}건</div><small>요청일 지남 · 최대 D+${c.lateMax}</small></div>` : ""}
+  </div>`;
+  h += `<div class="vo-tools"><button type="button" class="btn-primary" data-vo-paste="${id}">${vo.paste === id ? "요청 등록 닫기" : "＋ 출고 요청 등록 (붙여넣기)"}</button>
+    <button type="button" class="btn-sub" data-vo-sat="${id}">${v.sat ? "토요일 빼기" : "＋ 토요일"}</button>
+    <button type="button" class="btn-sub" data-vo-addmat="${id}">＋ 직납 자재</button>
+    <span class="vo-legend"><i class="sw kol"></i>콜마배차 <i class="sw mk"></i>${maker} 배차 · 칸을 눌러 바로 입력 · Enter로 옆 칸</span></div>`;
+  if (vo.paste === id) h += vorPasteHtml(v);
+  // 주 단위 표 — 기간: 데이터가 있는 첫 주(또는 이번 주) ~ 마지막 주(또는 2주 뒤) + 더 보기
+  const dates = [...Object.keys(v.days), ...v.sup.flatMap((s) => Object.keys(s.in))].sort();
+  const thisW = startOfWeek(new Date()), firstW = startOfWeek(dates.length && dates[0] < ymd(thisW) ? parseYMD(dates[0]) : thisW);
+  const lastD = dates.length ? dates[dates.length - 1] : today, endW = startOfWeek(parseYMD(lastD > ymd(addDays(thisW, 14)) ? lastD : ymd(addDays(thisW, 14))));
+  const weeks = []; for (let w = firstW; w <= addDays(endW, 7 * (vo.more[id] || 0)); w = addDays(w, 7)) weeks.push(ymd(w));
+  const past = weeks.filter((w) => w < ymd(addDays(thisW, -7))), shownW = vo.past[id] ? weeks : weeks.filter((w) => !past.includes(w));
+  if (past.length && !vo.past[id]) h += `<button type="button" class="vo-pastbtn" data-vo-past="${id}">지난 주 ${past.length}개 보기 ▾</button>`;
+  else if (past.length) h += `<button type="button" class="vo-pastbtn" data-vo-past="${id}">지난 주 접기 ▴</button>`;
+  h += shownW.map((w) => vorWeekHtml(v, w, c)).join("");
+  h += `<button type="button" class="vo-pastbtn" data-vo-more="${id}">＋ 다음 주 더 보기</button>`;
+  h += vorSupplyHtml(v, c);
+  h += vorHistHtml(v);
+  return h;
+}
+function vorWeekHtml(v, w0, c) {
+  const id = v.id, today = todayStr(), cols = vorWeekCols(v, w0), wEnd = ymd(addDays(parseYMD(w0), 6));
+  const thisW = ymd(startOfWeek(new Date())), tag = w0 === thisW ? "이번 주" : w0 < thisW ? "지난 주" : "";
+  const X = (d) => v.days[d] || { req: 0, kol: false, act: null };
+  const sum = (f) => cols.reduce((n, d) => n + f(X(d), d), 0);
+  const reqS = sum((x) => x.req), pltS = sum((x) => voPlt(v, x.req)), kolS = sum((x) => (x.kol && x.req ? 1 : 0)), actS = sum((x) => x.act || 0), actN = sum((x) => (x.act != null ? 1 : 0));
+  const head = cols.map((d) => { const x = X(d), hol = holidayName(d);
+    return `<th class="${x.kol && x.req ? "kol" : ""} ${d === today ? "today" : ""} ${hol ? "hol" : ""}" ${hol ? `title="${esc(hol)}"` : ""}>${DOW[parseYMD(d).getDay()]} <b>${voMD(d)}</b>${hol ? ` <small>${esc(hol)}</small>` : ""}</th>`; }).join("");
+  let rows = `<tr class="r-req"><th>출고 요청</th>${cols.map((d) => { const x = X(d); return `<td class="${x.kol && x.req ? "kol" : ""}">${voIn(`r:${id}:${d}`, x.req ? voF(x.req) : "", `inputmode="numeric" placeholder="—" aria-label="${voMD(d)} 출고 요청"`)}</td>`; }).join("")}<td class="sum"><b>${reqS ? voF(reqS) : "—"}</b></td></tr>`;
+  rows += `<tr class="r-plt"><th>PLT</th>${cols.map((d) => `<td>${X(d).req && v.plt ? voPlt(v, X(d).req) : ""}</td>`).join("")}<td class="sum">${v.plt ? pltS || "" : `<small class="muted">적재 수량 입력</small>`}</td></tr>`;
+  rows += `<tr class="r-car"><th>배차</th>${cols.map((d) => { const x = X(d); return `<td>${x.req ? `<button type="button" class="vo-car ${x.kol ? "kol" : ""}" data-vo-kol="${id}:${d}" title="눌러서 콜마 ↔ ${esc(voMaker(v))} 배차 바꾸기">${x.kol ? "콜마" : esc(voMaker(v))}</button>` : ""}</td>`; }).join("")}<td class="sum">${kolS ? `콜마 ${kolS}회` : ""}</td></tr>`;
+  rows += `<tr class="r-act"><th>실출고</th>${cols.map((d) => { const x = X(d), late = x.req && x.act == null && d < today ? Math.max(1, bizDiff(d, today)) : 0, diff = x.act != null && x.req && x.act !== x.req ? x.act - x.req : 0;
+      return `<td class="${late ? "late" : ""} ${x.act != null ? "has" : ""}">${voIn(`a:${id}:${d}`, x.act != null ? voF(x.act) : "", `inputmode="numeric" placeholder="${late ? "D+" + late : "—"}" aria-label="${voMD(d)} 실출고"`)}${diff ? `<small class="vo-diff">${diff > 0 ? "+" : ""}${voF(diff)}</small>` : ""}</td>`; }).join("")}<td class="sum"><b class="vo-ok">${actN ? voF(actS) : ""}</b></td></tr>`;
+  v.sup.forEach((s, i) => { const st = voStockAt(v, s, wEnd), per = voPer(v, s), inS = cols.reduce((n, d) => n + (s.in[d] || 0), 0);
+    rows += `<tr class="r-sup ${i === 0 ? "first" : ""}"><th>${esc(s.name)} <small>입고 ${voUnit(s)}</small></th>${cols.map((d) => `<td>${voIn(`s:${id}:${s.id}:${d}`, s.in[d] ? voF(s.in[d], 2) : "", `inputmode="decimal" placeholder="" aria-label="${voMD(d)} ${esc(s.name)} 입고"`)}</td>`).join("")}<td class="sum">${inS ? voF(inS, 2) : ""}${per && st != null ? `<small class="${st < 0 ? "bad" : ""}">주말 재고 ${voF(st, 1)}</small>` : ""}</td></tr>`; });
+  return `<div class="vo-wk ${w0 === thisW ? "cur" : ""}"><table><colgroup><col class="c-lab" />${cols.map(() => "<col />").join("")}<col class="c-sum" /></colgroup>
+    <thead><tr><th class="wl">${voMD(w0)} 주${tag ? ` <small>${tag}</small>` : ""}</th>${head}<th class="sum">주 합계</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function vorSupplyHtml(v, c) {
+  const id = v.id;
+  return `<div class="vo-sec"><div class="vo-sech"><b>공급 · 재고</b><span class="muted">반제품은 kg · 직납 자재는 실제 수량 — 날짜별 입고는 위 표의 아래 줄에 · 필요량 = (총 발주 − 시작 전 출고) × 1ea당 사용량</span></div>
+    <table class="vo-sup"><thead><tr><th>항목</th><th>업체</th><th>1ea당 사용량</th><th>기초 재고</th><th>입고 누계</th><th>남은 발주 필요량</th><th>부족 / 여유</th><th>오늘 재고</th><th></th></tr></thead><tbody>
+    ${c.sup.map(({ s, per, inTot, need, short, stock }) => { const sk = (f) => `sm:${id}:${s.id}:${f}`, u = voUnit(s);
+      return `<tr><td>${s.kind === "bulk" ? `<b>${esc(s.name)}</b> <small class="muted">kg</small>` : voIn(sk("name"), s.name, 'placeholder="자재 이름" aria-label="자재 이름"')}</td>
+        <td>${voIn(sk("vendor"), s.vendor, `placeholder="${s.kind === "bulk" ? "제조처" : "직납 업체"}" aria-label="업체"`)}</td>
+        <td>${s.kind === "bulk" ? (v.fillG ? `${voF(per * 1000, 2)}g = ${voF(per, 4)}kg <small class="muted">충전용량</small>` : `<small class="muted">위 충전용량(g) 입력</small>`) : voIn(sk("per"), s.per ? String(s.per) : "", 'inputmode="decimal" placeholder="예: 0.1 (10개당 1개)" aria-label="1ea당 소요량"')}</td>
+        <td>${voIn(sk("open"), s.open ? voF(s.open, 2) : "", `inputmode="decimal" placeholder="0" aria-label="기초 재고"`)}</td>
+        <td class="num">${voF(inTot, 2)} ${u}${s.kind === "bulk" && per ? `<small class="muted"> ≈ ${voF(inTot / per)}ea</small>` : ""}</td>
+        <td class="num">${per ? `${voF(need, 1)} ${u}` : "—"}</td>
+        <td class="num">${short == null ? "—" : short > 0 ? `<b class="vo-bad">${voF(short, 1)} ${u} 부족</b>${s.kind === "bulk" ? `<small class="muted"> ≈ ${voF(short / per)}ea분</small>` : ""}` : `<span class="vo-ok">${voF(-short, 1)} ${u} 여유</span>`}</td>
+        <td class="num ${per && stock < 0 ? "vo-bad" : ""}">${per && stock != null ? `${voF(stock, 1)} ${u}` : "—"}</td>
+        <td>${s.kind === "bulk" ? "" : `<button type="button" class="vo-x ${voArm === `sup:${id}:${s.id}` ? "armed" : ""}" data-vo-del="sup:${id}:${s.id}" aria-label="자재 빼기">${voArm === `sup:${id}:${s.id}` ? "삭제 확인" : "×"}</button>`}</td></tr>`; }).join("")}
+    </tbody></table><button type="button" class="btn-sub" data-vo-addmat="${id}">＋ 직납 자재 추가</button></div>`;
+}
+function vorHistHtml(v) {
+  const rs = v.rounds.slice().reverse(), lg = v.log.slice().reverse().slice(0, 40);
+  const fmtAt = (t) => { const d = new Date(t); return `${d.getMonth() + 1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+  return `<div class="vo-sec"><div class="vo-sech"><b>요청 차수 · 변경 이력</b><span class="muted">요청이 바뀌어도 지우지 않고 남깁니다</span></div>
+    ${rs.length ? `<div class="vo-rounds">${rs.map((r) => `<div class="vo-round"><b>${esc(r.no)}</b><span>${r.at ? voMD(r.at) + " 받음" : ""}</span><span>${r.from ? `${voMD(r.from)} ~ ${voMD(r.to)}` : ""}</span><span>신규 ${r.add} · 변경 ${r.chg} · 취소 ${r.del} · <b>${r.delta > 0 ? "+" : ""}${voF(r.delta)}</b></span>${r.src ? `<span class="muted">${esc(r.src)}</span>` : ""}</div>`).join("")}</div>` : ""}
+    ${lg.length ? `<ul class="vo-log">${lg.map((x) => `<li><span>${fmtAt(x.at)}</span>${esc(x.text)}</li>`).join("")}</ul>` : `<div class="muted">아직 기록이 없습니다</div>`}</div>`;
+}
+
+/* ---- 출고 요청 붙여넣기: 세로(일자 · 수량 · PLT · 배차) 또는 엑셀 가로표(일자 줄 · 수량 줄) ---- */
+function vorDate(tok) {
+  const t = String(tok || "").trim().replace(/\(.*?\)/g, "").replace(/\s+/g, "").replace(/일$/, "");
+  let m = t.match(/^(\d{4})[-./](\d{1,2})[-./](\d{1,2})\.?$/);
+  if (m) { const d = new Date(+m[1], +m[2] - 1, +m[3]); return d.getMonth() === +m[2] - 1 ? ymd(d) : null; }
+  m = t.match(/^(\d{1,2})[-./월](\d{1,2})\.?$/);
+  if (!m) return null;
+  const mo = +m[1], da = +m[2]; if (mo < 1 || mo > 12 || da < 1 || da > 31) return null;
+  const now = new Date(); let y = now.getFullYear(); const cm = now.getMonth() + 1;
+  if (mo - cm > 6) y--; else if (cm - mo > 6) y++;
+  const d = new Date(y, mo - 1, da); return d.getMonth() === mo - 1 ? ymd(d) : null;
+}
+const vorQty = (t) => { const s = String(t == null ? "" : t).replace(/[,\s]/g, "").replace(/(ea|개|EA)$/, ""); return /^\d+(\.\d+)?$/.test(s) ? Math.round(+s) : null; };
+function vorParse(text, v) {
+  const lines = String(text || "").split(/\r?\n/).filter((l) => l.trim());
+  const split = (l) => (l.includes("\t") ? l.split("\t") : l.trim().split(/\s+/)).map((x) => x.trim());
+  const rows = lines.map(split), out = {};
+  const isKol = (t) => /콜마/.test(t), isMk = (t) => /에코|업체|직배|자차/.test(t) || (v && v.maker && t.includes(v.maker));
+  // 가로표: 날짜가 2개 이상인 줄 → 그 아래 '요청 · 출고' 줄(없으면 숫자 있는 첫 줄)의 같은 칸
+  const hi = rows.findIndex((r) => r.filter((x) => vorDate(x)).length >= 2);
+  if (hi >= 0) {
+    const dr = rows[hi], below = rows.slice(hi + 1);
+    const qr = below.find((r) => /요청|출고|수량/.test(r[0] || "") && r.some((x) => vorQty(x) != null)) || below.find((r) => dr.some((x, j) => vorDate(x) && vorQty(r[j]) != null));
+    dr.forEach((x, j) => { const d = vorDate(x); if (!d) return; const q = qr ? vorQty(qr[j]) : null; out[d] = { date: d, qty: q || 0, kol: null }; });
+  } else rows.forEach((r) => {
+    const di = r.findIndex((x) => vorDate(x)); if (di < 0) return;
+    const d = vorDate(r[di]), rest = r.slice(di + 1), qi = rest.findIndex((x) => vorQty(x) != null);
+    const txt = rest.join(" ");
+    out[d] = { date: d, qty: qi >= 0 ? vorQty(rest[qi]) : 0, kol: isKol(txt) ? true : isMk(txt) ? false : null };
+  });
+  return Object.values(out).sort((a, b) => a.date.localeCompare(b.date));
+}
+function vorDiff(v, text) {
+  const rows = vorParse(text, v); if (!rows.length) return null;
+  const from = rows[0].date, to = rows[rows.length - 1].date, nw = {}; rows.forEach((r) => (nw[r.date] = r));
+  const old = Object.keys(v.days).filter((d) => d >= from && d <= to && v.days[d].req);
+  const all = [...new Set([...rows.map((r) => r.date), ...old])].sort();
+  let add = 0, chg = 0, del = 0, same = 0, oldSum = 0, newSum = 0;
+  const list = all.map((d) => { const o = v.days[d] || { req: 0, kol: false, act: null }, n = nw[d], nq = n ? n.qty : 0;
+    const kol = n && n.kol != null ? n.kol : o.req ? o.kol : false;
+    if (o.act != null && !nq) return { d, o: o.req, n: o.req, st: "keep", kol: o.kol, act: o.act };   // 이미 실출고한 날은 표에 없어도 그대로
+    oldSum += o.req; newSum += nq;
+    const st = !o.req && nq ? "new" : o.req && !nq ? "del" : o.req !== nq ? "chg" : o.kol !== kol ? "car" : "same";
+    if (st === "new") add++; else if (st === "del") del++; else if (st === "chg" || st === "car") chg++; else same++;
+    return { d, o: o.req, n: nq, st, kol, act: o.act }; });
+  return { from, to, list, add, chg, del, same, delta: newSum - oldSum, sum: newSum };
+}
+function vorPasteHtml(v) {
+  const d = vo.draft[v.id] || {}, id = v.id;
+  return `<div class="vo-paste"><div class="vo-pf">
+      <label>차수${voIn(`pn:${id}:no`, d.no || "", `placeholder="${v.rounds.length + 1}차 요청"`)}</label>
+      <label>요청 받은 날<input type="date" class="vo-in" data-vok="pn:${id}:at" value="${d.at || todayStr()}" /></label>
+      <label class="wide">근거 (메일 제목 · 메모)${voIn(`pn:${id}:src`, d.src || "", 'placeholder="예: [하이드로겔] 11/30주 출고 요청"')}</label></div>
+    <label class="vo-pl"><span>붙여넣기 — 한 줄에 <b>일자 · 수량 · (PLT) · (배차)</b>, 또는 엑셀 가로표(일자 줄 + 출고요청수량 줄)를 그대로 · Ctrl+Enter = 적용</span>
+      <textarea class="vo-in vo-ta" data-vok="pn:${id}:text" rows="5" placeholder="11/30&#9;12,000&#9;3&#9;${esc(voMaker(v))}&#10;12/1&#9;15,000&#9;4&#9;콜마">${esc(d.text || "")}</textarea></label>
+    <div id="vo-prev">${vorPrevHtml(v)}</div></div>`;
+}
+function vorPrevHtml(v) {
+  const d = vo.draft[v.id] || {}, df = vorDiff(v, d.text || "");
+  if (!df) return `<div class="muted vo-hint">붙여넣으면 지금 계획과 비교해 신규 · 변경 · 취소를 먼저 보여 줍니다 (붙여넣은 첫 날 ~ 마지막 날 사이만 바뀜)</div>`;
+  const c = vorCalc(v), exAfter = v.po ? Math.max(0, c.shipped + c.open + df.delta - v.po) : 0;
+  const ST = { new: ["신규", "new"], chg: ["변경", "chg"], car: ["배차 변경", "chg"], del: ["취소", "del"], same: ["그대로", "same"], keep: ["실출고 있음 · 그대로", "same"] };
+  return `<div class="vo-prevh"><b>바뀌는 내용</b><span class="muted">${voMD(df.from)} ~ ${voMD(df.to)} 사이만 바꿈 · 다른 날짜는 그대로</span></div>
+    <table class="vo-dt"><thead><tr><th>일자</th><th>지금 계획</th><th>새 요청</th><th>차이</th><th>PLT</th><th>배차 · 상태</th></tr></thead><tbody>
+    ${df.list.map((x) => `<tr class="st-${x.st}"><td>${voMD(x.d)} (${DOW[parseYMD(x.d).getDay()]})</td><td>${x.o ? voF(x.o) : "—"}</td><td><b>${x.n ? voF(x.n) : "—"}</b></td><td class="${x.n - x.o > 0 ? "up" : x.n - x.o < 0 ? "down" : ""}">${x.n - x.o ? (x.n - x.o > 0 ? "+" : "") + voF(x.n - x.o) : "0"}</td><td>${x.n && v.plt ? voPlt(v, x.n) : ""}</td>
+      <td>${x.n ? `<span class="vo-car sm ${x.kol ? "kol" : ""}">${x.kol ? "콜마" : esc(voMaker(v))}</span> ` : ""}<span class="vo-st ${ST[x.st][1]}">${ST[x.st][0]}</span></td></tr>`).join("")}</tbody></table>
+    <div class="vo-prevs"><span>신규 <b>${df.add}</b> · 변경 <b>${df.chg}</b> · 취소 <b>${df.del}</b> · 요청 합계 <b>${df.delta > 0 ? "+" : ""}${voF(df.delta)}</b></span>${exAfter ? `<span class="vo-bad">적용하면 총 발주보다 ${voF(exAfter)} 많음</span>` : ""}
+      <span class="vo-sp"></span><button type="button" class="btn-sub" data-vo-paste="${v.id}">닫기</button><button type="button" class="btn-primary" data-vo-pastego="${v.id}" ${df.add + df.chg + df.del ? "" : "disabled"}>적용</button></div>`;
+}
+function vorApplyPaste(id) {
+  const v0 = vorById(id); if (!v0) return; const d = vo.draft[id] || {}, df = vorDiff(v0, d.text || ""); if (!df) return;
+  const v = vorClone(v0);
+  df.list.forEach((x) => { if (x.st === "keep" || x.st === "same") return;
+    if (x.n) v.days[x.d] = { req: x.n, kol: x.kol, act: (v.days[x.d] || {}).act ?? null };
+    else if (v.days[x.d]) { if (v.days[x.d].act != null) v.days[x.d].req = 0; else delete v.days[x.d]; } });
+  const no = (d.no || "").trim() || `${v.rounds.length + 1}차 요청`;
+  v.rounds.push({ id: uid(), no, at: d.at || todayStr(), src: (d.src || "").trim(), from: df.from, to: df.to, add: df.add, chg: df.chg, del: df.del, delta: df.delta, sum: df.sum });
+  vorLog(v, `${no}: ${voMD(df.from)}~${voMD(df.to)} 신규 ${df.add} · 변경 ${df.chg} · 취소 ${df.del} (${df.delta > 0 ? "+" : ""}${voF(df.delta)})`);
+  vo.paste = null; delete vo.draft[id];
+  Store.saveVorder(v);
+  toast(`${no}을(를) 적용했습니다 — 신규 ${df.add} · 변경 ${df.chg} · 취소 ${df.del}`);
+}
+
+/* ---- 입력 · 클릭 ---- */
+function vorFieldChange(e) {
+  const el = e.target, key = el.dataset && el.dataset.vok; if (!key || ui.view !== "timetable") return;
+  const [t, id, a, b] = key.split(":");
+  if (t === "pn") { (vo.draft[id] = vo.draft[id] || {})[a] = el.value; return; }
+  const v0 = vorById(id); if (!v0) return;
+  if (iqPtrDown) { iqQuiet = true; iqPendingRender = true; }
+  const v = vorClone(v0), val = el.value;
+  if (t === "h") {
+    if (["po", "before", "plt"].includes(a)) { const n = voN(val); v[a] = n == null ? 0 : Math.round(n); }
+    else if (a === "fillG") { const n = voN(val); v.fillG = n == null ? 0 : n; }
+    else v[a] = String(val).trim();
+    if (a === "item" && !v.item) v.item = v0.item;
+    if (String(v0[a]) !== String(v[a])) vorLog(v, `${{ item: "품목", client: "고객사", po: "총 발주량", before: "시작 전 출고", plt: "PLT 적재 수량", maker: "생산업체", fillG: "충전용량(g)" }[a] || a}: ${v0[a] || "—"} → ${v[a] || "—"}`);
+  } else if (t === "r" || t === "a") {
+    const n = voN(val), x = v.days[a] || { req: 0, kol: false, act: null }, old = t === "r" ? x.req : x.act;
+    if (t === "r") x.req = n == null ? 0 : Math.round(n); else x.act = n == null || String(val).trim() === "" ? null : Math.round(n);
+    if (!x.req && x.act == null) delete v.days[a]; else v.days[a] = x;
+    const nv = t === "r" ? x.req : x.act;
+    if ((old || 0) !== (nv || 0) || (old == null) !== (nv == null)) vorLog(v, `${voMD(a)} ${t === "r" ? "출고 요청" : "실출고"}: ${old ? voF(old) : "—"} → ${nv ? voF(nv) : nv === 0 ? "0" : "—"}`);
+  } else if (t === "s") {
+    const s = v.sup.find((x) => x.id === a); if (!s) return; const n = voN(val), old = s.in[b] || 0;
+    if (n) s.in[b] = n; else delete s.in[b];
+    if (old !== (n || 0)) vorLog(v, `${voMD(b)} ${s.name} 입고: ${old ? voF(old, 2) : "—"} → ${n ? voF(n, 2) : "—"} ${voUnit(s)}`);
+  } else if (t === "sm") {
+    const s = v.sup.find((x) => x.id === a); if (!s) return;
+    if (b === "per" || b === "open") { const n = voN(val); s[b] = n == null ? 0 : n; } else s[b] = String(val).trim();
+  } else return;
+  Store.saveVorder(v);
+}
+function vorFieldKey(e) {
+  const el = e.target, key = el.dataset && el.dataset.vok; if (!key || ui.view !== "timetable") return;
+  if (key.startsWith("pn:")) { if (key.endsWith(":text") && e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); vorApplyPaste(key.split(":")[1]); } return; }
+  if (e.key !== "Enter" || el.tagName !== "INPUT") return;
+  e.preventDefault();
+  // Enter = 같은 줄 오른쪽 칸 (줄 끝이면 다음 줄 첫 칸)
+  const tr = el.closest("tr"), row = tr ? [...tr.querySelectorAll("[data-vok]")] : [], i = row.indexOf(el);
+  let nx = row[i + 1];
+  if (!nx && tr) { let r = tr.nextElementSibling; while (r && !nx) { nx = r.querySelector("[data-vok]"); r = r.nextElementSibling; } }
+  if (!nx) { const all = [...document.querySelectorAll("#content [data-vok]")]; nx = all[all.indexOf(el) + 1]; }
+  const nk = nx && nx.dataset.vok; vo.focusNext = nk || null;
+  el.blur();
+  if (vo.focusNext) { vo.focusNext = null; const t2 = nk && document.querySelector(`[data-vok="${CSS.escape(nk)}"]`); if (t2) { t2.focus(); try { t2.select(); } catch (_) {} } }
+}
+function vorCaptureFocus() { const a = document.activeElement; return { k: a && a.dataset && a.dataset.vok, s: a && a.selectionStart, y: window.scrollY }; }
+function vorRestoreFocus(st) {
+  const k = vo.focusNext || (st && st.k), sel = !!vo.focusNext; vo.focusNext = null; if (!k) return;
+  const el = document.querySelector(`[data-vok="${CSS.escape(k)}"]`); if (!el) return;
+  el.focus({ preventScroll: true });
+  try { if (sel) el.select(); else if (st && st.s != null && el.setSelectionRange) el.setSelectionRange(st.s, st.s); } catch (_) {}
+}
+function vorNew() {
+  const v = Store.normalizeVorder({ item: "", sup: [{ kind: "bulk" }] }); v.item = "새 품목";
+  vo.kind = "var"; vo.open = v.id; voSave();
+  if (ui.view !== "timetable") { ui.view = "timetable"; saveUI(); }
+  vo.focusNext = `h:${v.id}:item`;
+  Store.saveVorder({ ...v, log: [{ at: Date.now(), text: "변동형 출고 건 등록" }] });
+  setTimeout(() => { const el = document.querySelector(`[data-vok="h:${v.id}:item"]`); if (el) { el.focus(); el.select(); } }, 30);
+}
+function vorOpen(id) { try { window.focus(); } catch (_) {} vo.kind = "var"; vo.open = id; voSave(); setView("timetable"); }
+function vorClick(e) {
+  if (ui.view !== "timetable" || !e.target.closest("#content")) return;
+  const t = e.target;
+  const kd = t.closest("[data-vo-kind]"); if (kd) { vo.kind = kd.dataset.voKind; voSave(); render(); return; }
+  if (vo.kind !== "var") return;
+  const dl = t.closest("[data-vo-del]");
+  if (dl) { const k = dl.dataset.voDel; clearTimeout(voArmT);
+    if (voArm !== k) { voArm = k; render(); voArmT = setTimeout(() => { voArm = null; if (ui.view === "timetable") render(); }, 3000); return; }
+    voArm = null; const [kk, id, sid] = k.split(":");
+    if (kk === "vo") { const v = vorById(id); Store.deleteVorder(id); vo.open = null; voSave(); toast(`'${v ? v.item : "출고 건"}'을(를) 삭제했습니다`); }
+    else if (kk === "sup") { const v = vorClone(vorById(id)); const s = v.sup.find((x) => x.id === sid); v.sup = v.sup.filter((x) => x.id !== sid); if (s) vorLog(v, `직납 자재 빼기: ${s.name}`); Store.saveVorder(v); }
+    return; }
+  if (voArm) { voArm = null; clearTimeout(voArmT); }
+  if (t.closest("[data-vo-new]")) { vorNew(); return; }
+  if (t.closest("[data-vo-back]")) { vo.open = null; vo.paste = null; voSave(); render(); window.scrollTo(0, 0); return; }
+  if (t.closest("[data-vo-doneopen]")) { vo.doneOpen = !vo.doneOpen; render(); return; }
+  const op = t.closest("[data-vo-open]"); if (op && !t.closest("input,button,a")) { vo.open = op.dataset.voOpen; voSave(); render(); window.scrollTo(0, 0); return; }
+  const kl = t.closest("[data-vo-kol]"); if (kl) { const [id, d] = kl.dataset.voKol.split(":"); const v = vorClone(vorById(id)); const x = v.days[d]; if (!x) return; x.kol = !x.kol; vorLog(v, `${voMD(d)} 배차: ${x.kol ? `${voMaker(v)} → 콜마` : `콜마 → ${voMaker(v)}`}`); Store.saveVorder(v); return; }
+  const st = t.closest("[data-vo-sat]"); if (st) { const v = vorClone(vorById(st.dataset.voSat));
+    if (v.sat && Object.keys(v.days).some((d) => parseYMD(d).getDay() === 6)) { toast("토요일에 요청 · 실출고가 있어 뺄 수 없습니다 — 그 칸을 먼저 비워 주세요"); return; }
+    v.sat = !v.sat; Store.saveVorder(v); return; }
+  const am = t.closest("[data-vo-addmat]"); if (am) { const v = vorClone(vorById(am.dataset.voAddmat)); const sid = uid(); v.sup.push({ id: sid, kind: "mat", name: "", vendor: "", per: 0, open: 0, in: {} }); vo.focusNext = `sm:${v.id}:${sid}:name`; Store.saveVorder(v); return; }
+  const ps = t.closest("[data-vo-paste]"); if (ps) { vo.paste = vo.paste === ps.dataset.voPaste ? null : ps.dataset.voPaste; if (vo.paste) vo.focusNext = `pn:${vo.paste}:text`; render(); return; }
+  const pg = t.closest("[data-vo-pastego]"); if (pg) { vorApplyPaste(pg.dataset.voPastego); return; }
+  const pa = t.closest("[data-vo-past]"); if (pa) { vo.past[pa.dataset.voPast] = !vo.past[pa.dataset.voPast]; render(); return; }
+  const mo = t.closest("[data-vo-more]"); if (mo) { vo.more[mo.dataset.voMore] = (vo.more[mo.dataset.voMore] || 0) + 1; voSave(); render(); return; }
+  const dn = t.closest("[data-vo-done]"); if (dn) { const v = vorClone(vorById(dn.dataset.voDone)); v.done = !v.done; vorLog(v, v.done ? "완료" : "진행 중으로"); Store.saveVorder(v); toast(v.done ? "완료로 옮겼습니다 (목록 아래 '완료'에서 볼 수 있음)" : "진행 중으로 되돌렸습니다"); return; }
+  const xl = t.closest("[data-vo-xlsx]"); if (xl) { vorExportXlsx(xl.dataset.voXlsx); return; }
+}
+// 붙여넣기 칸: 입력할 때마다 미리 보기만 다시 그림 (전체를 다시 그리지 않아 한글 입력이 끊기지 않음)
+function vorDraftInput(e) {
+  const k = e.target && e.target.dataset && e.target.dataset.vok; if (!k || !k.startsWith("pn:")) return;
+  const [, id, f] = k.split(":"); (vo.draft[id] = vo.draft[id] || {})[f] = e.target.value;
+  if (f === "text") { const pv = document.getElementById("vo-prev"), v = vorById(id); if (pv && v) pv.innerHTML = vorPrevHtml(v); }
+}
+
+/* ---- 캘린더 · 오늘 ---- */
+function vorItemsOn(ds) {
+  const today = todayStr(), out = [];
+  (Store.state.vorders || []).filter((v) => !v.done).forEach((v) => Object.keys(v.days).forEach((d) => { const x = v.days[d]; if (!x.req) return;
+    const late = x.act == null && d < today ? Math.max(1, bizDiff(d, today)) : 0;
+    if (d === ds || (late && ds === today)) out.push({ v, d, x, late, done: x.act != null }); }));
+  return out.sort((a, b) => b.late - a.late);
+}
+function vorChipHtml(it) {
+  const { v, x, late, d } = it, plt = voPlt(v, x.req);
+  return `<div class="cal-chip todo vo-chip ${late ? "late" : ""} ${it.done ? "done" : ""} ${x.kol ? "kol" : ""}" data-vo-go="${v.id}" title="${esc(v.item)} 출고 ${voF(x.req)}ea${plt ? ` · ${plt} PLT` : ""} · ${x.kol ? "콜마" : esc(voMaker(v))} 배차${late ? ` — ${voMD(d)} 요청, 실출고 미입력 ${late}영업일` : ""}${it.done ? ` — 실출고 ${voF(x.act)}` : ""}"><span class="vo-ico">출고</span>${late ? `<span class="evt-d">D+${late}</span>` : ""}${esc(v.item)} ${voF(x.req)}${plt ? `<small>· ${plt}P</small>` : ""}${x.kol ? `<small>· 콜마</small>` : ""}</div>`;
+}
+function vorTodayHtml() {
+  const xs = vorItemsOn(todayStr()).filter((x) => !x.done); if (!xs.length) return "";
+  return `<p class="panel-title" style="margin-top:22px">출고 요청 · ${xs.length}건 <small class="muted">(변동형)</small></p><div class="agenda">${xs.map(({ v, d, x, late }) => `<div class="row-item vo-row ${late ? "pri-urgent" : "pri-high"}" data-vo-go="${v.id}">
+    <div class="time">${late ? `<span class="dbadge">D+${late}</span>` : `<span>오늘</span>`}</div>
+    <div class="body"><div class="title">${esc(v.item)} ${voF(x.req)}ea${v.plt ? ` · ${voPlt(v, x.req)} PLT` : ""}</div><div class="place">${x.kol ? "콜마" : esc(voMaker(v))} 배차 · ${voMD(d)} 요청${late ? " · 실출고 미입력" : ""}${v.client ? ` · ${esc(v.client)}` : ""}</div></div></div>`).join("")}</div>`;
+}
+function vorGoClick(e) { const g = e.target.closest && e.target.closest("[data-vo-go]"); if (!g) return; e.preventDefault(); e.stopPropagation(); vorOpen(g.dataset.voGo); }
+
+/* ---- 엑셀: 주 단위 표 그대로 ---- */
+function vorExportXlsx(id) {
+  const v = vorById(id); if (!v) return; const c = vorCalc(v);
+  const T = (x, s = 3) => ({ v: x, s }), N = (x, s = 4) => (x === "" || x == null ? T("", s === 6 ? 6 : 3) : { v: x, s });
+  const ncol = (v.sat ? 6 : 5) + 2, last = iqColL(ncol - 1);
+  const rows = [[T(v.item, 1)], [T(`${v.client ? v.client + " · " : ""}총 발주 ${voF(v.po)} · 출고 누계 ${voF(c.shipped)} · 요청(미출고) ${voF(c.open)} · 발주 잔량 ${voF(c.remain)}${c.excess ? ` · 요청 초과 ${voF(c.excess)}` : ""}`, 5)],
+    [T(`PLT 적재 ${v.plt ? voF(v.plt) + "ea" : "—"} · 생산업체 ${v.maker || "—"} · 충전용량 ${v.fillG ? voF(v.fillG, 2) + "g" : "—"} · 노란 칸 = 콜마배차`, 5)], []];
+  const merges = [`A1:${last}1`, `A2:${last}2`, `A3:${last}3`];
+  const ds = [...Object.keys(v.days), ...v.sup.flatMap((s) => Object.keys(s.in))].sort();
+  if (ds.length) for (let w = startOfWeek(parseYMD(ds[0])); ymd(w) <= ds[ds.length - 1]; w = addDays(w, 7)) {
+    const cols = vorWeekCols(v, ymd(w)), X = (d) => v.days[d] || { req: 0, kol: false, act: null };
+    if (!cols.some((d) => v.days[d] || v.sup.some((s) => s.in[d]))) continue;
+    rows.push([T("구분", 2), ...cols.map((d) => T(`${DOW[parseYMD(d).getDay()]} ${voMD(d)}`, X(d).kol && X(d).req ? 7 : 2)), T("합계", 2)]);
+    const sumOf = (f) => cols.reduce((n, d) => n + f(X(d), d), 0);
+    rows.push([T("출고요청수량"), ...cols.map((d) => N(X(d).req || "", X(d).kol && X(d).req ? 6 : 4)), N(sumOf((x) => x.req) || "")]);
+    rows.push([T("PLT"), ...cols.map((d) => N(voPlt(v, X(d).req) || "")), N(sumOf((x) => voPlt(v, x.req)) || "")]);
+    rows.push([T("배차"), ...cols.map((d) => T(X(d).req ? (X(d).kol ? "콜마" : voMaker(v)) : "")), T("")]);
+    rows.push([T("실제출고수량"), ...cols.map((d) => N(X(d).act != null ? X(d).act : "", 8)), N(sumOf((x) => x.act || 0) || "", 8)]);
+    v.sup.forEach((s) => rows.push([T(`${s.name} 입고(${voUnit(s)})`), ...cols.map((d) => N(s.in[d] || "")), N(cols.reduce((n, d) => n + (s.in[d] || 0), 0) || "")]));
+    rows.push([]);
+  }
+  if (v.sup.length) { rows.push([T("공급 · 재고", 2), T("1ea당 사용량", 2), T("기초 재고", 2), T("입고 누계", 2), T("필요량", 2), T("부족(−여유)", 2), T("오늘 재고", 2)]);
+    c.sup.forEach(({ s, per, inTot, need, short, stock }) => rows.push([T(`${s.name} (${voUnit(s)})`), N(per ? +per.toFixed(4) : ""), N(s.open || ""), N(inTot || ""), N(per ? Math.round(need * 10) / 10 : ""), N(short == null ? "" : Math.round(short * 10) / 10), N(per && stock != null ? Math.round(stock * 10) / 10 : "")])); }
+  const blob = iqXlsx(v.item || "변동형", rows, [16, ...Array(ncol - 2).fill(12), 13], { headRow: 4, merges, tableEnd: 4 });
+  const name = `변동형출고_${(v.item || "품목").replace(/[\\/:*?"<>|]/g, "_").slice(0, 40)}_${todayStr()}.xlsx`;
+  const url = URL.createObjectURL(blob), a = document.createElement("a"); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 3000);
+  toast(`'${v.item}' 표를 엑셀로 내려받았습니다`);
+}
+// 일정형 (한 번 생산 · 출고)
+function renderTimetableSched() {
   const R = ttRules(), today = todayStr();
   const days = ttRange(), first = days[0], last = days[days.length - 1];
   const idx = (ds) => days.indexOf(ds);
@@ -4850,15 +5415,18 @@ function iqXlsx(sheetName, rows, widths, opt) {
     + `<pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/><pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>`;
   const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">`
     + `<fonts count="3"><font><sz val="10"/><name val="맑은 고딕"/></font><font><b/><sz val="10"/><name val="맑은 고딕"/></font><font><b/><sz val="14"/><name val="맑은 고딕"/></font></fonts>`
-    + `<fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE8EEF8"/><bgColor indexed="64"/></patternFill></fill></fills>`
+    + `<fills count="5"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE8EEF8"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFBF0B8"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE9F3EB"/><bgColor indexed="64"/></patternFill></fill></fills>`
     + `<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FFC9D3E2"/></left><right style="thin"><color rgb="FFC9D3E2"/></right><top style="thin"><color rgb="FFC9D3E2"/></top><bottom style="thin"><color rgb="FFC9D3E2"/></bottom><diagonal/></border></borders>`
-    + `<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="6">`
+    + `<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="9">`
     + `<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>`
     + `<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/>`
     + `<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>`
     + `<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>`
     + `<xf numFmtId="3" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment vertical="top"/></xf>`
     + `<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>`
+    + `<xf numFmtId="3" fontId="0" fillId="3" borderId="1" xfId="0" applyNumberFormat="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="top"/></xf>`
+    + `<xf numFmtId="0" fontId="1" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>`
+    + `<xf numFmtId="3" fontId="1" fillId="4" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="top"/></xf>`
     + `</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
   const safe = (sheetName || "탐색").replace(/[\[\]:*?\/\\]/g, " ").slice(0, 31) || "탐색";
   return iqZip([
@@ -5211,7 +5779,8 @@ function render() {
   else if (ui.view === "timetable") {
     const old = lastRenderedView === "timetable" && content.querySelector(".tt-scroll");
     const keep = old ? { top: old.scrollTop, left: old.scrollLeft } : null;
-    content.innerHTML = renderTimetable();
+    if (vo.kind === "var") { if (!iqQuiet) { const fs = vorCaptureFocus(); content.innerHTML = renderTimetable(); vorRestoreFocus(fs); } }
+    else content.innerHTML = renderTimetable();
     const ns = content.querySelector(".tt-scroll");
     if (keep && ns) { ns.scrollTop = keep.top; ns.scrollLeft = keep.left; }
   }
@@ -5878,7 +6447,7 @@ function showAlertCard(e, key) {
    매일 처음 열 때 · 서버 데이터로 바꾸기 전 · 충돌 때 이 기기에 사본을 남김 (최근 8개) */
 const SNAP_KEY = "scheduler:snaps", SNAP_MAX = 8, SNAP_BYTES = 2500000;
 function snapList() { try { const a = JSON.parse(localStorage.getItem(SNAP_KEY) || "[]"); return Array.isArray(a) ? a : []; } catch (_) { return []; } }
-function snapCount(d) { return { e: (d.events || []).length, t: (d.todos || []).length, p: (d.projects || []).length, o: (d.orders || []).length, q: (d.inquiries || []).length }; }
+function snapCount(d) { return { e: (d.events || []).length, t: (d.todos || []).length, p: (d.projects || []).length, o: (d.orders || []).length + (d.vorders || []).length, q: (d.inquiries || []).length }; }
 function snapTake(label, dataObj) {
   try {
     const data = dataObj || JSON.parse(Store.exportJSON());
@@ -5984,7 +6553,7 @@ function syncSeedOnly(d) {
   if (!ids.size || (d.vendors || []).length || (d.inquiries || []).length) return false;
   return [...(d.events || []), ...(d.todos || []), ...(d.projects || []), ...(d.orders || [])].every((x) => ids.has(x.id));
 }
-const syncCanon = (d) => { const o = {}; ["events", "todos", "projects", "orders", "vendors", "inquiries", "inqItems"].forEach((k) => (o[k] = d[k] || [])); return o; };
+const syncCanon = (d) => { const o = {}; ["events", "todos", "projects", "orders", "vendors", "inquiries", "inqItems", "vorders"].forEach((k) => (o[k] = d[k] || [])); return o; };
 // 기준 고르기: local = 이 기기 내용을 서버에 · server = 서버 내용을 이 기기에 · merge = 양쪽 항목을 모두 남김(같은 항목은 이 기기 쪽)
 async function syncChoose(kind) {
   const full = (await supaFetch(`${rowUrl()}&select=data,updated_at`))[0];
@@ -6008,7 +6577,7 @@ function syncBaseGet() { try { return JSON.parse(localStorage.getItem(SYNC_BASE_
 // 3방향 합치기: 한쪽만 바꾼 항목은 바꾼 쪽(삭제 포함), 둘 다 바꾼 항목은 이 기기 쪽
 function syncMerge3(base, local, server) {
   const out = { ...server };
-  ["events", "todos", "projects", "orders", "vendors", "inquiries", "inqItems"].forEach((k) => {
+  ["events", "todos", "projects", "orders", "vendors", "inquiries", "inqItems", "vorders"].forEach((k) => {
     const B = new Map((base[k] || []).map((x) => [x.id, JSON.stringify(x)]));
     const L = new Map((local[k] || []).map((x) => [x.id, x])), S = new Map((server[k] || []).map((x) => [x.id, x]));
     const res = [];
@@ -6237,7 +6806,7 @@ function fbIdb(mode, fn) {
 }
 async function fbGetDir() { if (fb.dir) return fb.dir; try { fb.dir = (await fbIdb("readonly", (s) => s.get("dir"))) || null; } catch (_) {} return fb.dir; }
 async function fbSetDir(h) { fb.dir = h; try { await fbIdb("readwrite", (s) => (h ? s.put(h, "dir") : s.delete("dir"))); } catch (_) {} }
-const fbCount = (d) => (d.events || []).length + (d.todos || []).length + (d.projects || []).length + (d.orders || []).length + (d.inquiries || []).length + (d.vendors || []).length;
+const fbCount = (d) => (d.events || []).length + (d.todos || []).length + (d.projects || []).length + (d.orders || []).length + (d.inquiries || []).length + (d.vendors || []).length + (d.vorders || []).length;
 const fbHHMM = () => { const d = new Date(); return pad(d.getHours()) + pad(d.getMinutes()); };
 
 async function fbWriteFolder(dir, text) {
@@ -7008,7 +7577,7 @@ function wireGlobal() {
     if (ui.view === "backup") setView(ui.prevView && ui.prevView !== "settings" && ui.prevView !== "backup" ? ui.prevView : "today"); else setView("backup"); });
   document.getElementById("add-btn").addEventListener("click", () => {
     if (ui.view === "projects") { openModal("project", { cat: ui.cat === "personal" ? "personal" : "work" }); return; }
-    if (ui.view === "timetable") { openOrder(null); return; }
+    if (ui.view === "timetable") { if (vo.kind === "var") vorNew(); else openOrder(null); return; }
     openModal(ui.view === "todo" ? "todo" : "event", { cat: ui.cat === "personal" ? "personal" : "work" });
   });
   document.getElementById("search").addEventListener("input", (e) => { ui.search = e.target.value; render(); });
@@ -7138,7 +7707,12 @@ function wireGlobal() {
   syncInit();                                         // 클라우드 동기화 (로그인돼 있으면 서버와 맞춤)
   document.addEventListener("click", inqClick, true);   // 업체 탐색 (캘린더 · 오늘 · 고정 창의 회신 칩 포함)
   document.addEventListener("input", inqSearchInput);
-  document.addEventListener("change", inqFieldChange);     // 업체 탐색: 칸을 고치고 넘어가면 저장
+  document.addEventListener("change", inqFieldChange);
+  document.addEventListener("change", vorFieldChange);     // 타임테이블 변동형: 칸을 고치고 넘어가면 저장
+  document.addEventListener("keydown", vorFieldKey);
+  document.addEventListener("input", vorDraftInput);
+  document.addEventListener("click", vorClick);
+  document.addEventListener("click", vorGoClick, true);    // 캘린더 · 오늘 화면의 변동형 출고 칩     // 업체 탐색: 칸을 고치고 넘어가면 저장
   document.addEventListener("change", inqAddToChange);
   document.addEventListener("keydown", inqFieldKey);
   document.addEventListener("focusin", iqFormulaFocus); document.addEventListener("focusout", iqFormulaFocus);   // 수식 칸
