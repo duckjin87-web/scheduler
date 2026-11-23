@@ -380,6 +380,11 @@
     border:2px solid var(--surface);box-shadow:0 0 0 3px color-mix(in srgb, var(--urgent) 28%, transparent);}
   /* 지금 시각이 있는 시간 행 전체 음영 + 왼쪽 시간 칸에 현재 시각 */
   .week-grid .cell.now-row::after{content:"";position:absolute;inset:0;background:color-mix(in srgb, var(--urgent) 8%, transparent);pointer-events:none;z-index:0;}
+  .week-grid .cell.now-row.now-top::after{bottom:50%;} .week-grid .cell.now-row.now-bot::after{top:50%;}
+  /* 30분 단위: 시간 칸 가운데 점선 + 마우스가 있는 30분 칸만 음영 (아래 절반을 누르면 :30에 추가) */
+  .week-grid .cell .hh{position:absolute;left:0;right:0;top:50%;border-top:1px dashed color-mix(in srgb, var(--border) 85%, transparent);pointer-events:none;z-index:0;}
+  .week-grid .cell.hv-top::before,.week-grid .cell.hv-bot::before{content:"";position:absolute;left:0;right:0;height:50%;background:color-mix(in srgb, var(--work) 10%, transparent);pointer-events:none;z-index:0;}
+  .week-grid .cell.hv-top::before{top:0;} .week-grid .cell.hv-bot::before{top:50%;}
   .week-grid .hourlabel.now-row{color:var(--urgent);font-weight:800;background:color-mix(in srgb, var(--urgent) 9%, transparent);}
   .week-grid .hourlabel.now-row::after{content:attr(data-now);display:block;margin-top:2px;font-size:10px;font-weight:800;color:#fff;background:var(--urgent);
     border-radius:999px;padding:0 5px;width:max-content;margin-left:auto;font-variant-numeric:tabular-nums;}
@@ -438,21 +443,44 @@
   .vo-fields label{display:flex;flex-direction:column;gap:3px;font-size:11px;font-weight:800;color:var(--text-soft);background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:6px 8px 4px;}
   .vo-fields label small{font-weight:600;color:var(--text-faint);}
   .vo-fields .vo-in{font-size:14px;font-weight:700;padding:3px 4px;}
-  .vo-kpis .tt-kpi small{font-size:11px;}
+  .vo-kpis{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;}
+  .vo-k{flex:1 1 0;min-width:0;display:flex;align-items:baseline;gap:6px;white-space:nowrap;border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:7px 11px;}
+  .vo-k span{font-size:11.5px;font-weight:700;color:var(--text-soft);overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto;}
+  .vo-k b{font-size:16px;font-weight:800;margin-left:auto;font-variant-numeric:tabular-nums;}
+  .vo-k small{font-size:11px;color:var(--text-soft);}
+  .vo-k.bad{border-color:color-mix(in srgb, var(--urgent) 40%, var(--border));background:var(--urgent-soft);} .vo-k.bad span,.vo-k.bad b,.vo-k.bad small{color:var(--urgent);}
+  .vo-listbtn{display:inline-flex;align-items:center;gap:5px;border:1.5px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:9px;font:inherit;font-size:12.5px;font-weight:800;padding:6px 10px;cursor:pointer;}
+  .vo-listbtn svg{width:15px;height:15px;stroke:currentColor;} .vo-listbtn b{font-size:11px;background:var(--surface-2);border-radius:999px;padding:0 7px;}
+  .vo-listbtn.on,.vo-listbtn:hover{border-color:var(--work);color:var(--work);}
+  .vo-qlist{display:flex;flex-direction:column;gap:3px;background:var(--surface);border:1.5px solid var(--work-line);border-radius:12px;padding:8px;max-width:720px;}
+  .vo-ql{display:grid;grid-template-columns:minmax(120px,1.4fr) minmax(0,1fr) 120px 40px 18px;gap:10px;align-items:center;text-align:left;border:0;background:transparent;border-radius:8px;padding:7px 9px;font:inherit;font-size:13px;color:var(--text);cursor:pointer;}
+  .vo-ql:hover{background:var(--surface-2);} .vo-ql.on{background:var(--work-soft);} .vo-ql.done{opacity:.55;}
+  .vo-ql span{font-size:12px;color:var(--text-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .vo-ql small{font-size:11.5px;font-weight:700;color:var(--text-soft);text-align:right;}
+  .vo-qbar{height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden;display:block;} .vo-qbar i{display:block;height:100%;background:var(--done);}
+  .vo-qw{font-style:normal;font-size:11px;font-weight:800;color:#fff;background:var(--urgent);border-radius:999px;width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;}
+  .vo-qsep{font-size:11px;font-weight:800;color:var(--text-faint);padding:6px 9px 2px;}
+  .vo-qacts{display:flex;gap:6px;padding:6px 4px 2px;border-top:1px solid var(--border);margin-top:4px;}
+  .vo-wdel{margin-left:6px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text-soft);border-radius:6px;font:inherit;font-size:10.5px;font-weight:700;padding:1px 6px;cursor:pointer;}
+  .vo-wdel:hover{color:var(--urgent);border-color:var(--urgent);} .vo-wdel.armed{background:var(--urgent);border-color:var(--urgent);color:#fff;}
+  .vo-histbtn{border:0;background:transparent;font:inherit;font-size:14px;font-weight:800;color:var(--text);cursor:pointer;padding:0;}
+  .vo-histbtn small{font-size:11.5px;font-weight:600;color:var(--text-soft);margin-left:4px;}
   .tt-kpi.bad small{color:var(--urgent);}
   .vo-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
   .vo-legend{font-size:11.5px;color:var(--text-soft);display:inline-flex;align-items:center;gap:5px;margin-left:auto;}
   .vo-legend .sw{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid var(--border-strong);}
   .vo-legend .sw.kol{background:var(--kol);border-color:var(--kol-line);} .vo-legend .sw.mk{background:var(--surface);margin-left:6px;}
   .vo-pastbtn{display:block;margin:6px 0 10px;border:1.5px dashed var(--border-strong);background:transparent;color:var(--work);font:inherit;font-size:12px;font-weight:800;border-radius:9px;padding:6px 12px;cursor:pointer;}
-  .vo-wk{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow-x:auto;}
-  .vo-wk.cur{border-color:var(--work-line);box-shadow:0 0 0 2px color-mix(in srgb, var(--work) 12%, transparent);}
+  .vo-wk{background:var(--surface);border:2px solid color-mix(in srgb, var(--text) 32%, var(--border));border-radius:12px;margin-bottom:16px;overflow-x:auto;box-shadow:var(--shadow);}
+  .vo-wk.cur{border-color:var(--work);box-shadow:0 0 0 3px color-mix(in srgb, var(--work) 16%, transparent);}
+  .vo-wk thead tr th{border-bottom:2px solid color-mix(in srgb, var(--text) 25%, var(--border));}
   .vo-wk table{border-collapse:separate;border-spacing:0;width:100%;table-layout:fixed;min-width:680px;font-size:12.5px;}
   .vo-wk col.c-lab{width:118px;} .vo-wk col.c-sum{width:118px;}
   .vo-wk th,.vo-wk td{border-bottom:1px solid var(--border);border-right:1px solid color-mix(in srgb, var(--border) 60%, transparent);padding:3px 5px;text-align:right;vertical-align:middle;}
-  .vo-wk thead th{background:var(--surface-2);font-size:11.5px;font-weight:700;color:var(--text-soft);text-align:center;padding:6px 5px;}
+  .vo-wk thead th{background:var(--surface-3);font-size:11.5px;font-weight:700;color:var(--text-soft);text-align:center;padding:6px 5px;}
   .vo-wk thead th b{color:var(--text);}
-  .vo-wk thead th.wl{text-align:left;color:var(--text);font-weight:800;}
+  .vo-wk thead th.wl{text-align:left;color:var(--text);font-weight:800;font-size:13px;}
+  .vo-wk.cur thead th.wl{background:var(--work);color:#fff;} .vo-wk.cur thead th.wl small{color:#fff;}
   .vo-wk thead th.wl small{color:var(--work);font-weight:800;}
   .vo-wk thead th.kol{background:var(--kol);color:var(--kol-ink);} .vo-wk thead th.kol b{color:var(--kol-ink);}
   .vo-wk thead th.today{box-shadow:inset 0 -3px 0 var(--work);}
@@ -498,7 +526,9 @@
   .vo-prevs{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;margin-top:8px;} .vo-sp{flex:1;}
   .vo-sec{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin:12px 0;display:flex;flex-direction:column;gap:8px;overflow-x:auto;}
   .vo-sech{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;} .vo-sech .muted{font-size:11.5px;}
-  .vo-sup{border-collapse:collapse;width:100%;min-width:860px;font-size:12.5px;}
+  .vo-sup{border-collapse:collapse;width:auto;max-width:100%;font-size:12.5px;align-self:flex-start;}
+  .vo-sup th,.vo-sup td{white-space:nowrap;}
+  .vo-sup .vo-in{width:auto;field-sizing:content;min-width:4ch;}
   .vo-sup th{background:var(--surface-2);font-size:11px;font-weight:800;color:var(--text-soft);padding:5px 7px;text-align:left;}
   .vo-sup td{padding:3px 7px;border-bottom:1px solid var(--border);}
   .vo-sup td.num{text-align:right;white-space:nowrap;}
@@ -1041,7 +1071,8 @@
   }
   .week-grid .hourlabel{font-size:10.5px;color:var(--text-faint);text-align:right;padding:4px 6px 0 0;border-top:1px solid var(--border);height:var(--cell-h,46px);}
   .week-grid .cell{border-top:1px solid var(--border);border-left:1px solid var(--border);height:var(--cell-h,46px);padding:0;position:relative;cursor:pointer;transition:background .1s;}
-  .week-grid .cell:hover{background:var(--surface-2);}
+  .week-grid .cell:hover{background:transparent;}
+  .week-grid .cell.today-col:hover{background:var(--today-tint);}
   /* 셀 자체는 쌓임 맥락을 만들지 않고, 일정 블록이 다음 시간 칸 위로 올라오도록 블록에 z-index */
   .evt.timed{position:absolute;margin:0;padding:2px 5px;overflow:hidden;box-shadow:var(--shadow);}
   .week-grid .cell.today-col{background:var(--today-tint);}
@@ -1699,7 +1730,7 @@
   body.design-rail .week-grid .cell{border-top:1px solid var(--rail-line);}
   body.design-rail .week-grid .cell:first-of-type{border-top-width:2px;}
   body.design-rail .week-grid .cell::after{border-top-color:color-mix(in srgb, var(--text) 4%, transparent);}
-  body.design-rail .week-grid .cell:hover{background:color-mix(in srgb, var(--work) 6%, var(--rail-card));}
+  body.design-rail .week-grid .cell:hover{background:var(--rail-card);}
   body.design-rail .week-grid .cell.last-row{border-radius:0 0 14px 14px;}
   /* 주말 = 눌린(가라앉은) 카드, 오늘 = 파란 테두리 */
   body.design-rail .week-grid :is(.head,.band-cell,.cell).wkend{background:var(--rail-sunk);}
@@ -2247,7 +2278,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-11-23 · 타임테이블 변동형(PO 분납 · 수시 출고) 1단계";
+const APP_VERSION = "2026-11-23 · 캘린더 30분 음영 · 알림 기본 30분 전 · 변동형 주 삭제 · 목록 버튼 · 한 줄 요약";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -2590,7 +2621,7 @@ function fmtDueMeta(s) {
 function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
 const PRIO = { urgent: { label: "긴급", rank: 0 }, high: { label: "높음", rank: 1 }, normal: { label: "보통", rank: 2 } };
 const REPEAT_LABEL = { none: "반복 안 함", daily: "매일", weekly: "매주", monthly: "매월" };
-const REMIND_LABEL = { none: "없음", "0": "정시", "5": "5분 전", "10": "10분 전", "30": "30분 전", "60": "1시간 전", "1440": "1일 전" };
+const REMIND_LABEL = { none: "없음", "0": "정시", "5": "5분 전", "10": "10분 전", "30": "30분 전", "60": "1시간 전", "120": "2시간 전", "180": "3시간 전", "1440": "1일 전", "2880": "2일 전" };
 
 // 추천 색: 우선순위 음영(보통=초록·높음=주황·긴급=빨강)과 겹치지 않는 10색 + '직접 선택'으로 어떤 색이든 가능
 const PROJECT_COLORS = ["#7C6FB0", "#9B5DE5", "#A0509A", "#D1478A", "#4B4FA6", "#3E77B5", "#2A95C5", "#1F8A9E", "#5D7186", "#454B55"];
@@ -3304,7 +3335,7 @@ function renderWeek() {
         const left = (L.col / L.n) * 100, w = (L.span / L.n) * 100;
         return `<div class="evt timed pri-${e.priority} ${e.cat} ${e.done ? "done" : ""}${projCls(e)}${lateCls(e)}" style="${inProject(e) ? `--pc:${projectById(e.projectId).color};` : ""}top:${top.toFixed(1)}px;left:calc(${left}% + 1px);width:calc(${w}% - 3px);height:${height.toFixed(1)}px;" title="${esc(evTimeText(e))} ${esc(e.title)}${lateTitle(e)}" draggable="true" data-drag="event" data-id="${e._base}" data-edit-event="${e._base}"><span class="rz rz-top" data-rz="top" title="위로 끌어 시작 시간 변경"></span><span class="cal-check ${e.done ? "done" : ""}" data-ev-toggle="${e._base}">${e.done ? IC.check : ""}</span><span class="t">${esc(evTimeText(e))}</span><span class="ci">${catIcon(e.cat)}</span>${e.rolledFrom ? `<span class="evt-d">D+${daysBetween(e.rolledFrom, e.date)}</span>` : ""}${projDot(e.projectId)}${esc(e.title)}${e.repeat !== "none" ? " ↻" : ""}<span class="rz rz-bot" data-rz="bot" title="아래로 끌어 종료 시간 변경"></span></div>`;
       }).join("");
-      grid += `<div class="cell ${starts.length ? "has-evt" : ""} ${isToday ? "today-col" : ""} ${isHoliday(ds) ? "holiday-col" : ""}${isWkend(ds) ? " wkend" : ""}${h === 20 ? " last-row" : ""}" data-date="${ds}" data-hour="${pad(h)}:00">${inner}</div>`;
+      grid += `<div class="cell ${starts.length ? "has-evt" : ""} ${isToday ? "today-col" : ""} ${isHoliday(ds) ? "holiday-col" : ""}${isWkend(ds) ? " wkend" : ""}${h === 20 ? " last-row" : ""}" data-date="${ds}" data-hour="${pad(h)}:00">${inner}<i class="hh" aria-hidden="true"></i></div>`;
     });
   }
   grid += `</div></div>`;
@@ -3389,9 +3420,9 @@ function ttWorstDelay(o, steps) { let best = null; steps.forEach((st) => { if (s
    총 발주량 안에서 출고 요청이 차수별로 들어오고(붙여넣기 → 변경 비교 → 적용), 날마다 요청 · PLT(올림) · 배차(콜마 / 생산업체) · 실출고를 따로 기록
    공급: 반제품은 kg(충전용량 g/ea로 환산), 직납 자재는 실제 수량(소요량/ea) — 남은 발주 기준 부족량과 주별 재고 */
 const VO_KEY = "scheduler:vor-ui";
-const vo = { kind: "sched", open: null, more: {}, past: {}, paste: null, draft: {}, focusNext: null, doneOpen: false };
-try { const s = JSON.parse(localStorage.getItem(VO_KEY) || "{}"); ["kind", "open", "more"].forEach((k) => { if (s[k] != null) vo[k] = s[k]; }); } catch (_) {}
-const voSave = () => { try { localStorage.setItem(VO_KEY, JSON.stringify({ kind: vo.kind, open: vo.open, more: vo.more })); } catch (_) {} };
+const vo = { kind: "sched", open: null, more: {}, hide: {}, past: {}, hist: {}, list: false, paste: null, draft: {}, focusNext: null, doneOpen: false };
+try { const s = JSON.parse(localStorage.getItem(VO_KEY) || "{}"); ["kind", "open", "more", "hide"].forEach((k) => { if (s[k] != null) vo[k] = s[k]; }); } catch (_) {}
+const voSave = () => { try { localStorage.setItem(VO_KEY, JSON.stringify({ kind: vo.kind, open: vo.open, more: vo.more, hide: vo.hide })); } catch (_) {} };
 let voArm = null, voArmT = null;
 const vorById = (id) => (Store.state.vorders || []).find((x) => x.id === id);
 const voN = (v) => { const f = parseFloat(String(v == null ? "" : v).replace(/[,\s]/g, "")); return Number.isFinite(f) && f >= 0 ? f : null; };
@@ -3445,6 +3476,14 @@ function renderTimetable() {
   const v = vo.open && vorById(vo.open);
   return vorTabsHtml() + (v ? vorDetailHtml(v) : vorListHtml());
 }
+const IC_LIST = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>`;
+function vorQuickListHtml(cur) {
+  const vs = Store.state.vorders || [], act = vs.filter((x) => !x.done), done = vs.filter((x) => x.done);
+  const row = (x) => { const c = vorCalc(x), warn = c.excess || c.lateN || c.sup.some((y) => y.short > 0);
+    return `<button type="button" class="vo-ql ${x.id === cur ? "on" : ""} ${x.done ? "done" : ""}" data-vo-open="${x.id}"><b>${esc(x.item)}</b><span>${esc(x.client || "")}</span><span class="vo-qbar"><i style="width:${c.pct}%"></i></span><small>${x.po ? c.pct.toFixed(0) + "%" : ""}</small>${warn ? `<i class="vo-qw" title="확인 필요">!</i>` : ""}</button>`; };
+  return `<div class="vo-qlist">${act.map(row).join("")}${done.length ? `<div class="vo-qsep">완료 ${done.length}</div>${done.map(row).join("")}` : ""}
+    <div class="vo-qacts"><button type="button" class="btn-sub" data-vo-back>카드로 전체 보기</button><button type="button" class="btn-sub" data-vo-new>＋ 변동형 출고 건</button></div></div>`;
+}
 function vorWeekCols(v, w0) { return [...Array(v.sat ? 6 : 5)].map((_, i) => ymd(addDays(parseYMD(w0), i))); }
 function vorListHtml() {
   const q = (ui.search || "").trim().toLowerCase();
@@ -3459,12 +3498,12 @@ function vorListHtml() {
   if (!vs.length && !q) return h + `<div class="tt-empty"><b>아직 변동형 출고 건이 없습니다</b>
       <p>총 발주량 · PLT 적재 수량 · 생산업체 · 충전용량을 넣고, 고객 출고 요청을 엑셀에서 그대로 붙여넣으면 주 단위 표로 정리됩니다. 요청이 발주를 넘거나, 날짜가 지났는데 실출고가 없거나, 반제품 · 자재가 모자라면 알려 줍니다.</p>
       <div class="row"><button class="btn-primary" data-vo-new>＋ 변동형 출고 건</button></div></div>`;
-  h += `<div class="tt-kpis">
-    <div class="tt-kpi"><div class="k">이번 주 출고 요청</div><div class="v">${voF(qty)}<small>ea</small></div></div>
-    <div class="tt-kpi"><div class="k">이번 주 PLT</div><div class="v">${plt}<small>PLT</small></div></div>
-    <div class="tt-kpi"><div class="k">이번 주 콜마배차</div><div class="v">${kol}<small>회</small></div></div>
-    <div class="tt-kpi ${warnN ? "bad" : ""}"><div class="k">확인 필요</div><div class="v">${warnN}건</div></div>
-    <div class="tt-kpi"><div class="k">진행 중</div><div class="v">${act.length}건</div></div></div>`;
+  h += `<div class="vo-kpis">
+    <div class="vo-k"><span>이번 주 출고 요청</span><b>${voF(qty)}</b><small>ea</small></div>
+    <div class="vo-k"><span>이번 주 PLT</span><b>${plt}</b></div>
+    <div class="vo-k"><span>이번 주 콜마배차</span><b>${kol}</b><small>회</small></div>
+    <div class="vo-k ${warnN ? "bad" : ""}"><span>확인 필요</span><b>${warnN}</b><small>건</small></div>
+    <div class="vo-k"><span>진행 중</span><b>${act.length}</b><small>건</small></div></div>`;
   h += `<div class="vo-cards">${act.map(vorCardHtml).join("") || `<div class="muted">진행 중인 변동형 출고 건이 없습니다.</div>`}</div>`;
   if (done.length) h += `<button type="button" class="btn-sub vo-donebtn" data-vo-doneopen>완료 ${done.length}건 ${vo.doneOpen ? "▲" : "▼"}</button>${vo.doneOpen ? `<div class="vo-cards">${done.map(vorCardHtml).join("")}</div>` : ""}`;
   return h;
@@ -3486,8 +3525,9 @@ const voIn = (key, val, attrs = "") => `<input class="vo-in" data-vok="${key}" v
 function vorDetailHtml(v) {
   const c = vorCalc(v), id = v.id, today = todayStr(), maker = esc(voMaker(v));
   const k = (f) => `h:${id}:${f}`;
-  let h = `<div class="vo-head"><button type="button" class="vo-back" data-vo-back>‹ 변동형 목록</button>
-    <div class="vo-titlerow"><input class="vo-in vo-title" data-vok="${k("item")}" value="${esc(v.item)}" placeholder="품목" aria-label="품목" autocomplete="off" />
+  let h = `<div class="vo-head">
+    <div class="vo-titlerow"><button type="button" class="vo-listbtn ${vo.list ? "on" : ""}" data-vo-list aria-expanded="${vo.list}" title="변동형 출고 건 목록 열기 · 닫기">${IC_LIST}<span>목록</span><b>${(Store.state.vorders || []).filter((x) => !x.done).length}</b></button>
+      <input class="vo-in vo-title" data-vok="${k("item")}" value="${esc(v.item)}" placeholder="품목" aria-label="품목" autocomplete="off" />
       <span class="vo-tag">변동형 · PO 분납</span>${v.done ? `<span class="vo-tag done">완료</span>` : ""}
       <div class="vo-acts"><button type="button" class="btn-sub" data-vo-xlsx="${id}">엑셀</button><button type="button" class="btn-sub ${v.done ? "on" : ""}" data-vo-done="${id}">${v.done ? "진행 중으로" : "완료"}</button>
         <button type="button" class="btn-sub vo-del ${voArm === "vo:" + id ? "armed" : ""}" data-vo-del="vo:${id}">${voArm === "vo:" + id ? "삭제 확인" : "삭제"}</button></div></div>
@@ -3498,14 +3538,14 @@ function vorDetailHtml(v) {
       <label>PLT 적재 수량 <small>ea / 완파레트</small>${voIn(k("plt"), voF(v.plt), 'inputmode="numeric" placeholder="예: 4,200"')}</label>
       <label>생산업체 <small>배차 이름</small>${voIn(k("maker"), v.maker, 'placeholder="예: ○○업체"')}</label>
       <label>충전용량 <small>g / ea</small>${voIn(k("fillG"), voF(v.fillG, 2), 'inputmode="decimal" placeholder="예: 3.5"')}</label>
-    </div></div>`;
-  h += `<div class="tt-kpis vo-kpis">
-    <div class="tt-kpi"><div class="k">총 발주량</div><div class="v">${v.po ? voF(v.po) : "—"}</div></div>
-    <div class="tt-kpi"><div class="k">출고 누계 (실적)</div><div class="v vo-ok">${voF(c.shipped)}</div><small class="muted">${v.po ? c.pct.toFixed(1) + "%" : ""}</small></div>
-    <div class="tt-kpi"><div class="k">요청 확정 · 미출고</div><div class="v">${voF(c.open)}</div></div>
-    <div class="tt-kpi"><div class="k">발주 잔량</div><div class="v">${v.po ? voF(c.remain) : "—"}</div></div>
-    ${c.excess ? `<div class="tt-kpi bad"><div class="k">요청 초과 (추가 PO 확인)</div><div class="v">${voF(c.excess)}</div><small>${c.overAt ? `${voMD(c.overAt)} 요청분부터 총 발주 넘음` : ""}</small></div>` : ""}
-    ${c.lateN ? `<div class="tt-kpi bad"><div class="k">실출고 미입력</div><div class="v">${c.lateN}건</div><small>요청일 지남 · 최대 D+${c.lateMax}</small></div>` : ""}
+    </div>${vo.list ? vorQuickListHtml(v.id) : ""}</div>`;
+  h += `<div class="vo-kpis">
+    <div class="vo-k"><span>총 발주</span><b>${v.po ? voF(v.po) : "—"}</b></div>
+    <div class="vo-k"><span>출고 누계</span><b class="vo-ok">${voF(c.shipped)}</b><small>${v.po ? c.pct.toFixed(1) + "%" : ""}</small></div>
+    <div class="vo-k"><span>요청 · 미출고</span><b>${voF(c.open)}</b></div>
+    <div class="vo-k"><span>발주 잔량</span><b>${v.po ? voF(c.remain) : "—"}</b></div>
+    ${c.excess ? `<div class="vo-k bad" title="${c.overAt ? `${voMD(c.overAt)} 요청분부터 총 발주를 넘음 — 추가 PO 확인` : ""}"><span>요청 초과</span><b>${voF(c.excess)}</b><small>${c.overAt ? `${voMD(c.overAt)}~` : ""}</small></div>` : ""}
+    ${c.lateN ? `<div class="vo-k bad" title="요청일이 지났는데 실출고 입력 없음"><span>실출고 미입력</span><b>${c.lateN}</b><small>건 · D+${c.lateMax}</small></div>` : ""}
   </div>`;
   h += `<div class="vo-tools"><button type="button" class="btn-primary" data-vo-paste="${id}">${vo.paste === id ? "요청 등록 닫기" : "＋ 출고 요청 등록 (붙여넣기)"}</button>
     <button type="button" class="btn-sub" data-vo-sat="${id}">${v.sat ? "토요일 빼기" : "＋ 토요일"}</button>
@@ -3516,7 +3556,8 @@ function vorDetailHtml(v) {
   const dates = [...Object.keys(v.days), ...v.sup.flatMap((s) => Object.keys(s.in))].sort();
   const thisW = startOfWeek(new Date()), firstW = startOfWeek(dates.length && dates[0] < ymd(thisW) ? parseYMD(dates[0]) : thisW);
   const lastD = dates.length ? dates[dates.length - 1] : today, endW = startOfWeek(parseYMD(lastD > ymd(addDays(thisW, 14)) ? lastD : ymd(addDays(thisW, 14))));
-  const weeks = []; for (let w = firstW; w <= addDays(endW, 7 * (vo.more[id] || 0)); w = addDays(w, 7)) weeks.push(ymd(w));
+  const hid = vo.hide[id] || [], weeks = [];
+  for (let w = firstW; w <= addDays(endW, 7 * (vo.more[id] || 0)); w = addDays(w, 7)) { const ws = ymd(w); if (!hid.includes(ws) || vorWeekHasData(v, ws)) weeks.push(ws); }
   const past = weeks.filter((w) => w < ymd(addDays(thisW, -7))), shownW = vo.past[id] ? weeks : weeks.filter((w) => !past.includes(w));
   if (past.length && !vo.past[id]) h += `<button type="button" class="vo-pastbtn" data-vo-past="${id}">지난 주 ${past.length}개 보기 ▾</button>`;
   else if (past.length) h += `<button type="button" class="vo-pastbtn" data-vo-past="${id}">지난 주 접기 ▴</button>`;
@@ -3526,6 +3567,7 @@ function vorDetailHtml(v) {
   h += vorHistHtml(v);
   return h;
 }
+function vorWeekHasData(v, w0) { const w1 = ymd(addDays(parseYMD(w0), 6)); return Object.keys(v.days).some((d) => d >= w0 && d <= w1) || v.sup.some((s) => Object.keys(s.in).some((d) => d >= w0 && d <= w1)); }
 function vorWeekHtml(v, w0, c) {
   const id = v.id, today = todayStr(), cols = vorWeekCols(v, w0), wEnd = ymd(addDays(parseYMD(w0), 6));
   const thisW = ymd(startOfWeek(new Date())), tag = w0 === thisW ? "이번 주" : w0 < thisW ? "지난 주" : "";
@@ -3541,18 +3583,17 @@ function vorWeekHtml(v, w0, c) {
       return `<td class="${late ? "late" : ""} ${x.act != null ? "has" : ""}">${voIn(`a:${id}:${d}`, x.act != null ? voF(x.act) : "", `inputmode="numeric" placeholder="${late ? "D+" + late : "—"}" aria-label="${voMD(d)} 실출고"`)}${diff ? `<small class="vo-diff">${diff > 0 ? "+" : ""}${voF(diff)}</small>` : ""}</td>`; }).join("")}<td class="sum"><b class="vo-ok">${actN ? voF(actS) : ""}</b></td></tr>`;
   v.sup.forEach((s, i) => { const st = voStockAt(v, s, wEnd), per = voPer(v, s), inS = cols.reduce((n, d) => n + (s.in[d] || 0), 0);
     rows += `<tr class="r-sup ${i === 0 ? "first" : ""}"><th>${esc(s.name)} <small>입고 ${voUnit(s)}</small></th>${cols.map((d) => `<td>${voIn(`s:${id}:${s.id}:${d}`, s.in[d] ? voF(s.in[d], 2) : "", `inputmode="decimal" placeholder="" aria-label="${voMD(d)} ${esc(s.name)} 입고"`)}</td>`).join("")}<td class="sum">${inS ? voF(inS, 2) : ""}${per && st != null ? `<small class="${st < 0 ? "bad" : ""}">주말 재고 ${voF(st, 1)}</small>` : ""}</td></tr>`; });
-  return `<div class="vo-wk ${w0 === thisW ? "cur" : ""}"><table><colgroup><col class="c-lab" />${cols.map(() => "<col />").join("")}<col class="c-sum" /></colgroup>
-    <thead><tr><th class="wl">${voMD(w0)} 주${tag ? ` <small>${tag}</small>` : ""}</th>${head}<th class="sum">주 합계</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  return `<div class="vo-wk ${w0 === thisW ? "cur" : ""}" data-w="${w0}"><table><colgroup><col class="c-lab" />${cols.map(() => "<col />").join("")}<col class="c-sum" /></colgroup>
+    <thead><tr><th class="wl">${voMD(w0)} 주${tag ? ` <small>${tag}</small>` : ""}</th>${head}<th class="sum">주 합계 <button type="button" class="vo-wdel ${voArm === `wk:${id}:${w0}` ? "armed" : ""}" data-vo-del="wk:${id}:${w0}" title="${vorWeekHasData(v, w0) ? "이 주의 요청 · 실출고 · 입고를 지우고 주를 뺌" : "이 주 빼기"}">${voArm === `wk:${id}:${w0}` ? (vorWeekHasData(v, w0) ? "내용까지 삭제" : "빼기 확인") : "주 삭제"}</button></th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 function vorSupplyHtml(v, c) {
   const id = v.id;
   return `<div class="vo-sec"><div class="vo-sech"><b>공급 · 재고</b><span class="muted">반제품은 kg · 직납 자재는 실제 수량 — 날짜별 입고는 위 표의 아래 줄에 · 필요량 = (총 발주 − 시작 전 출고) × 1ea당 사용량</span></div>
-    <table class="vo-sup"><thead><tr><th>항목</th><th>업체</th><th>1ea당 사용량</th><th>기초 재고</th><th>입고 누계</th><th>남은 발주 필요량</th><th>부족 / 여유</th><th>오늘 재고</th><th></th></tr></thead><tbody>
+    <table class="vo-sup"><thead><tr><th>항목</th><th>1ea당 사용량</th><th>기초 재고</th><th>입고 누계</th><th>남은 발주 필요량</th><th>부족 / 여유</th><th>오늘 재고</th><th></th></tr></thead><tbody>
     ${c.sup.map(({ s, per, inTot, need, short, stock }) => { const sk = (f) => `sm:${id}:${s.id}:${f}`, u = voUnit(s);
-      return `<tr><td>${s.kind === "bulk" ? `<b>${esc(s.name)}</b> <small class="muted">kg</small>` : voIn(sk("name"), s.name, 'placeholder="자재 이름" aria-label="자재 이름"')}</td>
-        <td>${voIn(sk("vendor"), s.vendor, `placeholder="${s.kind === "bulk" ? "제조처" : "직납 업체"}" aria-label="업체"`)}</td>
-        <td>${s.kind === "bulk" ? (v.fillG ? `${voF(per * 1000, 2)}g = ${voF(per, 4)}kg <small class="muted">충전용량</small>` : `<small class="muted">위 충전용량(g) 입력</small>`) : voIn(sk("per"), s.per ? String(s.per) : "", 'inputmode="decimal" placeholder="예: 0.1 (10개당 1개)" aria-label="1ea당 소요량"')}</td>
-        <td>${voIn(sk("open"), s.open ? voF(s.open, 2) : "", `inputmode="decimal" placeholder="0" aria-label="기초 재고"`)}</td>
+      return `<tr><td>${s.kind === "bulk" ? `<b>${esc(s.name)}</b> <small class="muted">kg</small>` : voIn(sk("name"), s.name, `placeholder="자재 이름" aria-label="자재 이름" size="${Math.max(6, s.name.length * 2)}"`)}</td>
+        <td>${s.kind === "bulk" ? (v.fillG ? `${voF(per * 1000, 2)}g = ${voF(per, 4)}kg <small class="muted">충전용량</small>` : `<small class="muted">위 충전용량(g) 입력</small>`) : voIn(sk("per"), s.per ? String(s.per) : "", `inputmode="decimal" placeholder="0.1 = 10개당 1개" aria-label="1ea당 소요량" size="${s.per ? Math.max(4, String(s.per).length + 1) : 14}"`)}</td>
+        <td>${voIn(sk("open"), s.open ? voF(s.open, 2) : "", `inputmode="decimal" placeholder="0" aria-label="기초 재고" size="${Math.max(4, voF(s.open, 2).length + 1)}"`)}</td>
         <td class="num">${voF(inTot, 2)} ${u}${s.kind === "bulk" && per ? `<small class="muted"> ≈ ${voF(inTot / per)}ea</small>` : ""}</td>
         <td class="num">${per ? `${voF(need, 1)} ${u}` : "—"}</td>
         <td class="num">${short == null ? "—" : short > 0 ? `<b class="vo-bad">${voF(short, 1)} ${u} 부족</b>${s.kind === "bulk" ? `<small class="muted"> ≈ ${voF(short / per)}ea분</small>` : ""}` : `<span class="vo-ok">${voF(-short, 1)} ${u} 여유</span>`}</td>
@@ -3563,9 +3604,10 @@ function vorSupplyHtml(v, c) {
 function vorHistHtml(v) {
   const rs = v.rounds.slice().reverse(), lg = v.log.slice().reverse().slice(0, 40);
   const fmtAt = (t) => { const d = new Date(t); return `${d.getMonth() + 1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
-  return `<div class="vo-sec"><div class="vo-sech"><b>요청 차수 · 변경 이력</b><span class="muted">요청이 바뀌어도 지우지 않고 남깁니다</span></div>
-    ${rs.length ? `<div class="vo-rounds">${rs.map((r) => `<div class="vo-round"><b>${esc(r.no)}</b><span>${r.at ? voMD(r.at) + " 받음" : ""}</span><span>${r.from ? `${voMD(r.from)} ~ ${voMD(r.to)}` : ""}</span><span>신규 ${r.add} · 변경 ${r.chg} · 취소 ${r.del} · <b>${r.delta > 0 ? "+" : ""}${voF(r.delta)}</b></span>${r.src ? `<span class="muted">${esc(r.src)}</span>` : ""}</div>`).join("")}</div>` : ""}
-    ${lg.length ? `<ul class="vo-log">${lg.map((x) => `<li><span>${fmtAt(x.at)}</span>${esc(x.text)}</li>`).join("")}</ul>` : `<div class="muted">아직 기록이 없습니다</div>`}</div>`;
+  const open = !!vo.hist[v.id];
+  return `<div class="vo-sec"><div class="vo-sech"><button type="button" class="vo-histbtn" data-vo-hist="${v.id}" aria-expanded="${open}">${open ? "▾" : "▸"} 요청 차수 · 변경 이력 <small>차수 ${v.rounds.length} · 기록 ${v.log.length}</small></button><span class="muted">요청이 바뀌어도 지우지 않고 남깁니다</span></div>
+    ${!open ? "" : rs.length ? `<div class="vo-rounds">${rs.map((r) => `<div class="vo-round"><b>${esc(r.no)}</b><span>${r.at ? voMD(r.at) + " 받음" : ""}</span><span>${r.from ? `${voMD(r.from)} ~ ${voMD(r.to)}` : ""}</span><span>신규 ${r.add} · 변경 ${r.chg} · 취소 ${r.del} · <b>${r.delta > 0 ? "+" : ""}${voF(r.delta)}</b></span>${r.src ? `<span class="muted">${esc(r.src)}</span>` : ""}</div>`).join("")}</div>` : ""}
+    ${!open ? "" : lg.length ? `<ul class="vo-log">${lg.map((x) => `<li><span>${fmtAt(x.at)}</span>${esc(x.text)}</li>`).join("")}</ul>` : `<div class="muted">아직 기록이 없습니다</div>`}</div>`;
 }
 
 /* ---- 출고 요청 붙여넣기: 세로(일자 · 수량 · PLT · 배차) 또는 엑셀 가로표(일자 줄 · 수량 줄) ---- */
@@ -3684,13 +3726,19 @@ function vorFieldChange(e) {
 function vorFieldKey(e) {
   const el = e.target, key = el.dataset && el.dataset.vok; if (!key || ui.view !== "timetable") return;
   if (key.startsWith("pn:")) { if (key.endsWith(":text") && e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); vorApplyPaste(key.split(":")[1]); } return; }
-  if (e.key !== "Enter" || el.tagName !== "INPUT") return;
+  const isTab = e.key === "Tab";
+  if (!isTab && (e.key !== "Enter" || el.tagName !== "INPUT")) return;
+  const all = [...document.querySelectorAll("#content [data-vok]:not([data-vok^='pn:'])")];
+  let nx;
+  if (isTab) { nx = all[all.indexOf(el) + (e.shiftKey ? -1 : 1)]; if (!nx) return; }   // Tab = 다음 입력 칸 (칸을 저장하며 다시 그려도 이동)
+  else {
+    // Enter = 같은 줄 오른쪽 칸 (줄 끝이면 다음 줄 첫 칸)
+    const tr = el.closest("tr"), row = tr ? [...tr.querySelectorAll("[data-vok]")] : [], i = row.indexOf(el);
+    nx = row[i + 1];
+    if (!nx && tr) { let r = tr.nextElementSibling; while (r && !nx) { nx = r.querySelector("[data-vok]"); r = r.nextElementSibling; } }
+    if (!nx) nx = all[all.indexOf(el) + 1];
+  }
   e.preventDefault();
-  // Enter = 같은 줄 오른쪽 칸 (줄 끝이면 다음 줄 첫 칸)
-  const tr = el.closest("tr"), row = tr ? [...tr.querySelectorAll("[data-vok]")] : [], i = row.indexOf(el);
-  let nx = row[i + 1];
-  if (!nx && tr) { let r = tr.nextElementSibling; while (r && !nx) { nx = r.querySelector("[data-vok]"); r = r.nextElementSibling; } }
-  if (!nx) { const all = [...document.querySelectorAll("#content [data-vok]")]; nx = all[all.indexOf(el) + 1]; }
   const nk = nx && nx.dataset.vok; vo.focusNext = nk || null;
   el.blur();
   if (vo.focusNext) { vo.focusNext = null; const t2 = nk && document.querySelector(`[data-vok="${CSS.escape(nk)}"]`); if (t2) { t2.focus(); try { t2.select(); } catch (_) {} } }
@@ -3714,20 +3762,25 @@ function vorOpen(id) { try { window.focus(); } catch (_) {} vo.kind = "var"; vo.
 function vorClick(e) {
   if (ui.view !== "timetable" || !e.target.closest("#content")) return;
   const t = e.target;
-  const kd = t.closest("[data-vo-kind]"); if (kd) { vo.kind = kd.dataset.voKind; voSave(); render(); return; }
+  const kd = t.closest("[data-vo-kind]"); if (kd) { if (kd.dataset.voKind === "var" && vo.kind === "var") { vo.open = null; vo.list = false; } vo.kind = kd.dataset.voKind; voSave(); render(); return; }
   if (vo.kind !== "var") return;
   const dl = t.closest("[data-vo-del]");
   if (dl) { const k = dl.dataset.voDel; clearTimeout(voArmT);
     if (voArm !== k) { voArm = k; render(); voArmT = setTimeout(() => { voArm = null; if (ui.view === "timetable") render(); }, 3000); return; }
     voArm = null; const [kk, id, sid] = k.split(":");
     if (kk === "vo") { const v = vorById(id); Store.deleteVorder(id); vo.open = null; voSave(); toast(`'${v ? v.item : "출고 건"}'을(를) 삭제했습니다`); }
+    else if (kk === "wk") { const v = vorClone(vorById(id)), w1 = ymd(addDays(parseYMD(sid), 6)); let n = 0;
+      Object.keys(v.days).forEach((d) => { if (d >= sid && d <= w1) { delete v.days[d]; n++; } });
+      v.sup.forEach((s) => Object.keys(s.in).forEach((d) => { if (d >= sid && d <= w1) { delete s.in[d]; n++; } }));
+      vo.hide[id] = [...new Set([...(vo.hide[id] || []), sid])]; voSave();
+      if (n) { vorLog(v, `${voMD(sid)} 주 삭제 (${n}칸)`); Store.saveVorder(v); toast(`${voMD(sid)} 주를 지웠습니다 (${n}칸)`); } else render(); }
     else if (kk === "sup") { const v = vorClone(vorById(id)); const s = v.sup.find((x) => x.id === sid); v.sup = v.sup.filter((x) => x.id !== sid); if (s) vorLog(v, `직납 자재 빼기: ${s.name}`); Store.saveVorder(v); }
     return; }
   if (voArm) { voArm = null; clearTimeout(voArmT); }
   if (t.closest("[data-vo-new]")) { vorNew(); return; }
-  if (t.closest("[data-vo-back]")) { vo.open = null; vo.paste = null; voSave(); render(); window.scrollTo(0, 0); return; }
+  if (t.closest("[data-vo-back]")) { vo.open = null; vo.paste = null; vo.list = false; voSave(); render(); window.scrollTo(0, 0); return; }
   if (t.closest("[data-vo-doneopen]")) { vo.doneOpen = !vo.doneOpen; render(); return; }
-  const op = t.closest("[data-vo-open]"); if (op && !t.closest("input,button,a")) { vo.open = op.dataset.voOpen; voSave(); render(); window.scrollTo(0, 0); return; }
+  const op = t.closest("[data-vo-open]"); if (op && (!t.closest("input,button,a") || t.closest("button") === op)) { vo.open = op.dataset.voOpen; vo.paste = null; voSave(); render(); window.scrollTo(0, 0); return; }
   const kl = t.closest("[data-vo-kol]"); if (kl) { const [id, d] = kl.dataset.voKol.split(":"); const v = vorClone(vorById(id)); const x = v.days[d]; if (!x) return; x.kol = !x.kol; vorLog(v, `${voMD(d)} 배차: ${x.kol ? `${voMaker(v)} → 콜마` : `콜마 → ${voMaker(v)}`}`); Store.saveVorder(v); return; }
   const st = t.closest("[data-vo-sat]"); if (st) { const v = vorClone(vorById(st.dataset.voSat));
     if (v.sat && Object.keys(v.days).some((d) => parseYMD(d).getDay() === 6)) { toast("토요일에 요청 · 실출고가 있어 뺄 수 없습니다 — 그 칸을 먼저 비워 주세요"); return; }
@@ -3736,7 +3789,14 @@ function vorClick(e) {
   const ps = t.closest("[data-vo-paste]"); if (ps) { vo.paste = vo.paste === ps.dataset.voPaste ? null : ps.dataset.voPaste; if (vo.paste) vo.focusNext = `pn:${vo.paste}:text`; render(); return; }
   const pg = t.closest("[data-vo-pastego]"); if (pg) { vorApplyPaste(pg.dataset.voPastego); return; }
   const pa = t.closest("[data-vo-past]"); if (pa) { vo.past[pa.dataset.voPast] = !vo.past[pa.dataset.voPast]; render(); return; }
-  const mo = t.closest("[data-vo-more]"); if (mo) { vo.more[mo.dataset.voMore] = (vo.more[mo.dataset.voMore] || 0) + 1; voSave(); render(); return; }
+  const mo = t.closest("[data-vo-more]"); if (mo) { const id = mo.dataset.voMore, hid = vo.hide[id] || [];
+    // 마지막으로 보이는 주의 다음 주: 지운 주면 다시 보이고, 아니면 한 주 늘림
+    const shownW = [...document.querySelectorAll(".vo-wk[data-w]")].map((x) => x.dataset.w).sort(), lastW = shownW[shownW.length - 1];
+    const next = lastW ? ymd(addDays(parseYMD(lastW), 7)) : null;
+    if (next && hid.includes(next)) vo.hide[id] = hid.filter((w) => w !== next); else vo.more[id] = (vo.more[id] || 0) + 1;
+    voSave(); render(); return; }
+  const lb = t.closest("[data-vo-list]"); if (lb) { vo.list = !vo.list; render(); return; }
+  const hs = t.closest("[data-vo-hist]"); if (hs) { vo.hist[hs.dataset.voHist] = !vo.hist[hs.dataset.voHist]; render(); return; }
   const dn = t.closest("[data-vo-done]"); if (dn) { const v = vorClone(vorById(dn.dataset.voDone)); v.done = !v.done; vorLog(v, v.done ? "완료" : "진행 중으로"); Store.saveVorder(v); toast(v.done ? "완료로 옮겼습니다 (목록 아래 '완료'에서 볼 수 있음)" : "진행 중으로 되돌렸습니다"); return; }
   const xl = t.closest("[data-vo-xlsx]"); if (xl) { vorExportXlsx(xl.dataset.voXlsx); return; }
 }
@@ -5738,14 +5798,14 @@ function notifyProjectCompletion() {
 // 주간 캘린더의 현재 시각: 오늘 열에 빨간 점·선, 그 시간 행 전체 음영 (30초마다 위치만 갱신)
 function refreshNowMarker() {
   const g = document.querySelector(".week-grid:not(.month-grid)");
-  document.querySelectorAll(".week-grid .now-row").forEach((el) => { el.classList.remove("now-row"); el.removeAttribute("data-now"); });
+  document.querySelectorAll(".week-grid .now-row").forEach((el) => { el.classList.remove("now-row", "now-top", "now-bot"); el.removeAttribute("data-now"); });
   document.querySelectorAll(".week-grid .now-line").forEach((el) => el.remove());
   if (!g) return;
   const today = todayStr(), nowM = nowMin(), hh = `${pad(Math.floor(nowM / 60))}:00`;
   if (!g.querySelector(`.cell[data-date="${today}"]`)) return;                 // 이번 주가 아니면 표시 안 함
   const row = g.querySelectorAll(`.cell[data-hour="${hh}"]`);
   if (!row.length) return;                                                     // 표시 시간(8~20시) 밖
-  row.forEach((c) => c.classList.add("now-row"));
+  row.forEach((c) => c.classList.add("now-row", nowM % 60 < 30 ? "now-top" : "now-bot"));   // 지금이 속한 30분 칸만 음영
   const lab = g.querySelector(`.hourlabel[data-hour="${hh}"]`);
   if (lab) { lab.classList.add("now-row"); lab.dataset.now = minToHM(nowM); }
   const cell = g.querySelector(`.cell[data-date="${today}"][data-hour="${hh}"]`);
@@ -5919,7 +5979,7 @@ function renderModal(kind, data, cat, isEdit) {
     const allDay = !!data.allDay;
     const startV = data.time || "09:00";
     const endV = data.endTime || (isEdit ? "" : addMin(startV, 30));
-    const remindV = data.reminder != null ? data.reminder : "0";   // 기본: 정각
+    const remindV = data.reminder != null ? data.reminder : "30";  // 기본: 30분 전
     fields = `
       <div class="field"><label for="f-title">제목</label><input id="f-title" value="${esc(data.title || "")}" placeholder="예: 팀 회의" autocomplete="off" /></div>
       <div class="field-row">
@@ -6044,7 +6104,7 @@ function renderModal(kind, data, cat, isEdit) {
       if (document.getElementById("np-title").value.trim()) addStep();   // 입력만 하고 ＋를 안 누른 단계도 포함
       const pid = Store.addProject({ name, color });
       steps.forEach((x) => {
-        if (x.time) Store.addEvent({ title: x.title, date: x.date, time: x.time, endTime: addMin(x.time, 30), cat: curCat, priority: "normal", reminder: "0", projectId: pid });
+        if (x.time) Store.addEvent({ title: x.title, date: x.date, time: x.time, endTime: addMin(x.time, 30), cat: curCat, priority: "normal", reminder: "30", projectId: pid });
         else Store.addTodo({ title: x.title, due: x.date, cat: curCat, priority: "normal", projectId: pid });
       });
       returnToProject = null; closeModal();   // 추가 창에서 바로 완료 (프로젝트 창을 따로 띄우지 않음)
@@ -6223,7 +6283,7 @@ function renderProjectModal(pid) {
     if (!title) { tEl.focus(); return; }
     const date = document.getElementById("pj-s-date").value || todayStr(), time = timeEl.value;
     const cat = ui.cat === "personal" ? "personal" : "work";
-    if (time) Store.addEvent({ title, date, time, endTime: addMin(time, 30), cat, priority: "normal", reminder: "0", projectId: p.id });
+    if (time) Store.addEvent({ title, date, time, endTime: addMin(time, 30), cat, priority: "normal", reminder: "30", projectId: p.id });
     else Store.addTodo({ title, due: date, cat, priority: "normal", projectId: p.id });
     renderProjectModal(p.id); toast(`'${title}' 단계를 추가했습니다`);
     setTimeout(() => { const t = document.getElementById("pj-s-title"); if (t) t.focus(); }, 30);
@@ -6380,14 +6440,14 @@ function requestNotify() { try { if ("Notification" in window && Notification.pe
 function scheduleReminders() {
   reminderTimers.forEach(clearTimeout); reminderTimers = [];
   const now = Date.now();
-  [0, 1].forEach((off) => {
+  [0, 1, 2, 3].forEach((off) => {                                        // 2일 전 알림까지 → 3일 뒤 일정까지 예약
     const ds = ymd(addDays(new Date(), off));
     eventsOn(ds).forEach((e) => {
       if (e.allDay || !e.time || !e.reminder || e.reminder === "none") return;
       const dt = new Date(`${ds}T${e.time.length === 5 ? e.time : "09:00"}:00`);
       const fire = dt.getTime() - parseInt(e.reminder, 10) * 60000;
       const key = e._base + "@" + ds;
-      if (fire > now && fire - now < 26 * 3600 * 1000 && !firedAlerts.has(key)) {
+      if (fire > now && fire - now < 4 * 24 * 3600 * 1000 && !firedAlerts.has(key)) {
         reminderTimers.push(setTimeout(() => fireAlert(e, key), fire - now));
       }
     });
@@ -7083,7 +7143,7 @@ function pinBodyClick(e) {
 // 핀 팝업 빠른 추가 (오늘 기준)
 function quickAddPin(kind, title) {
   title = (title || "").trim(); if (!title) return false;
-  if (kind === "event") Store.addEvent({ title, cat: "work", priority: "normal", date: todayStr(), time: "09:00", endTime: "09:30", reminder: "0" });
+  if (kind === "event") Store.addEvent({ title, cat: "work", priority: "normal", date: todayStr(), time: "09:00", endTime: "09:30", reminder: "30" });
   else Store.addTodo({ title, cat: "work", priority: "normal", due: todayStr() });
   toast(kind === "event" ? "일정을 추가했습니다" : "할 일을 추가했습니다");
   return true;
@@ -7676,6 +7736,17 @@ function wireGlobal() {
   });
   gutter.addEventListener("pointerup", () => { if (rz) { rz = false; gutter.classList.remove("dragging"); saveUI(); } });
 
+  // 시간 칸: 마우스가 있는 30분(위 · 아래 절반)만 음영
+  let hvCell = null;
+  const hvClear = () => { if (hvCell) hvCell.classList.remove("hv-top", "hv-bot"); hvCell = null; };
+  document.getElementById("content").addEventListener("mousemove", (e) => {
+    const cell = e.target.closest && e.target.closest(".week-grid .cell[data-hour]");
+    if (!cell || e.target.closest(".evt")) { hvClear(); return; }
+    const r = cell.getBoundingClientRect(), bot = e.clientY - r.top > r.height / 2;
+    if (hvCell !== cell) { hvClear(); hvCell = cell; }
+    cell.classList.toggle("hv-bot", bot); cell.classList.toggle("hv-top", !bot);
+  });
+  document.getElementById("content").addEventListener("mouseleave", hvClear);
   // 캘린더 빈 셀 클릭 → 추가
   document.getElementById("content").addEventListener("click", (e) => {
     const cell = e.target.closest(".cell, .band-cell, .m-cell");
