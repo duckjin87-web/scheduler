@@ -965,7 +965,7 @@
   .tt-modal .field input{padding:7px 9px;font-size:13px;border-radius:7px;}
   .tt-r{display:grid;gap:8px;}
   .tt-r-item{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);}
-  .tt-r-4{grid-template-columns:minmax(0,.75fr) minmax(0,1.55fr) minmax(0,1.2fr) minmax(0,.7fr);}
+  .tt-r-4{grid-template-columns:minmax(0,.8fr) minmax(0,1.5fr) minmax(0,1fr);}
   .tt-capa-w{display:flex;align-items:center;gap:4px;}
   .tt-capa-w #tt-capa{flex:1 1 auto;min-width:56px;}
   .tt-capa-w #tt-lines{flex:0 0 38px;width:38px;text-align:center;padding-left:4px;padding-right:4px;}
@@ -2443,7 +2443,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-11-24 · 변동형 필요량 열 · capa 생산은 받은 요청까지만";
+const APP_VERSION = "2026-11-24 · 완료 일정 알림 중지 · 놓친 알림 · 일정형 생산 라인 칸 삭제";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -2721,9 +2721,9 @@ function ttAutoShiftOrder(o, today) {
   }
   return notes;
 }
-// 같은 라인에서 생산 기간이 겹치는 출고 건
+// 같은 라인에서 생산 기간이 겹치는 출고 건 — 생산 라인 칸을 없애서 더 이상 쓰지 않음 (일별 CAPA × 라인 수만 사용)
 function ttLineConflicts(rows) {
-  const out = {};
+  const out = {}; if (out) return out;
   const act = rows.filter((r) => r.o.line && r.pl.ok && !r.o.done.prod && !r.o.done.ship);
   for (let i = 0; i < act.length; i++) for (let j = i + 1; j < act.length; j++) {
     const a = act[i], b = act[j];
@@ -2738,13 +2738,13 @@ function ttLineConflicts(rows) {
 }
 // 엑셀에서 바로 열리는 CSV (한글 깨짐 방지 BOM)
 function ttExportCsv() {
-  const head = ["품목", "거래처", "발주량", "일별CAPA", "라인수", "라인", "제조구분", "출고목표일", "원료칭량/원료셋팅", "제조", "판정완료", "자재셋팅",
+  const head = ["품목", "거래처", "발주량", "일별CAPA", "라인수", "제조구분", "출고목표일", "원료칭량/원료셋팅", "제조", "판정완료", "자재셋팅",
     "추가셋팅", "최종자재셋팅", "이동", "생산시작", "생산종료", "생산일수", "파샬출고", "납품", "목표대비(영업일)", "진행", "LOT", "메모"];
   const cell = (v) => { const t = v == null ? "" : String(v); return /[",\r\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
   const lines = [head];
   Store.state.orders.forEach((o) => {
     const pl = ttPlan(o), steps = ttSteps(o, pl);
-    lines.push([o.item, o.client, o.qty, o.capa, o.lines || 1, o.line, o.mfgType === "vendor" ? (o.matTurnkey ? "업체 제조(자재 턴키)" : "업체 제조") : "자사 제조", o.due || "",
+    lines.push([o.item, o.client, o.qty, o.capa, o.lines || 1, o.mfgType === "vendor" ? (o.matTurnkey ? "업체 제조(자재 턴키)" : "업체 제조") : "자사 제조", o.due || "",
       pl.weigh || "", o.mfgDate || "", pl.judgeEnd || "", o.matDate || "",
       (o.setups || []).map((s) => `${s.name} ${s.date || "-"}`).join(" / "), pl.matFinal || "",
       pl.ok ? pl.move : "", pl.ok ? pl.prodStart : "", pl.ok ? pl.prodEnd : "", pl.prodDays,
@@ -4381,7 +4381,7 @@ function renderTimetableSched() {
     const S = ttStatus(pl, o);
     const hasDue0 = o.due && o.due >= first && o.due <= last, pt = hasDue0 ? 19 : 5;
     const rowLabels = ["원료·제조", "자재·이동", "생산", "출고·납품"].map((l, i) => `<span class="tt-rl" style="top:${pt + grpStart[i] * 23 + 3}px">${l}</span>`).join("");
-    g += `<div class="tt-g" data-tt-open="${o.id}" title="${esc(o.item)} — 눌러서 열기">${rowLabels}<div class="nm">${esc(o.item)}</div><div class="mt">${esc(o.client || "거래처 없음")} · ${o.qty.toLocaleString()}ea${o.line ? ` · ${esc(o.line)}` : ""}</div><span class="tt-pill ${S.cls}">${S.txt}</span>${conf[o.id] ? `<span class="tt-pill bad">라인 겹침</span>` : ""}${o.weekend !== "off" ? `<span class="tt-pill wk">${TT_WEEKEND_LABEL[o.weekend]}</span>` : ""}</div>`;
+    g += `<div class="tt-g" data-tt-open="${o.id}" title="${esc(o.item)} — 눌러서 열기">${rowLabels}<div class="nm">${esc(o.item)}</div><div class="mt">${esc(o.client || "거래처 없음")} · ${o.qty.toLocaleString()}ea</div><span class="tt-pill ${S.cls}">${S.txt}</span>${conf[o.id] ? `<span class="tt-pill bad">라인 겹침</span>` : ""}${o.weekend !== "off" ? `<span class="tt-pill wk">${TT_WEEKEND_LABEL[o.weekend]}</span>` : ""}</div>`;
     const hasDue = hasDue0;
     let lane = `<div class="tt-lane${hasDue ? " has-due" : ""}" style="grid-template-columns:${dayCols};grid-template-rows:repeat(${nR},20px)">`;
     days.forEach((ds, i) => {
@@ -4431,7 +4431,7 @@ function renderTimetableSched() {
       : pl.ok && pl.slack < 0 && pl.latestMat ? `<div class="tt-warn soft">목표일을 맞추려면 ${mfgL} ${fmtMD(pl.latestMfg)} · 자재 ${fmtMD(pl.latestMat)}까지 끝나야 합니다</div>` : "";
     return `<div class="tt-card ${o.done.ship ? "is-done" : ""}" data-tt-open="${o.id}">
       <div class="tt-card-h"><b>${esc(o.item)}</b><span class="tt-pill ${S.cls}">${S.txt}</span></div>
-      <div class="tt-card-m">${esc(o.client || "거래처 없음")} · 발주 ${o.qty.toLocaleString()}ea · CAPA ${o.capa.toLocaleString()}/일${o.lines > 1 ? ` × ${o.lines}라인` : ""}${o.line ? ` · ${esc(o.line)}` : ""}${o.due ? ` · 목표 ${fmtMD(o.due)}` : ""}${pl.own ? "" : pl.turnkey ? " · 업체 제조·자재 턴키" : " · 업체 제조"} · ${ttJudgeLabel(o.judgeDays)}${o.weekend !== "off" ? ` · ${TT_WEEKEND_LABEL[o.weekend]}` : ""}${o.partial && pl.partSum ? ` · 파샬 ${pl.partChecks.length}회` : ""}${o.lot ? ` · LOT ${esc(o.lot)}` : ""}</div>
+      <div class="tt-card-m">${esc(o.client || "거래처 없음")} · 발주 ${o.qty.toLocaleString()}ea · CAPA ${o.capa.toLocaleString()}/일${o.lines > 1 ? ` × ${o.lines}라인` : ""}${o.due ? ` · 목표 ${fmtMD(o.due)}` : ""}${pl.own ? "" : pl.turnkey ? " · 업체 제조·자재 턴키" : " · 업체 제조"} · ${ttJudgeLabel(o.judgeDays)}${o.weekend !== "off" ? ` · ${TT_WEEKEND_LABEL[o.weekend]}` : ""}${o.partial && pl.partSum ? ` · 파샬 ${pl.partChecks.length}회` : ""}${o.lot ? ` · LOT ${esc(o.lot)}` : ""}</div>
       <div class="tt-card-d">${dates}</div>
       <div class="tt-prog-w"><div class="tt-prog"><i style="width:${steps.length ? Math.round((doneN / steps.length) * 100) : 0}%"></i></div><span class="tt-prog-t">${doneN}/${steps.length}</span></div>
       ${worst ? `<div class="tt-warn ${worst.n >= TT_LATE_MAX ? "" : "soft"}">최초 계획보다 ${esc({ prod: "생산", judge: "판정" }[worst.st.key] || worst.st.label)} ${worst.n}일 밀림 (D+${worst.n})</div>` : ""}
@@ -4502,7 +4502,6 @@ function renderOrderModal(id, copyFrom) {
           <div class="field"><label for="tt-qty">발주량 (ea)</label><input id="tt-qty" inputmode="numeric" value="${o.qty || ""}" placeholder="3000" autocomplete="off" /></div>
           <div class="field"><label for="tt-capa">일별 CAPA × 라인 수</label><div class="tt-capa-w"><input id="tt-capa" inputmode="numeric" value="${o.capa || ""}" placeholder="1500" autocomplete="off" title="라인 1개의 하루 생산량" /><span>×</span><input id="tt-lines" inputmode="numeric" value="${o.lines || 1}" autocomplete="off" aria-label="생산 라인 수" title="같이 돌리는 라인 수 — 하루 생산량 = CAPA × 라인 수" /><span>라인</span></div></div>
           <div class="field"><label for="tt-due">출고 목표일</label><input id="tt-due" type="date" value="${o.due || ""}" /></div>
-          <div class="field"><label for="tt-line">생산 라인</label><input id="tt-line" value="${esc(o.line || "")}" placeholder="A라인" autocomplete="off" title="라인 이름 — 같은 라인에서 생산 기간이 겹치면 알려 줍니다" /></div>
         </div>
       </section>
       <section class="tt-box s-mfg tt-a-raw"><div class="tt-box-h"><i>2</i>원료&amp;제조<div class="seg tt-type"><button type="button" data-v="own">자사 제조</button><button type="button" data-v="vendor">업체 제조</button></div></div>
@@ -6852,24 +6851,42 @@ const snoozeTimers = {};
 function requestNotify() { try { if ("Notification" in window && Notification.permission === "default") Notification.requestPermission(); } catch (e) {} }
 
 // 컴퓨터(로컬) 시간 기준으로 알림 예약. 앱/PiP가 열려 있는 동안 동작.
+//  · 완료한 일정은 예약하지 않고, 이미 뜬 팝업 · 30분/1시간 뒤 다시 알림도 완료하면 취소
+//  · 캘린더 필터(업무/개인)와 관계없이 모든 일정 대상
+//  · 앱이 닫혀 있던 사이(모바일 백그라운드 등) 지난 알림은 다시 열 때 일정 시작 전이면 바로 띄움 — 한 번 뜬 알림은 기기에 기억해 다시 안 뜸
+const FIRED_KEY = "scheduler:fired";
+const evLive = (key) => { const id = String(key || "").split("@")[0]; const e = Store.state.events.find((x) => x.id === id); return e && !e.done ? e : null; };
+function firedLoad() { try { const o = JSON.parse(localStorage.getItem(FIRED_KEY) || "{}"); const cut = Date.now() - 4 * 86400000; Object.keys(o).forEach((k) => { if (o[k] < cut) delete o[k]; else firedAlerts.add(k); }); } catch (_) {} }
+function firedSave(key) { try { const o = JSON.parse(localStorage.getItem(FIRED_KEY) || "{}"); o[key] = Date.now(); localStorage.setItem(FIRED_KEY, JSON.stringify(o)); } catch (_) {} }
 function scheduleReminders() {
   reminderTimers.forEach(clearTimeout); reminderTimers = [];
+  if (!firedAlerts.size) firedLoad();
   const now = Date.now();
-  [0, 1, 2, 3].forEach((off) => {                                        // 2일 전 알림까지 → 3일 뒤 일정까지 예약
+  [-1, 0, 1, 2, 3].forEach((off) => {                                    // 2일 전 알림까지 → 3일 뒤 일정까지 예약 (어제는 자정 넘긴 놓친 알림용)
     const ds = ymd(addDays(new Date(), off));
-    eventsOn(ds).forEach((e) => {
+    Store.state.events.filter((e) => !e.done && occursOn(e, ds)).forEach((e0) => {
+      const e = { ...e0, date: ds, _base: e0.id };
       if (e.allDay || !e.time || !e.reminder || e.reminder === "none") return;
       const dt = new Date(`${ds}T${e.time.length === 5 ? e.time : "09:00"}:00`);
       const fire = dt.getTime() - parseInt(e.reminder, 10) * 60000;
       const key = e._base + "@" + ds;
-      if (fire > now && fire - now < 4 * 24 * 3600 * 1000 && !firedAlerts.has(key)) {
-        reminderTimers.push(setTimeout(() => fireAlert(e, key), fire - now));
-      }
+      if (firedAlerts.has(key)) return;
+      if (fire > now && fire - now < 4 * 24 * 3600 * 1000) reminderTimers.push(setTimeout(() => fireAlert(e, key), fire - now));
+      else if (fire <= now && now < dt.getTime()) reminderTimers.push(setTimeout(() => fireAlert(e, key), 800));   // 놓친 알림 (아직 시작 전)
     });
   });
+  closeDoneAlerts();
+}
+// 완료했거나 지운 일정의 팝업 · 스누즈 정리
+function closeDoneAlerts() {
+  document.querySelectorAll(".alert-card[data-key]").forEach((c) => { if (!evLive(c.dataset.key)) c.remove(); });
+  try { if (pipWin && pipWin.document) pipWin.document.querySelectorAll(".alert-card[data-key]").forEach((c) => { if (!evLive(c.dataset.key)) c.remove(); }); } catch (_) {}
+  Object.keys(snoozeTimers).forEach((k) => { if (!evLive(k)) { clearTimeout(snoozeTimers[k]); delete snoozeTimers[k]; } });
+  try { if (navigator.serviceWorker && navigator.serviceWorker.controller) navigator.serviceWorker.ready.then((reg) => reg.getNotifications()).then((ns) => ns.forEach((n) => { const k = n.data && n.data.key; if (k && !evLive(k)) n.close(); })).catch(() => {}); } catch (_) {}
 }
 function fireAlert(e, key) {
-  firedAlerts.add(key);
+  if (firedAlerts.has(key) || !evLive(key)) return;
+  firedAlerts.add(key); firedSave(key);
   const title = "일정 알림: " + e.title;
   const body = `${evTimeText(e)} ${e.location || ""}`.trim();
   osNotify(title, body, key) || showAlertCard(e, key); // OS 팝업 실패 시 앱 내부 팝업
@@ -6896,7 +6913,7 @@ function showAlertCard(e, key) {
   if (pipWin && pipWin.document) { const s = pipWin.document.getElementById("alert-stack"); if (s) stacks.push(s); }
   const host = stacks[0];
   const card = document.createElement("div");
-  card.className = "alert-card";
+  card.className = "alert-card"; card.dataset.key = key;
   if (prefs.alertScale && prefs.alertScale !== 100) card.style.zoom = (prefs.alertScale / 100).toFixed(3);
   card.innerHTML = `<div class="ac-head"><span class="ac-badge">${IC.bell}알림</span><span class="ac-time">${esc(evTimeText(e))}</span></div>
     <div class="ac-title">${esc(e.title)}</div>${e.location ? `<div class="ac-loc">${esc(e.location)}</div>` : ""}
@@ -6907,7 +6924,7 @@ function showAlertCard(e, key) {
     if (b.dataset.a === "30" || b.dataset.a === "60") {
       const mins = parseInt(b.dataset.a, 10);
       clearTimeout(snoozeTimers[key]);
-      snoozeTimers[key] = setTimeout(() => showAlertCard(e, key), mins * 60000);
+      snoozeTimers[key] = setTimeout(() => { delete snoozeTimers[key]; if (evLive(key)) showAlertCard(e, key); }, mins * 60000);
       toast(`${mins}분 뒤 다시 알림`);
     }
   });
@@ -8238,7 +8255,7 @@ function wireGlobal() {
     navigator.serviceWorker.addEventListener("message", (ev) => {
       if (ev.data && ev.data.type === "snooze") {
         const { minutes, data } = ev.data;
-        setTimeout(() => osNotify(data.title, data.body, (data.key || "") + ":s"), minutes * 60000);
+        setTimeout(() => { if (evLive(data.key)) osNotify(data.title, data.body, (data.key || "") + ":s"); }, minutes * 60000);
         toast(`${minutes}분 뒤 다시 알림`);
       }
     });
