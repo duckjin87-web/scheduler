@@ -629,7 +629,7 @@
   .vo-vt.direct{background:var(--high-soft);color:var(--high);} .vo-vt.move{background:var(--work-soft);color:var(--work);}
   /* A-1 자재 한 장 표 */
   .vo-supw{overflow-x:auto;border:1px solid var(--border);border-radius:10px;}
-  .vo-sup2{border-collapse:collapse;width:100%;min-width:1040px;font-size:12.5px;}
+  .vo-sup2{border-collapse:collapse;width:100%;min-width:1120px;font-size:12.5px;}
   .vo-sup2 th{background:var(--surface-3);color:var(--text-soft);font-size:11px;font-weight:800;padding:6px 8px;text-align:right;white-space:nowrap;}
   .vo-sup2 th small{display:block;font-weight:600;font-size:10px;color:var(--text-faint);}
   .vo-sup2 td{padding:6px 8px;border-top:1px solid var(--border);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;background:var(--surface);}
@@ -2443,7 +2443,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-11-23 · 변동형 일 capa 기준 투입 · 사내이동 · 상단 고정";
+const APP_VERSION = "2026-11-24 · 변동형 필요량 열 · capa 생산은 받은 요청까지만";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -3610,7 +3610,7 @@ const voMD = (d) => { const x = parseYMD(d); return `${x.getMonth() + 1}/${x.get
 // 날짜별 자재 투입 기준 수량(ea)
 //  생산 기록을 안 쓰면: 실출고(없으면 출고 요청)
 //  생산 기록을 쓰면: 오늘까지는 생산 실적, 앞날은 생산 계획(입력) 우선
-//    · 일 capa를 넣었으면 계획 없는 작업일은 capa만큼 생산 (남은 발주 · 요청을 다 만들 때까지)
+//    · 일 capa를 넣었으면 계획 없는 작업일은 capa만큼 생산 (받은 출고 요청을 다 만들 때까지 — 아직 요청 안 온 발주분은 날짜가 없으니 '미확보'로 따로 봄)
 //    · capa가 없으면 '출고 요청 − 완제품 재고'만큼 그날 생산한다고 봄
 //    · 어느 쪽이든 완제품이 모자라 출고를 못 맞추는 날은 모자란 만큼 더 생산한다고 봄(자재는 넉넉히 잡힘) → capShort
 // 생산 기록은 첫 생산일부터 셈 (그 전 출고분은 이미 만들어 둔 것 → 자재 투입은 출고 기준)
@@ -3634,10 +3634,9 @@ function voCons(v) {
       if (fg < 0) { out[d] = (out[d] || 0) - fg; auto[d] = -fg; fg = 0; } });
     return { out, auto, capd, capShort, basis: "plan" };
   }
-  // capa 기준: 남은 생산량 = 앞으로 나갈 수량(남은 발주, 요청이 더 많으면 요청) − 완제품 재고
-  let shipped = v.before; Object.values(v.days).forEach((x) => { if (x.act != null) shipped += x.act; });
+  // capa 기준: 남은 생산량 = 받은 출고 요청(내일 이후) − 완제품 재고
   const futReq = keys.reduce((n, d) => n + ship(d), 0), lastKey = keys[keys.length - 1];
-  let left = Math.max(0, (v.po ? Math.max(v.po - shipped - todayOpen, futReq) : futReq) - fg);
+  let left = Math.max(0, futReq - fg);
   for (let i = 1; i <= 400; i++) {
     const d = ymd(addDays(parseYMD(today), i));
     if (left <= 0 && (!lastKey || d > lastKey)) break;
@@ -3652,7 +3651,7 @@ function voCons(v) {
 // 투입 계산 기준을 사람 말로
 function voBasis(v, c) {
   if (!v.prodOn) return { short: "출고 요청 기준", long: "앞날 투입 = 출고 요청(실출고 입력분은 실출고) × 개당 투입량" };
-  if (v.capa) return { short: `생산 계획 → 없으면 일 capa ${voF(v.capa)}`, long: `앞날 투입 = 생산 계획 입력분, 계획 없는 작업일은 일 capa ${voF(v.capa)}ea씩 (남은 ${v.po ? "발주" : "요청"}를 다 만들 때까지)${v.sat ? " · 토요일 포함" : " · 토 · 일 · 공휴일 제외"}` };
+  if (v.capa) return { short: `생산 계획 → 없으면 일 capa ${voF(v.capa)}`, long: `앞날 투입 = 생산 계획 입력분, 계획 없는 작업일은 일 capa ${voF(v.capa)}ea씩 (받은 출고 요청을 다 만들 때까지 · 아직 요청 안 온 발주분은 미확보로 따로 봄)${v.sat ? " · 토요일 포함" : " · 토 · 일 · 공휴일 제외"}` };
   return { short: "생산 계획 → 없으면 출고 요청만큼", long: "앞날 투입 = 생산 계획 입력분, 계획 없는 날은 그날 출고 요청 − 완제품 재고만큼 (일 capa를 넣으면 capa 기준으로 바뀜)" };
 }
 // 완제품 재고 = 시작 재고 + 생산 − 실출고 (첫 생산일부터 그날까지) · 생산 기록 전이면 null
@@ -3911,8 +3910,8 @@ function vorSupplyHtml(v, c) {
     ${voHelpBox("sup", `<b>오늘 재고</b> = 기초 + 입고 완료(오늘까지) − ${v.prodOn ? "(시작 완제품 재고 + 생산)" : "출고(첫 입고일부터)"} × 개당 투입량.<br>
       <b>부족 시작</b> = 오늘 재고에 입고 예정을 더하고 앞날 투입을 빼 가며 0 아래로 내려가는 첫날 · <b>전망 최저</b> = 그 기간 가장 낮은 재고. 둘 다 같은 투입 기준을 씁니다.<br>
       <b>투입 기준</b> — ${esc(bs.long)}.${v.prodOn ? "" : " 생산 기록을 켜고 일 capa를 넣으면 생산 기준으로 바뀝니다."}<br>
-      <b>미확보</b> = 남은 발주(총 발주 − 시작 전 출고) 필요량 − (기초 + 입고 완료 + 입고 예정). ▾를 누르면 계산식과 기초 재고 · 리드타임 칸이 열립니다. 이름 옆 직납/사내이동을 누르면 기본 입고 방식이 바뀝니다.`)}
-    <div class="vo-supw"><table class="vo-sup2"><thead><tr><th>자재</th><th class="via">입고 방식</th><th title="완제품 1ea 만들 때 드는 양">1ea당</th><th>기초</th><th>입고 완료</th><th>투입<small>${v.prodOn ? `생산 ${voF(c.sup[0] ? c.sup[0].usedQty : 0)}` : "출고 기준"}</small></th><th>오늘 재고</th><th>입고 예정</th><th>부족 시작</th><th>전망 최저<small>~${voMD(hz)}</small></th><th>미확보</th><th>상태</th><th></th></tr></thead><tbody>
+      <b>필요량</b> = 남은 발주(총 발주 − 시작 전 출고) × 1ea당 · <b>미확보</b> = 필요량 − (기초 + 입고 완료 + 입고 예정). 부족 시작은 받은 출고 요청까지만 날짜로 보고, 아직 요청 안 온 발주분 부족은 미확보로 보여 줍니다. ▾를 누르면 계산식과 기초 재고 · 리드타임 칸이 열립니다. 이름 옆 직납/사내이동을 누르면 기본 입고 방식이 바뀝니다.`)}
+    <div class="vo-supw"><table class="vo-sup2"><thead><tr><th>자재</th><th class="via">입고 방식</th><th title="완제품 1ea 만들 때 드는 양">1ea당</th><th>기초</th><th>입고 완료</th><th>투입<small>${v.prodOn ? `생산 ${voF(c.sup[0] ? c.sup[0].usedQty : 0)}` : "출고 기준"}</small></th><th>오늘 재고</th><th>입고 예정</th><th>부족 시작</th><th>전망 최저<small>~${voMD(hz)}</small></th><th title="남은 발주(총 발주 − 시작 전 출고) × 1ea당">필요량<small>${v.po ? `발주 ${voF(Math.max(0, v.po - v.before))} 기준` : "총 발주 미입력"}</small></th><th title="필요량 − (기초 + 입고 완료 + 입고 예정)">미확보</th><th>상태</th><th></th></tr></thead><tbody>
     ${rows.map((x) => { const s2 = x.s, u = voUnit(s2), sk = (f) => `sm:${id}:${s2.id}:${f}`, det = !!vo.sdet[s2.id], dp = s2.kind === "bulk" ? 1 : 0;
       const nxt = x.plan[0];
       let dr = 0, mv = 0; Object.keys(s2.in).forEach((d) => { if (((s2.viaAt || {})[d] || s2.via) === "move") mv += s2.in[d]; else dr += s2.in[d]; });
@@ -3925,10 +3924,11 @@ function vorSupplyHtml(v, c) {
         <td>${x.inPlan ? `${voF(x.inPlan, dp)}${nxt ? `<small>${voMD(nxt[0])} ${((s2.viaAt || {})[nxt[0]] || s2.via) === "move" ? "사내이동" : "직납"}${x.plan.length > 1 ? ` 외 ${x.plan.length - 1}` : ""}</small>` : ""}` : "—"}</td>
         <td class="${x.negAt ? "vo-bad" : ""}">${x.negAt ? voDay(x.negAt) : "—"}</td>
         <td class="${x.per && x.low < 0 ? "vo-bad" : ""}">${x.per && x.stock != null ? voF(x.low, dp) : "—"}${x.per && x.stock != null && x.lowAt !== today ? `<small>${voMD(x.lowAt)}</small>` : ""}</td>
+        <td>${x.per && v.po ? voF(x.need, dp) : "—"}</td>
         <td>${!x.per ? "—" : x.gap > 0 ? `<em class="vo-gapv">${voF(x.gap, dp)}</em>` : `<span class="vo-ok">여유 ${voF(Math.abs(x.gap), dp)}</span>`}</td>
         <td><span class="vo-stag ${CL[x.st]}">${ST[x.st]}${x.st === "short" ? ` ${voDay(x.negAt)}` : ""}</span></td>
         <td><button type="button" class="vo-more ${det ? "on" : ""}" data-vo-sdet="${s2.id}" aria-expanded="${det}" aria-label="${esc(s2.name)} 계산식 · 설정">${det ? "▴" : "▾"}</button></td></tr>
-      ${det ? `<tr class="vo-detr${voAn("sdet:" + s2.id)}"><td colspan="13"><div class="vo-formula">
+      ${det ? `<tr class="vo-detr${voAn("sdet:" + s2.id)}"><td colspan="14"><div class="vo-formula">
           ${tb("기초", voF(s2.open, dp))}<i>+</i>${tb("입고 완료" + (dr && mv ? "" : ` · ${VO_VIA[s2.via]}`), voF(x.inDone, dp))}<i>−</i>${tb(`투입 (${v.prodOn ? "생산" : "출고"} ${voF(x.usedQty)} × ${s2.kind === "bulk" ? voF(x.per, 4) + "kg" : voF(x.per, 4)})`, voF(x.used, dp))}<i>=</i>${tb("오늘 재고" + (s2.kind === "bulk" ? " kg" : ""), x.stock == null ? "—" : voF(x.stock, dp), "res" + (x.stock < 0 ? " neg" : ""))}
           <i>→</i>${tb(x.plan.length ? x.plan.map(([d]) => voMD(d)).slice(0, 3).join(" · ") + " 예정" : "입고 예정", x.inPlan ? "+" + voF(x.inPlan, dp) : "없음", "plan")}<i>→</i>${tb(x.negAt ? `${voDay(x.negAt)}부터 부족 · ~${voMD(x.hz)} 최저` : `~${voMD(x.hz)} 최저`, x.stock == null ? "—" : voF(x.low, dp), x.low < 0 ? "low" : "")}
           <span class="vo-fnote">앞날 투입: ${esc(bs.short)}</span>
@@ -4264,7 +4264,7 @@ function vorExportXlsx(id) {
   }
   if (v.sup.length) { rows.push([T("공급 · 재고", 2), T("방식", 2), T("1ea당 사용량", 2), T("입고 완료", 2), T("입고 예정", 2), T("필요량", 2), T("미확보(−여유)", 2), T("투입량", 2), T("오늘 재고", 2), T("부족 예상일", 2)]);
     const r1 = (n) => (n == null ? "" : Math.round(n * 10) / 10);
-    c.sup.forEach((x) => rows.push([T(`${x.s.name} (${voUnit(x.s)})`), T(VO_VIA[x.s.via]), N(x.per ? +x.per.toFixed(4) : ""), N(r1(x.have) || ""), N(r1(x.inPlan) || ""), N(x.per ? r1(x.need) : ""), N(x.per ? r1(x.gap) : ""), N(x.per ? r1(x.used) : ""), N(x.per && x.stock != null ? r1(x.stock) : ""), T(x.negAt || "")])); }
+    c.sup.forEach((x) => rows.push([T(`${x.s.name} (${voUnit(x.s)})`), T(VO_VIA[x.s.via]), x.s.kind === "bulk" ? T(v.fillG ? `${voF(v.fillG, 2)}g` : "") : N(x.per ? +x.per.toFixed(4) : ""), N(r1(x.have) || ""), N(r1(x.inPlan) || ""), N(x.per ? r1(x.need) : ""), N(x.per ? r1(x.gap) : ""), N(x.per ? r1(x.used) : ""), N(x.per && x.stock != null ? r1(x.stock) : ""), T(x.negAt || "")])); }
   const blob = iqXlsx(v.item || "변동형", rows, [16, ...Array(Math.max(ncol, 10) - 2).fill(12), 13], { headRow: 4, merges, tableEnd: 4 });
   const name = `변동형출고_${(v.item || "품목").replace(/[\\/:*?"<>|]/g, "_").slice(0, 40)}_${todayStr()}.xlsx`;
   const url = URL.createObjectURL(blob), a = document.createElement("a"); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
