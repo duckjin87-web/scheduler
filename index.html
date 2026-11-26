@@ -602,7 +602,7 @@
   .vo-wk tr.r-sup td .vo-in{font-size:12.2px;font-weight:600;}
   .vo-wk tr.r-sup td{position:relative;}
   .vo-vb{position:absolute;left:3px;top:50%;transform:translateY(-50%);z-index:1;border:1px solid transparent;font:inherit;font-size:9.5px;font-weight:800;line-height:1.4;border-radius:999px;padding:0 5px;cursor:pointer;opacity:.85;}
-  .vo-vb.direct{background:var(--high-soft);color:var(--high);} .vo-vb.move{background:var(--work-soft);color:var(--work);}
+  .vo-vb.direct{background:var(--high-soft);color:var(--high);} .vo-vb.move{background:var(--work-soft);color:var(--work);} .vo-vb.rush{background:var(--urgent-soft);color:var(--urgent);}
   .vo-vb.ov{border-color:currentColor;opacity:1;}
   .vo-vb:hover{opacity:1;border-color:currentColor;}
   .vo-gapv{font-style:normal;color:var(--urgent);background:#FFF1A8;border-radius:5px;padding:0 6px;font-weight:700;}
@@ -626,7 +626,7 @@
   .vo-task.bad{border-left:4px solid var(--urgent);} .vo-task.okc .tv{color:var(--done);}
   .vo-chipl{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px;} .vo-chipl i{font-style:normal;}
   .vo-vt{font-style:normal;font-size:9.5px;font-weight:800;border-radius:999px;padding:0 6px;border:0;cursor:pointer;font-family:inherit;line-height:1.5;}
-  .vo-vt.direct{background:var(--high-soft);color:var(--high);} .vo-vt.move{background:var(--work-soft);color:var(--work);}
+  .vo-vt.direct{background:var(--high-soft);color:var(--high);} .vo-vt.move{background:var(--work-soft);color:var(--work);} .vo-vt.rush{background:var(--urgent-soft);color:var(--urgent);}
   /* A-1 자재 한 장 표 */
   .vo-supw{overflow-x:auto;border:1px solid var(--border);border-radius:10px;}
   .vo-sup2{border-collapse:collapse;width:100%;min-width:1120px;font-size:12.5px;}
@@ -2446,7 +2446,7 @@
 /* =========================================================================
    스케줄러 — 반응형 단일 페이지 앱 (localStorage 저장)
    ========================================================================= */
-const APP_VERSION = "2026-11-25 · 고정 팝업 넓힌 창도 한 줄 말줄임";
+const APP_VERSION = "2026-11-26 · 변동형 사내이동 D+2 · 긴급이동 D+1";
 
 /* ---------- 유틸 ---------- */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -2910,7 +2910,7 @@ const Store = (() => {
       return { id: str(x.id) || `${id}-s${i + 1}`, kind: bulk ? "bulk" : "mat", name: (bulk && str(x.name).trim() === "반제품(벌크)" ? "" : str(x.name).trim()) || (bulk ? "반제품" : "자재"), vendor: str(x.vendor).trim(),
         via: x.via === "move" || x.via === "direct" ? x.via : bulk ? "move" : "direct", per: n(x.per), open: n(x.open), in: inn,
         lead: Math.max(0, Math.min(60, Math.round(n(x.lead)))), sentFor: str(x.sentFor),
-        viaAt: (() => { const o = {}; if (x.viaAt && typeof x.viaAt === "object") Object.keys(x.viaAt).forEach((d) => { if (inn[d] && (x.viaAt[d] === "move" || x.viaAt[d] === "direct")) o[d] = x.viaAt[d]; }); return o; })() }; });
+        viaAt: (() => { const o = {}; if (x.viaAt && typeof x.viaAt === "object") Object.keys(x.viaAt).forEach((d) => { if (inn[d] && (x.viaAt[d] === "move" || x.viaAt[d] === "direct" || x.viaAt[d] === "rush")) o[d] = x.viaAt[d]; }); return o; })() }; });
     const prod = {}; if (v.prod && typeof v.prod === "object") Object.keys(v.prod).forEach((d) => { const q = Math.round(n(v.prod[d])); if (q && okD(d)) prod[d] = q; });
     return { id, item: str(v.item).trim() || "새 품목", client: str(v.client).trim(), po: Math.round(n(v.po)), before: Math.round(n(v.before)), plt: Math.round(n(v.plt)),
       maker: str(v.maker).trim(), fillG: n(v.fillG), sat: !!v.sat, done: !!v.done, note: str(v.note), days, sup,
@@ -3619,6 +3619,15 @@ const voMD = (d) => { const x = parseYMD(d); return `${x.getMonth() + 1}/${x.get
 // 생산 기록은 첫 생산일부터 셈 (그 전 출고분은 이미 만들어 둔 것 → 자재 투입은 출고 기준)
 const voProdStart = (v) => { const f = Object.keys(v.prod || {}).sort()[0], t = todayStr(); return f && f <= t ? f : t; };
 const voWorkDay = (v, d) => { const w = parseYMD(d).getDay(); return (w === 6 ? !!v.sat : w !== 0) && !isHoliday(d); };
+// 입고 칸 날짜 → 실제로 쓸 수 있는 날: 직납 당일 · 사내이동 D+2 · 긴급이동 D+1 (작업일 기준, 토요일은 토요일 칸을 켰을 때만)
+const VO_LAG = { direct: 0, move: 2, rush: 1 };
+const voViaAt = (s, d) => (s.viaAt || {})[d] || s.via;
+function voAddWork(v, ds, n) { let d = ds; for (let k = 0; k < n;) { d = ymd(addDays(parseYMD(d), 1)); if (voWorkDay(v, d)) k++; } return d; }
+function voSubWork(v, ds, n) { let d = ds; for (let k = 0; k < n;) { d = ymd(addDays(parseYMD(d), -1)); if (voWorkDay(v, d)) k++; } return d; }
+const voArr = (v, s, d) => voAddWork(v, d, VO_LAG[voViaAt(s, d)] || 0);
+// [{ d: 입력한 날, a: 도착(사용 가능)일, q, via }] — 도착일 순
+function voInList(v, s) { return Object.keys(s.in).map((d) => ({ d, a: voArr(v, s, d), q: s.in[d], via: voViaAt(s, d) })).sort((x, y) => x.a.localeCompare(y.a) || x.d.localeCompare(y.d)); }
+function voInEff(v, s) { const o = {}; voInList(v, s).forEach((r) => { o[r.a] = (o[r.a] || 0) + r.q; }); return o; }
 function voCons(v) {
   const today = todayStr(), out = {}, auto = {}, capd = {}, ps = v.prodOn ? voProdStart(v) : null, cap = v.prodOn ? v.capa || 0 : 0;
   let capShort = null;
@@ -3665,12 +3674,12 @@ function voFgAt(v, upTo) {
 }
 // 재고는 첫 입고일(없고 기초 재고만 있으면 첫 투입일)부터 셈 — 기록 전 출고분까지 빼서 음수가 나오지 않게
 function voStockStart(v, s, cons) {
-  const ins = Object.keys(s.in).sort(); if (ins.length) return ins[0];
+  const ins = Object.keys(s.in).sort(); if (ins.length) return ins[0];                  // 입력한 날부터 셈 (사내이동이면 도착 전까지는 재고에 안 잡힘)
   return s.open ? Object.keys(cons).sort()[0] || todayStr() : null;
 }
 function voStockAt(v, s, upTo, cons) {
   cons = cons || voCons(v).out; const per = voPer(v, s), st0 = voStockStart(v, s, cons); if (!st0 || upTo < st0) return null;
-  let st = s.open; Object.keys(s.in).forEach((d) => { if (d <= upTo) st += s.in[d]; });
+  const ie = voInEff(v, s); let st = s.open; Object.keys(ie).forEach((d) => { if (d <= upTo) st += ie[d]; });
   Object.keys(cons).forEach((d) => { if (d >= st0 && d <= upTo) st -= cons[d] * per; }); return st;
 }
 // 자재 한 줄의 상태: 입고 완료(오늘까지) / 입고 예정(내일부터) / 오늘 재고 / 투입량 / 예정 포함 전망(가장 낮은 재고 · 첫 부족일) / PO 기준 미확보
@@ -3678,7 +3687,7 @@ function voStockAt(v, s, upTo, cons) {
 //  생산 기록을 쓰면 투입 = (시작 완제품 재고 + 생산) × 개당 투입량, 안 쓰면 출고(첫 입고일부터) × 개당 투입량
 function voStockNow(v, s, upTo, cons) {
   const today = todayStr(), eff = upTo < today ? upTo : today, per = voPer(v, s);
-  let inn = s.open; Object.keys(s.in).forEach((d) => { if (d <= eff) inn += s.in[d]; });
+  const ie = voInEff(v, s); let inn = s.open; Object.keys(ie).forEach((d) => { if (d <= eff) inn += ie[d]; });
   let q = 0;
   if (v.prodOn) { q = v.fgOpen; Object.keys(v.prod).forEach((d) => { if (d <= eff) q += v.prod[d]; }); }
   else { const st0 = voStockStart(v, s, cons || voCons(v).out); if (!st0) return { stock: null, q: 0 };
@@ -3688,11 +3697,12 @@ function voStockNow(v, s, upTo, cons) {
 function voSupState(v, s, cons) {
   const today = todayStr(), per = voPer(v, s), st0 = voStockStart(v, s, cons);
   let inDone = 0, inPlan = 0; const plan = [];
-  Object.keys(s.in).sort().forEach((d) => { if (d <= today) inDone += s.in[d]; else { inPlan += s.in[d]; plan.push([d, s.in[d]]); } });
+  const il = voInList(v, s), ie = voInEff(v, s);
+  il.forEach((r) => { if (r.a <= today) inDone += r.q; else { inPlan += r.q; plan.push(r); } });
   const now = voStockNow(v, s, today, cons), usedQty = now.q, stock = now.stock;
   let run = stock == null ? 0 : stock, low = run, lowAt = today, negAt = stock != null && stock < 0 ? today : null, negQty = negAt ? -stock : 0, hz = today;
-  if (per && stock != null) [...new Set([...Object.keys(cons), ...Object.keys(s.in)])].filter((d) => d > today && (!st0 || d >= st0)).sort().forEach((d) => {
-    run += (s.in[d] || 0) - (cons[d] || 0) * per; hz = d; if (run < low) { low = run; lowAt = d; } if (run < 0 && !negAt) { negAt = d; negQty = -run; } });
+  if (per && stock != null) [...new Set([...Object.keys(cons), ...Object.keys(ie)])].filter((d) => d > today && (!st0 || d >= st0)).sort().forEach((d) => {
+    run += (ie[d] || 0) - (cons[d] || 0) * per; hz = d; if (run < low) { low = run; lowAt = d; } if (run < 0 && !negAt) { negAt = d; negQty = -run; } });
   const need = Math.max(0, v.po - v.before) * per, have = s.open + inDone, gap = per ? need - have - inPlan : null;
   const st = !per ? "unset" : negAt ? "short" : gap > 0 ? "gap" : "ok";
   return { s, per, need, have, inDone, inPlan, plan, usedQty, used: usedQty * per, stock, low, lowAt, negAt, negQty, hz, gap, st,
@@ -3820,7 +3830,7 @@ function vorDetailHtml(v) {
     <span class="vo-legend"><i class="sw kol"></i>콜마 <i class="sw mk"></i>${maker} <i class="sw plan"></i>예정 ${voHelp("grid")}</span></div>
     ${voHelpBox("grid", `<b>출고 요청</b>은 고객이 요청한 수량, <b>실출고</b>는 실제 나간 수량입니다 (다르면 차이가 표시됨). PLT는 완파레트 적재 수량으로 나눠 <b>올림</b>합니다. 배차 칸을 누르면 콜마 ↔ ${maker}가 바뀝니다.<br>
       <b>생산</b>을 켜면 날마다 생산 수량을 넣을 수 있고, 자재 투입을 출고가 아니라 <b>생산 기준</b>으로 계산합니다. 생산 계획이 없는 앞날은 '출고 요청 − 완제품 재고'만큼 그날 생산한다고 보고 흐린 숫자로 미리 보여 줍니다.<br>
-      <b>입고</b> 줄의 내일 이후 칸은 <b>예정</b>(빗금)으로 보이고, 공급 · 재고의 '예정 포함 전망'에 들어갑니다. Tab · Enter로 다음 칸, 각 주의 '주 삭제'로 주를 뺍니다.`)}`;
+      <b>입고</b> 줄은 도착일(사내이동 D+2 · 긴급이동 D+1)이 내일 이후면 <b>예정</b>(빗금)으로 보이고, 공급 · 재고의 '예정 포함 전망'에 들어갑니다. Tab · Enter로 다음 칸, 각 주의 '주 삭제'로 주를 뺍니다.`)}`;
   if (vo.paste === id) h += `<div class="${voAn("paste")}">${vorPasteHtml(v)}</div>`;
   // 주 단위 표 — 기간: 데이터가 있는 첫 주(또는 이번 주) ~ 마지막 주(또는 2주 뒤) + 더 보기
   const dates = [...Object.keys(v.days), ...Object.keys(v.prod), ...v.sup.flatMap((s) => Object.keys(s.in))].sort();
@@ -3839,7 +3849,8 @@ function vorDetailHtml(v) {
 }
 function vorWeekHasData(v, w0) { const w1 = ymd(addDays(parseYMD(w0), 6)), inW = (d) => d >= w0 && d <= w1;
   return Object.keys(v.days).some(inW) || Object.keys(v.prod || {}).some(inW) || v.sup.some((s) => Object.keys(s.in).some(inW)); }
-const VO_VIA = { direct: "직납", move: "사내이동" };
+const VO_VIA = { direct: "직납", move: "사내이동", rush: "긴급이동" };
+const VO_NEXT = { direct: "move", move: "rush", rush: "direct" };   // 표의 입고 배지를 누를 때 바뀌는 순서
 function vorWeekHtml(v, w0, c) {
   const id = v.id, today = todayStr(), cols = vorWeekCols(v, w0), wEnd = ymd(addDays(parseYMD(w0), 6));
   const thisW = ymd(startOfWeek(new Date())), tag = w0 === thisW ? "이번 주" : w0 < thisW ? "지난 주" : "";
@@ -3861,9 +3872,9 @@ function vorWeekHtml(v, w0, c) {
       return `<td class="${d > today && v.prod[d] ? "plan" : ""}">${voIn(`p:${id}:${d}`, v.prod[d] ? voF(v.prod[d]) : "", `inputmode="numeric" placeholder="${au ? "≈" + voF(au) : ""}" aria-label="${voMD(d)} 생산" ${au ? `title="${cpd ? `생산 계획이 없어 일 capa(${voF(v.capa)})로 잡은 수량${au > v.capa ? " — capa로는 출고를 못 맞춰 더 잡음" : ""}` : "생산 계획이 없어 '출고 요청 − 완제품 재고'로 잡은 수량"}"` : ""}`)}</td>`; }).join("")}
       ${tail(pS ? voF(pS) : "", [pP ? voF(pP) : "", aS ? `<i title="생산 계획이 없어 ${v.capa ? "일 capa로" : "출고 요청만큼"} 잡은 수량">≈${voF(aS)}</i>` : ""].filter(Boolean).join("<br>"), w0 > today ? "" : `<span title="완제품 재고 = 시작 재고 + 생산 − 실출고 (${wEnd < today ? "주말" : "오늘"} 기준)">${stk(fgE)}</span>`)}</tr>`; }
   if (vo.supRows) v.sup.forEach((s, i) => { const st = w0 > today ? null : voStockNow(v, s, wEnd, c.cons).stock, per = voPer(v, s), dp = s.kind === "bulk" ? 1 : 0;
-    const inS = cols.reduce((n, d) => n + (d <= today ? s.in[d] || 0 : 0), 0), planS = cols.reduce((n, d) => n + (d > today ? s.in[d] || 0 : 0), 0);
-    rows += `<tr class="r-sup ${i === 0 ? "first" : ""}"><th title="${esc(s.name)} · 기본 ${VO_VIA[s.via]} 입고(${voUnit(s)}) — 날짜 칸의 배지를 누르면 그날 입고만 바꿈">${esc(s.name)} <small class="via ${s.via}">${s.via === "move" ? "사내이동" : "직납"}</small></th>${cols.map((d) => { const vw = (s.viaAt || {})[d] || s.via;
-      return `<td class="${d > today && s.in[d] ? "plan" : ""} ${s.in[d] ? "has" : ""}">${s.in[d] ? `<button type="button" class="vo-vb ${vw} ${vw !== s.via ? "ov" : ""}" data-vo-vb="${id}:${s.id}:${d}" title="${voMD(d)} 입고: ${VO_VIA[vw]} — 눌러서 ${VO_VIA[vw === "move" ? "direct" : "move"]}(으)로">${vw === "move" ? "사내이동" : "직납"}</button>` : ""}${voIn(`s:${id}:${s.id}:${d}`, s.in[d] ? voF(s.in[d], 2) : "", `inputmode="decimal" placeholder="" aria-label="${voMD(d)} ${esc(s.name)} 입고${d > today ? " (예정)" : ""}"`)}</td>`; }).join("")}${tail(inS ? `${voF(inS, 2)}<small>${voUnit(s)}</small>` : "", planS ? voF(planS, 2) : "", per ? stk(st, dp) : "")}</tr>`; });
+    const inS = cols.reduce((n, d) => n + (s.in[d] && voArr(v, s, d) <= today ? s.in[d] : 0), 0), planS = cols.reduce((n, d) => n + (s.in[d] && voArr(v, s, d) > today ? s.in[d] : 0), 0);
+    rows += `<tr class="r-sup ${i === 0 ? "first" : ""}"><th title="${esc(s.name)} · 기본 ${VO_VIA[s.via]} 입고(${voUnit(s)}) — 사내이동은 D+2 · 긴급이동은 D+1에 재고로 잡힘 · 날짜 칸의 배지를 누르면 그날 입고만 직납 → 사내이동 → 긴급이동 순으로 바뀜">${esc(s.name)} <small class="via ${s.via}">${VO_VIA[s.via]}</small></th>${cols.map((d) => { const vw = voViaAt(s, d), ar = s.in[d] ? voArr(v, s, d) : d;
+      return `<td class="${s.in[d] && ar > today ? "plan" : ""} ${s.in[d] ? "has" : ""}">${s.in[d] ? `<button type="button" class="vo-vb ${vw} ${vw !== s.via ? "ov" : ""}" data-vo-vb="${id}:${s.id}:${d}" title="${voMD(d)} ${VO_VIA[vw]}${ar !== d ? ` → ${voMD(ar)} 도착(D+${VO_LAG[vw]})` : ""} — 눌러서 ${VO_VIA[VO_NEXT[vw]]}(으)로">${VO_VIA[vw]}${ar !== d ? ` →${voMD(ar)}` : ""}</button>` : ""}${voIn(`s:${id}:${s.id}:${d}`, s.in[d] ? voF(s.in[d], 2) : "", `inputmode="decimal" placeholder="" aria-label="${voMD(d)} ${esc(s.name)} 입고${d > today ? " (예정)" : ""}"`)}</td>`; }).join("")}${tail(inS ? `${voF(inS, 2)}<small>${voUnit(s)}</small>` : "", planS ? voF(planS, 2) : "", per ? stk(st, dp) : "")}</tr>`; });
   const wd = vorWeekHasData(v, w0), armed = voArm === `wk:${id}:${w0}`;
   return `<div class="vo-wk ${w0 === thisW ? "cur" : ""}" data-w="${w0}"><table><colgroup><col class="c-lab" />${cols.map((d) => `<col class="${d === today ? "c-today" : ""}" />`).join("")}<col class="c-sum" /><col class="c-xp" /><col class="c-xs" /></colgroup>
     <thead><tr><th class="wl">${voMD(w0)} 주${tag ? ` <small>${tag}</small>` : ""} <button type="button" class="vo-wdel ${armed ? "armed" : ""}" data-vo-del="wk:${id}:${w0}" title="${wd ? "이 주의 요청 · 실출고 · 입고를 지우고 주를 뺌" : "이 주 빼기"}">${armed ? (wd ? "내용까지 삭제" : "빼기 확인") : "주 삭제"}</button></th>${head}
@@ -3875,9 +3886,9 @@ function vorBoardHtml(v, c) {
   const id = v.id, today = todayStr(), x = v.days[today], fold = vo.boardFold;
   const late = Object.keys(v.days).filter((d) => d < today && v.days[d].req && v.days[d].act == null).sort();
   const shortS = c.sup.filter((y) => y.st === "short").sort((a2, b2) => a2.negAt.localeCompare(b2.negAt));
-  const soon = []; for (let i = 1; soon.length < 3 && i <= 10; i++) { const d = addBiz(today, i); v.sup.forEach((s2) => { if (s2.in[d]) soon.push({ d, s: s2 }); }); }
-  const todayIn = v.sup.filter((s2) => s2.in[today]);
-  const vw = (s2, d) => ((s2.viaAt || {})[d] || s2.via);
+  const arr = v.sup.flatMap((s2) => voInList(v, s2).map((r) => ({ ...r, s: s2 })));
+  const todayIn = arr.filter((r) => r.a === today), soon = arr.filter((r) => r.a > today).sort((x, y) => x.a.localeCompare(y.a)).slice(0, 3);
+  const ivt = (r) => `<i class="vo-vt ${r.via}" ${r.d !== r.a ? `title="${voMD(r.d)} ${VO_VIA[r.via]} → ${voMD(r.a)} 도착"` : ""}>${VO_VIA[r.via]}</i>`;
   const next = Object.keys(v.days).filter((d) => d > today && v.days[d].req && v.days[d].act == null).sort()[0];
   let ship;
   if (x && x.req) {
@@ -3891,9 +3902,9 @@ function vorBoardHtml(v, c) {
   const lateT = `<div class="vo-task ${late.length ? "bad" : "okc"}"><span class="tk">밀린 실출고 입력</span><span class="tv">${late.length}건</span>
     <span class="ts">${late.length ? late.slice(0, 4).map((d) => `${voMD(d)} ${voF(v.days[d].req)}`).join(" · ") + (late.length > 4 ? ` 외 ${late.length - 4}` : "") : "어제까지 요청은 모두 입력됨"}</span>
     ${late.length ? `<button type="button" class="tb ${armed ? "armed" : ""}" data-vo-del="fillall:${id}">${armed ? `한 번 더 누르면 ${late.length}건 입력` : "모두 요청대로 입력"}</button>` : ""}</div>`;
-  const inT = `<div class="vo-task"><span class="tk">입고 · 오늘 / 다음</span><span class="tv">${todayIn.length ? `오늘 ${todayIn.length}건` : "오늘 없음"}</span>
-    ${todayIn.map((s2) => `<span class="ts">${esc(s2.name)} ${voF(s2.in[today], 2)} <i class="vo-vt ${vw(s2, today)}">${vw(s2, today) === "move" ? "사내이동" : "직납"}</i></span>`).join("")}
-    ${soon.map((o) => `<span class="ts">${voMD(o.d)} ${esc(o.s.name)} ${voF(o.s.in[o.d], 2)} <i class="vo-vt ${vw(o.s, o.d)}">${vw(o.s, o.d) === "move" ? "사내이동" : "직납"}</i></span>`).join("") || (todayIn.length ? "" : `<span class="ts">예정된 입고 없음</span>`)}</div>`;
+  const inT = `<div class="vo-task"><span class="tk" title="사내이동 D+2 · 긴급이동 D+1 도착 기준">입고(도착) · 오늘 / 다음</span><span class="tv">${todayIn.length ? `오늘 ${todayIn.length}건` : "오늘 없음"}</span>
+    ${todayIn.map((r) => `<span class="ts">${esc(r.s.name)} ${voF(r.q, 2)} ${ivt(r)}</span>`).join("")}
+    ${soon.map((r) => `<span class="ts">${voMD(r.a)} ${esc(r.s.name)} ${voF(r.q, 2)} ${ivt(r)}</span>`).join("") || (todayIn.length ? "" : `<span class="ts">예정된 입고 없음</span>`)}</div>`;
   const shortT = `<div class="vo-task ${shortS.length ? "bad" : "okc"}"><span class="tk">자재 부족</span><span class="tv">${shortS.length ? shortS.length + "개" : "없음"}</span>
     ${shortS.length ? `<span class="vo-chipl">${shortS.map((y) => `<i class="vo-w bad">${esc(y.s.name)} ${y.negAt === today ? "지금" : voMD(y.negAt)}</i>`).join("")}</span><button type="button" class="tb" data-vo-jump="req">요청할 것 보기 ↓</button>` : `<span class="ts">예정 포함해도 모자라는 자재 없음</span>`}</div>`;
   return `<section class="vo-board ${fold ? "fold" : ""}"><div class="vo-bh"><b>오늘 할 일</b><span class="vo-bd">${voMD(today)} ${DOW[parseYMD(today).getDay()]}</span>
@@ -3913,18 +3924,18 @@ function vorSupplyHtml(v, c) {
     ${voHelpBox("sup", `<b>오늘 재고</b> = 기초 + 입고 완료(오늘까지) − ${v.prodOn ? "(시작 완제품 재고 + 생산)" : "출고(첫 입고일부터)"} × 개당 투입량.<br>
       <b>부족 시작</b> = 오늘 재고에 입고 예정을 더하고 앞날 투입을 빼 가며 0 아래로 내려가는 첫날 · <b>전망 최저</b> = 그 기간 가장 낮은 재고. 둘 다 같은 투입 기준을 씁니다.<br>
       <b>투입 기준</b> — ${esc(bs.long)}.${v.prodOn ? "" : " 생산 기록을 켜고 일 capa를 넣으면 생산 기준으로 바뀝니다."}<br>
-      <b>필요량</b> = 남은 발주(총 발주 − 시작 전 출고) × 1ea당 · <b>미확보</b> = 필요량 − (기초 + 입고 완료 + 입고 예정). 부족 시작은 받은 출고 요청까지만 날짜로 보고, 아직 요청 안 온 발주분 부족은 미확보로 보여 줍니다. ▾를 누르면 계산식과 기초 재고 · 리드타임 칸이 열립니다. 이름 옆 직납/사내이동을 누르면 기본 입고 방식이 바뀝니다.`)}
+      <b>필요량</b> = 남은 발주(총 발주 − 시작 전 출고) × 1ea당 · <b>미확보</b> = 필요량 − (기초 + 입고 완료 + 입고 예정). 부족 시작은 받은 출고 요청까지만 날짜로 보고, 아직 요청 안 온 발주분 부족은 미확보로 보여 줍니다. ▾를 누르면 계산식과 기초 재고 · 리드타임 칸이 열립니다. 이름 옆 직납/사내이동을 누르면 기본 입고 방식이 바뀝니다.<br><b>사내이동</b>은 입고 칸 날짜의 <b>D+2</b>(작업일), <b>긴급이동</b>은 <b>D+1</b>에 재고로 잡습니다. 위 표 입고 칸의 배지를 누르면 그날 입고만 직납 → 사내이동 → 긴급이동 순으로 바뀝니다.`)}
     <div class="vo-supw"><table class="vo-sup2"><thead><tr><th>자재</th><th class="via">입고 방식</th><th title="완제품 1ea 만들 때 드는 양">1ea당</th><th>기초</th><th>입고 완료</th><th>투입<small>${v.prodOn ? `생산 ${voF(c.sup[0] ? c.sup[0].usedQty : 0)}` : "출고 기준"}</small></th><th>오늘 재고</th><th>입고 예정</th><th>부족 시작</th><th>전망 최저<small>~${voMD(hz)}</small></th><th title="남은 발주(총 발주 − 시작 전 출고) × 1ea당">필요량<small>${v.po ? `발주 ${voF(Math.max(0, v.po - v.before))} 기준` : "총 발주 미입력"}</small></th><th title="필요량 − (기초 + 입고 완료 + 입고 예정)">미확보</th><th>상태</th><th></th></tr></thead><tbody>
     ${rows.map((x) => { const s2 = x.s, u = voUnit(s2), sk = (f) => `sm:${id}:${s2.id}:${f}`, det = !!vo.sdet[s2.id], dp = s2.kind === "bulk" ? 1 : 0;
       const nxt = x.plan[0];
-      let dr = 0, mv = 0; Object.keys(s2.in).forEach((d) => { if (((s2.viaAt || {})[d] || s2.via) === "move") mv += s2.in[d]; else dr += s2.in[d]; });
+      const byV = { direct: 0, move: 0, rush: 0 }; Object.keys(s2.in).forEach((d) => { byV[voViaAt(s2, d)] += s2.in[d]; });
       return `<tr class="st-${x.st}">
         <td class="nm">${s2.kind === "bulk" ? `<b>${esc(s2.name)}</b>` : voIn(sk("name"), s2.name, `class="vo-in vo-snm" placeholder="자재 이름" aria-label="자재 이름"`).replace('class="vo-in" ', "")}</td>
-        <td class="via"><button type="button" class="vo-vt ${s2.via}" data-vo-via="${id}:${s2.id}:${s2.via === "move" ? "direct" : "move"}" title="기본 입고 방식: ${VO_VIA[s2.via]} — 눌러서 바꾸기">${VO_VIA[s2.via]}</button></td>
+        <td class="via"><button type="button" class="vo-vt ${s2.via}" data-vo-via="${id}:${s2.id}:${s2.via === "move" ? "direct" : "move"}" title="기본 입고 방식: ${VO_VIA[s2.via]}${s2.via === "move" ? " (입고 칸 날짜 D+2에 도착)" : ""} — 눌러서 바꾸기 · 긴급이동(D+1)은 위 표의 입고 칸 배지로">${VO_VIA[s2.via]}</button></td>
         <td class="per">${s2.kind === "bulk" ? (v.fillG ? `${voF(x.per * 1000, 2)}<small>g · kg 단위</small>` : `<button type="button" class="vo-link" data-vo-edit="${id}">충전용량 입력</button>`) : voIn(sk("per"), s2.per ? String(s2.per) : "", `class="vo-in vo-perin" inputmode="decimal" placeholder="0.1" aria-label="${esc(s2.name)} 1ea당 소요량" title="예: 0.1 = 10개당 1개"`).replace('class="vo-in" ', "")}</td>
         <td>${voF(s2.open, dp)}</td><td>${voF(x.inDone, dp)}</td><td>${x.per ? voF(x.used, dp) : "—"}</td>
         <td class="big ${x.stock != null && x.stock < 0 ? "vo-bad" : ""}">${x.stock == null || !x.per ? "—" : voF(x.stock, dp)}</td>
-        <td>${x.inPlan ? `${voF(x.inPlan, dp)}${nxt ? `<small>${voMD(nxt[0])} ${((s2.viaAt || {})[nxt[0]] || s2.via) === "move" ? "사내이동" : "직납"}${x.plan.length > 1 ? ` 외 ${x.plan.length - 1}` : ""}</small>` : ""}` : "—"}</td>
+        <td>${x.inPlan ? `${voF(x.inPlan, dp)}${nxt ? `<small title="${esc(x.plan.map((r) => `${voMD(r.a)} 도착 ${voF(r.q, dp)} (${voMD(r.d)} ${VO_VIA[r.via]})`).join("\n"))}">${voMD(nxt.a)} 도착 · ${VO_VIA[nxt.via]}${x.plan.length > 1 ? ` 외 ${x.plan.length - 1}` : ""}</small>` : ""}` : "—"}</td>
         <td class="${x.negAt ? "vo-bad" : ""}">${x.negAt ? voDay(x.negAt) : "—"}</td>
         <td class="${x.per && x.low < 0 ? "vo-bad" : ""}">${x.per && x.stock != null ? voF(x.low, dp) : "—"}${x.per && x.stock != null && x.lowAt !== today ? `<small>${voMD(x.lowAt)}</small>` : ""}</td>
         <td>${x.per && v.po ? voF(x.need, dp) : "—"}</td>
@@ -3932,10 +3943,10 @@ function vorSupplyHtml(v, c) {
         <td><span class="vo-stag ${CL[x.st]}">${ST[x.st]}${x.st === "short" ? ` ${voDay(x.negAt)}` : ""}</span></td>
         <td><button type="button" class="vo-more ${det ? "on" : ""}" data-vo-sdet="${s2.id}" aria-expanded="${det}" aria-label="${esc(s2.name)} 계산식 · 설정">${det ? "▴" : "▾"}</button></td></tr>
       ${det ? `<tr class="vo-detr${voAn("sdet:" + s2.id)}"><td colspan="14"><div class="vo-formula">
-          ${tb("기초", voF(s2.open, dp))}<i>+</i>${tb("입고 완료" + (dr && mv ? "" : ` · ${VO_VIA[s2.via]}`), voF(x.inDone, dp))}<i>−</i>${tb(`투입 (${v.prodOn ? "생산" : "출고"} ${voF(x.usedQty)} × ${s2.kind === "bulk" ? voF(x.per, 4) + "kg" : voF(x.per, 4)})`, voF(x.used, dp))}<i>=</i>${tb("오늘 재고" + (s2.kind === "bulk" ? " kg" : ""), x.stock == null ? "—" : voF(x.stock, dp), "res" + (x.stock < 0 ? " neg" : ""))}
-          <i>→</i>${tb(x.plan.length ? x.plan.map(([d]) => voMD(d)).slice(0, 3).join(" · ") + " 예정" : "입고 예정", x.inPlan ? "+" + voF(x.inPlan, dp) : "없음", "plan")}<i>→</i>${tb(x.negAt ? `${voDay(x.negAt)}부터 부족 · ~${voMD(x.hz)} 최저` : `~${voMD(x.hz)} 최저`, x.stock == null ? "—" : voF(x.low, dp), x.low < 0 ? "low" : "")}
+          ${tb("기초", voF(s2.open, dp))}<i>+</i>${tb("입고 완료(도착)", voF(x.inDone, dp))}<i>−</i>${tb(`투입 (${v.prodOn ? "생산" : "출고"} ${voF(x.usedQty)} × ${s2.kind === "bulk" ? voF(x.per, 4) + "kg" : voF(x.per, 4)})`, voF(x.used, dp))}<i>=</i>${tb("오늘 재고" + (s2.kind === "bulk" ? " kg" : ""), x.stock == null ? "—" : voF(x.stock, dp), "res" + (x.stock < 0 ? " neg" : ""))}
+          <i>→</i>${tb(x.plan.length ? x.plan.map((r) => voMD(r.a)).slice(0, 3).join(" · ") + " 도착 예정" : "입고 예정", x.inPlan ? "+" + voF(x.inPlan, dp) : "없음", "plan")}<i>→</i>${tb(x.negAt ? `${voDay(x.negAt)}부터 부족 · ~${voMD(x.hz)} 최저` : `~${voMD(x.hz)} 최저`, x.stock == null ? "—" : voF(x.low, dp), x.low < 0 ? "low" : "")}
           <span class="vo-fnote">앞날 투입: ${esc(bs.short)}</span>
-          ${dr && mv ? `<span class="vo-fnote">입고 직납 ${voF(dr, dp)} · 사내이동 ${voF(mv, dp)}</span>` : ""}
+          ${Object.keys(byV).filter((k) => byV[k]).length > 1 || byV.move || byV.rush ? `<span class="vo-fnote">입고 ${Object.keys(byV).filter((k) => byV[k]).map((k) => `${VO_VIA[k]} ${voF(byV[k], dp)}`).join(" · ")} · 사내이동은 D+2, 긴급이동은 D+1에 재고로 잡음</span>` : ""}
           <span class="vo-fset"><label>기초 재고 ${voIn(sk("open"), s2.open ? voF(s2.open, 2) : "", `class="vo-in vo-perin" inputmode="decimal" placeholder="0" aria-label="${esc(s2.name)} 기초 재고"`).replace('class="vo-in" ', "")} ${u}</label>
             <label>리드타임 ${voIn(sk("lead"), s2.lead ? String(s2.lead) : "", `class="vo-in vo-perin" inputmode="numeric" placeholder="0" aria-label="${esc(s2.name)} 리드타임(영업일)" title="요청하고 들어오기까지 걸리는 영업일"`).replace('class="vo-in" ', "")} 영업일</label>
             ${s2.kind === "bulk" ? "" : `<button type="button" class="vo-x ${voArm === `sup:${id}:${s2.id}` ? "armed" : ""}" data-vo-del="sup:${id}:${s2.id}">${voArm === `sup:${id}:${s2.id}` ? "삭제 확인" : "이 자재 빼기"}</button>`}</span>
@@ -3947,12 +3958,18 @@ function vorReqItems(v, c) {
   const today = todayStr(), out = [];
   c.sup.forEach((x) => { const s2 = x.s; if (!x.per) return; const u = voUnit(s2), dp = s2.kind === "bulk" ? 1 : 0;
     if (x.st === "short") {
-      const by = s2.lead ? subBiz(x.negAt, s2.lead) : x.negAt, late = by < today;
+      // 사내이동은 요청 → D+2 도착(리드타임을 따로 넣었으면 그 값), 늦으면 긴급이동(D+1)으로 되는지 봄
+      const mv = s2.via === "move", lead = s2.lead || (mv ? VO_LAG.move : 0);
+      const by = lead ? voSubWork(v, x.negAt, lead) : x.negAt, late = by < today;
+      const rush = mv && late && voSubWork(v, x.negAt, VO_LAG.rush) >= today;
+      const kind = rush ? "긴급이동 요청" : mv ? "사내이동 요청" : "직납 요청";
       const qty = Math.ceil(x.negQty), tot = Math.ceil(-x.low);
-      out.push({ s: s2, key: `${x.negAt}|${qty}`, pri: 0, due: by < today ? today : by, chip: by <= today ? (s2.lead ? "오늘 발주" : "오늘") : `${voMD(by)}까지`, cls: "bad",
-        title: `${s2.name} ${voF(qty, dp)}${u} ${s2.via === "move" ? "사내이동 요청" : "직납 요청"}`,
-        sub: `${voDay(x.negAt)}부터 부족${tot > qty ? ` · ~${voMD(x.hz)}까지 총 ${voF(tot, dp)}${u} 모자람` : ""}${x.inPlan ? ` · 입고 예정 ${voF(x.inPlan, dp)} 반영 후` : " · 입고 예정 없음"}${s2.lead ? ` · 리드타임 ${s2.lead}일${late ? " → 이미 늦음, 바로 요청" : ` → ${voDay(by)} 요청`}` : " · 리드타임 미입력"}`,
-        msg: `[${v.item}] ${s2.name} ${s2.via === "move" ? "사내이동 요청" : "납품 요청 (직납)"}\n- 수량: ${voF(qty, dp)}${u}${tot > qty ? ` (${voMD(x.hz)}까지 총 ${voF(tot, dp)}${u})` : ""}\n- 필요일: ${voMD(x.negAt)}(${DOW[parseYMD(x.negAt).getDay()]})${x.negAt === today ? " 오늘" : ""}\n- 사유: ${v.prodOn ? "생산" : "출고"} 계획 대비 부족${x.inPlan ? ` (입고 예정 ${voF(x.inPlan, dp)}${u} 반영 후)` : ", 입고 예정 없음"}${v.client ? `\n- 고객사: ${v.client}` : ""}` });
+      const leadTxt = rush ? ` · 사내이동 D+${lead}로는 늦음 → 오늘 긴급이동(D+1) 요청하면 ${voDay(x.negAt)} 도착`
+        : lead ? ` · ${mv && !s2.lead ? `사내이동 D+${lead}` : `리드타임 ${lead}일`}${late ? " → 이미 늦음, 바로 요청" : ` → ${voDay(by)}까지 요청`}` : " · 리드타임 미입력";
+      out.push({ s: s2, key: `${x.negAt}|${qty}`, pri: 0, due: by < today ? today : by, chip: rush ? "오늘 긴급이동" : by <= today ? (lead ? "오늘 발주" : "오늘") : `${voMD(by)}까지`, cls: "bad",
+        title: `${s2.name} ${voF(qty, dp)}${u} ${kind}`,
+        sub: `${voDay(x.negAt)}부터 부족${tot > qty ? ` · ~${voMD(x.hz)}까지 총 ${voF(tot, dp)}${u} 모자람` : ""}${x.inPlan ? ` · 입고 예정 ${voF(x.inPlan, dp)} 반영 후` : " · 입고 예정 없음"}${leadTxt}`,
+        msg: `[${v.item}] ${s2.name} ${rush ? "긴급 사내이동 요청 (D+1)" : mv ? "사내이동 요청" : "납품 요청 (직납)"}\n- 수량: ${voF(qty, dp)}${u}${tot > qty ? ` (${voMD(x.hz)}까지 총 ${voF(tot, dp)}${u})` : ""}\n- 필요일: ${voMD(x.negAt)}(${DOW[parseYMD(x.negAt).getDay()]})${x.negAt === today ? " 오늘" : ""}\n- 사유: ${v.prodOn ? "생산" : "출고"} 계획 대비 부족${x.inPlan ? ` (입고 예정 ${voF(x.inPlan, dp)}${u} 반영 후)` : ", 입고 예정 없음"}${v.client ? `\n- 고객사: ${v.client}` : ""}` });
     } else if (x.st === "gap") {
       const g = Math.ceil(x.gap);
       out.push({ s: s2, key: `gap|${g}`, pri: 1, due: "9999", chip: "미확보", cls: "warn", title: `${s2.name} 발주분 ${voF(g, dp)}${u} 미확보`,
@@ -4207,7 +4224,7 @@ function vorClick(e) {
     v.prodOn = on === "1"; vorLog(v, v.prodOn ? "생산 기록 사용 — 자재 투입을 생산 기준으로" : "생산 기록 끔 — 자재 투입을 출고 기준으로"); Store.saveVorder(v);
     toast(v.prodOn ? "생산 줄을 켰습니다 — 자재 투입을 생산 수량 기준으로 계산합니다" : "생산 줄을 껐습니다 — 자재 투입을 출고 수량 기준으로 계산합니다 (입력한 생산 기록은 남아 있음)"); return; }
   const vb = t.closest("[data-vo-vb]"); if (vb) { const [id, sid, d] = vb.dataset.voVb.split(":"); const v = vorClone(vorById(id)); const s = v.sup.find((x) => x.id === sid); if (!s || !s.in[d]) return;
-    s.viaAt = s.viaAt || {}; const cur = s.viaAt[d] || s.via, nw = cur === "move" ? "direct" : "move";
+    s.viaAt = s.viaAt || {}; const cur = s.viaAt[d] || s.via, nw = VO_NEXT[cur] || "direct";
     if (nw === s.via) delete s.viaAt[d]; else s.viaAt[d] = nw;
     vorLog(v, `${voMD(d)} ${s.name} 입고 ${voF(s.in[d], 2)}: ${VO_VIA[cur]} → ${VO_VIA[nw]}`); Store.saveVorder(v); return; }
   const vi = t.closest("[data-vo-via]"); if (vi) { const [id, sid, w] = vi.dataset.voVia.split(":"); const v = vorClone(vorById(id)); const s = v.sup.find((x) => x.id === sid); if (!s || s.via === w) return;
